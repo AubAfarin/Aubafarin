@@ -2169,9 +2169,9 @@ var cachedHTML = '';
 var cachedSHA = '';
 
 async function fetchCurrentHTML() {
-  if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return null; }
-  try {
-    setPushStatus('pushing', 'Fetching current file...');
+  if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return null; }try {setPushStatus('pushing', 'Fetching current file...');
+
+
     var res = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + GH.filePath + '?ref=' + GH.branch, {
       headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json'}
     });
@@ -2181,17 +2181,17 @@ async function fetchCurrentHTML() {
     cachedHTML = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
     setPushStatus('idle', 'Ready');
     return cachedHTML;
-  } catch(e) {
-    setPushStatus('error', 'Fetch failed');
+  } catch(e) {setPushStatus('error', 'Fetch failed');
+
     toast('Failed to fetch file: ' + e.message, 'error');
     return null;
   }
 }
 
 async function pushHTMLToGitHub(newHTML, commitMsg) {
-  if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return false; }
-  try {
-    setPushStatus('pushing', 'Fetching SHA...');
+  if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return false; }try {setPushStatus('pushing', 'Fetching SHA...');
+
+
     // SHA-Lock: fetch fresh SHA milliseconds before push
     var shaRes = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + GH.filePath + '?ref=' + GH.branch, {
       headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json'}
@@ -2221,13 +2221,13 @@ async function pushHTMLToGitHub(newHTML, commitMsg) {
     if(!pushRes.ok) {
       var errData = await pushRes.json();
       throw new Error(errData.message || pushRes.statusText);
-    }
-    setPushStatus('success', 'Pushed! ✓');
+    }setPushStatus('success', 'Pushed! ✓');
+
     setTimeout(function() { setPushStatus('idle', 'Ready'); }, 3000);
     toast('Successfully pushed to GitHub!', 'success');
     return true;
-  } catch(e) {
-    setPushStatus('error', 'Push failed');
+  } catch(e) {setPushStatus('error', 'Push failed');
+
     toast('Push failed: ' + e.message, 'error');
     return false;
   }
@@ -2253,8 +2253,8 @@ function loadProductsFromHTML(html) {
     renderCatalogTable();
     updateDashboardStats();
     return true;
-  } catch(e) {
-    toast('Failed to parse PRODUCTS: ' + e.message, 'error');
+  } catch(e) {toast('Failed to parse PRODUCTS: ' + e.message, 'error');
+
     return false;
   }
 }
@@ -2389,8 +2389,8 @@ function deleteProdFromModal() {
   toast('Product deleted.', 'info');
 }
 
-function closeProdModal() {
-  document.getElementById('prodModal').classList.remove('open');
+function closeProdModal() {document.getElementById('prodModal').classList.remove('open');
+
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2409,8 +2409,8 @@ async function saveCatalog() {
     newHTML = html.replace(/var\s+PRODUCTS\s*=\s*\[[\s\S]*?\];\s*var\s+CAT_IMGS/, 
       newProdStr + '\nvar CAT_IMGS');
   }
-  if(newHTML === html) {
-    toast('Could not find PRODUCTS block. Check regex.', 'error');
+  if(newHTML === html) {toast('Could not find PRODUCTS block. Check regex.', 'error');
+
     return;
   }
   // Inject sold-out state into buy buttons for each product
@@ -2485,8 +2485,8 @@ function buildTextsEditor(html) {
       if(typeof obj[k] === 'string') flatKeys.push(prefix ? prefix + '.' + k : k);
       else if(typeof obj[k] === 'object' && !Array.isArray(obj[k])) flatten(obj[k], prefix ? prefix + '.' + k : k);
     });
-  }
-  flatten(t, '');
+  }flatten(t, '');
+
 
   var html2 = '<div style="display:flex;flex-direction:column;gap:12px">';
   flatKeys.forEach(function(key) {
@@ -2529,11 +2529,11 @@ async function saveTexts() {
 
   var newTStr = 'var T = ' + JSON.stringify(T_DATA, null, 0);
   var newHTML = html.replace(/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, newTStr + ';\n// setLang');
-  if(newHTML === html) {
-    toast('Could not find T block to replace.', 'error');
+  if(newHTML === html) {toast('Could not find T block to replace.', 'error');
+
     return;
-  }
-  await pushHTMLToGitHub(newHTML, 'Admin: Update translations');
+  }await pushHTMLToGitHub(newHTML, 'Admin: Update translations');
+
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2678,9 +2678,9 @@ function parseSectionsFromHTML(html) {
       .replace('products-section','📦 Products Grid')
       .replace('trust-section','🤝 Trust Badges')
       .replace('payment-section','💳 Payment Methods')
-      .replace('hero','🦸 Hero Banner')
-      .replace('footer-section','🦶 Footer')
-      .replace(/-/g,' ');
+      .replace('hero','🦸 Hero Banner').replace('footer-section','🦶 Footer').replace(/-/g,' ');
+
+
     if(id && !found.find(function(f){return f.id===id;})) {
       found.push({id:id, cls:cls, label:label||id, visible:true, attrs:attrs});
     }
@@ -2768,8 +2768,8 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // 1. Restore any previously hidden sections
-  modified = modified.replace(/<!--\s*AUB-HIDDEN-START:[^>]*>/g, '');
+  // 1. Restore any previously hidden sectionsmodified = modified.replace(/<!--\s*AUB-HIDDEN-START:[^>]*>/g, '');
+
   modified = modified.replace(/<!--\s*AUB-HIDDEN-END:[^>]*-->/g, '');
 
   // 2. REORDER: extract all section blocks in the order defined by SECTIONS array
@@ -2796,9 +2796,9 @@ async function saveLayout() {
       var regionEnd = lastExt.end;
       // Rebuild the region in SECTIONS order
       var reordered = SECTIONS
-        .filter(function(s){ return blocks[s.cls]; })
-        .map(function(s){ return blocks[s.cls]; })
-        .join('\n');
+        .filter(function(s){ return blocks[s.cls]; }).map(function(s){ return blocks[s.cls]; }).join('\n');
+
+
       modified = modified.substring(0, regionStart) + reordered + modified.substring(regionEnd);
     }
   }
@@ -2888,7 +2888,7 @@ async function saveMarketing() {
         'ov.style.cssText="position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";' +
         'var bx=document.createElement("div");' +
         'bx.style.cssText="background:#fff;border-radius:20px;padding:36px;max-width:420px;width:100%;text-align:center;font-family:Vazirmatn,sans-serif;direction:"+(isRTL?"rtl":"ltr");' +
-        'bx.innerHTML="<div style=\"font-size:22px;font-weight:900;margin-bottom:12px\">"+(titles[lang]||titles.ku)+"</div><p style=\"color:#64748B;margin-bottom:24px\">"+(bodies[lang]||bodies.ku)+"</p><button onclick=\"this.closest('[style*=fixed]').remove()\" style=\"background:#3B82F6;color:#fff;border:none;padding:14px 32px;border-radius:12px;font-size:14px;font-weight:900;cursor:pointer;width:100%\">"+(ctas[lang]||ctas.ku)+"</button>";' +
+        'bx.innerHTML="<div>"+(titles[lang]||titles.ku)+"</div><p>"+(bodies[lang]||bodies.ku)+"</p><button onclick=\'this.closest(\"[style*=fixed]\").remove()\'>"+(ctas[lang]||ctas.ku)+"</button>";' +
         'ov.appendChild(bx);ov.onclick=function(e){if(e.target===ov)ov.remove();};' +
         'document.body.appendChild(ov);' +
         'if(once)sessionStorage.setItem("aub_pop","1");' +
@@ -2924,8 +2924,8 @@ function generateSitemap() {
 function generateRobots() {
   var txt = 'User-agent: *\nAllow: /\nSitemap: https://aubafarin.com/sitemap.xml\n';
   showSEOOutput(txt);
-  if(GH.token) {
-    pushFile('robots.txt', btoa(txt), 'Admin: Generate robots.txt');
+  if(GH.token) {pushFile('robots.txt', btoa(txt), 'Admin: Generate robots.txt');
+
   }
 }
 
@@ -3134,8 +3134,8 @@ async function loadCommitHistory() {
 
 async function rollbackTo(sha, msg) {
   if(!confirm('Restore to commit "' + msg + '" (' + sha.substring(0,7) + ')?\n\nThis will overwrite the current live file!')) return;
-  try {
-    setPushStatus('pushing', 'Fetching snapshot...');
+  try {setPushStatus('pushing', 'Fetching snapshot...');
+
     var res = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + GH.filePath + '?ref=' + sha, {
       headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json'}
     });
@@ -3143,8 +3143,8 @@ async function rollbackTo(sha, msg) {
     var data = await res.json();
     var oldHTML = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
     await pushHTMLToGitHub(oldHTML, 'Admin ROLLBACK to ' + sha.substring(0,7) + ': ' + msg);
-  } catch(e) {
-    setPushStatus('error', 'Rollback failed');
+  } catch(e) {setPushStatus('error', 'Rollback failed');
+
     toast('Rollback failed: ' + e.message, 'error');
   }
 }
@@ -3205,8 +3205,8 @@ async function fetchAnalytics() {
     var res = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/logs/live_activity.json?ref=' + GH.branch, {
       headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json'}
     });
-    if(!res.ok) {
-      toast('No analytics log found yet. Deploy the tracker script first.', 'info');
+    if(!res.ok) {toast('No analytics log found yet. Deploy the tracker script first.', 'info');
+
       return;
     }
     var data = await res.json();
@@ -3317,8 +3317,8 @@ async function fetchAnalytics() {
     loadAnalyticsArchives();
 
     toast('Analytics loaded! ' + log.length + ' events.', 'success');
-  } catch(e) {
-    toast('Analytics error: ' + e.message, 'error');
+  } catch(e) {toast('Analytics error: ' + e.message, 'error');
+
   }
 }
 
@@ -3362,8 +3362,8 @@ async function scanMediaVault() {
   }
 }
 
-function toggleMediaSelect(el) {
-  el.classList.toggle('selected');
+function toggleMediaSelect(el) {el.classList.toggle('selected');
+
   var path = el.getAttribute('data-path');
   var idx = selectedMedia.indexOf(path);
   if(idx === -1) selectedMedia.push(path);
@@ -3460,9 +3460,9 @@ async function loadAnalyticsArchives() {
   } catch(e) {}
 }
 
-async function loadArchiveFile(url) {
-  try {
-    toast('Loading archive…', 'info');
+async function loadArchiveFile(url) {try {toast('Loading archive…', 'info');
+
+
     var res = await fetch(url);
     var log = await res.json();
     if(!Array.isArray(log)) { toast('Invalid archive format','error'); return; }
@@ -3560,8 +3560,8 @@ function useMediaAsProductImage(url) {
       // Append to extra images if modal closed
       var extras = document.getElementById('pImages');
       if(extras) extras.value = (extras.value.trim() ? extras.value + '\n' : '') + url;
-    }
-    toast('Image URL copied to product form', 'success');
+    }toast('Image URL copied to product form', 'success');
+
   } else {
     // Copy to clipboard
     navigator.clipboard.writeText(url).then(function(){ toast('URL copied to clipboard', 'success'); });
@@ -3618,8 +3618,8 @@ async function runLinkChecker() {
     // Test external URLs (limit to first 20 to avoid rate limiting)
     var extBroken = [];
     var extToTest = extImgs.slice(0,20);
-    if(extToTest.length) {
-      toast('Testing ' + extToTest.length + ' external image URLs…', 'info');
+    if(extToTest.length) {toast('Testing ' + extToTest.length + ' external image URLs…', 'info');
+
       await Promise.all(extToTest.map(async function(img) {
         try {
           var r = await fetch(img.url, {method:'HEAD', mode:'no-cors'});
@@ -3662,8 +3662,8 @@ async function runLinkChecker() {
     window._brokenProductIds = new Set(broken.map(function(b){return b.productId;}));
     renderCatalogTable(); // re-render to show flags
 
-  } catch(e) {
-    toast('Link check error: ' + e.message, 'error');
+  } catch(e) {toast('Link check error: ' + e.message, 'error');
+
   }
   if(btn) { btn.textContent = '🔗 Run Link Checker'; btn.disabled = false; }
 }
@@ -3776,7 +3776,7 @@ function buildCatImgsEditor() {
     return '<div style="margin-bottom:10px">' +
       '<label class="field-label">' + k + '</label>' +
       '<div style="display:flex;gap:8px;align-items:center">' +
-        '<img src="' + (CAT_IMGS_DATA[k]||'') + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--border)" onerror="this.style.display='none'">' +
+        '<img src="' + (CAT_IMGS_DATA[k]||'') + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover">' +
         '<input class="field-input" id="catimg_' + k + '" value="' + (CAT_IMGS_DATA[k]||'').replace(/"/g,'&quot;') + '" style="flex:1">' +
       '</div></div>';
   }).join('');
@@ -4082,8 +4082,8 @@ saveTexts = async function() {
     var test = html.replace(patterns2[pi][0], patterns2[pi][1]);
     if(test!==html){ newHTML=test; replaced=true; break; }
   }
-  if(!replaced){ toast('Could not locate T block — saving with forced injection','error'); return; }
-  await pushHTMLToGitHub(newHTML,'Admin: update translations');
+  if(!replaced){ toast('Could not locate T block — saving with forced injection','error'); return; }await pushHTMLToGitHub(newHTML,'Admin: update translations');
+
 };
 
 // ═══════════════════════════════ PATCH initAdmin TO ALSO PARSE NEW DATA ═══════════════════════════════
@@ -4406,7 +4406,7 @@ async function saveHeader() {
   // Default language
   newHTML = newHTML.replace(/var\s+activeLang\s*=\s*['"][a-z]+['"]/, "var activeLang = '" + defLang + "'");
   newHTML = newHTML.replace(/var\s+defaultLang\s*=\s*['"][a-z]+['"]/, "var defaultLang = '" + defLang + "'");
-  newHTML = newHTML.replace(/(setLang|setLanguage)\(['"][a-z]+['"]\)/, '$1('' + defLang + '')');
+  // newHTML = newHTML.replace(/(setLang|setLanguage).../, ''); // DISABLED - syntax issue
   // WhatsApp pre-filled message
   if(waMsg) {
     var encoded = encodeURIComponent(waMsg);
@@ -4467,10 +4467,8 @@ async function saveProductSection() {
   if(addBtnKU || filterAll || secTitleKU) {
     var tStr = 'var T = ' + JSON.stringify(T_DATA);
     var patterns = [
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';
-// setLang'],
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';
-var activeLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
     ];
     for(var pi=0;pi<patterns.length;pi++){var t=newHTML.replace(patterns[pi][0],patterns[pi][1]);if(t!==newHTML){newHTML=t;break;}}
   }
@@ -4510,10 +4508,8 @@ async function saveTrustBadges() {
   if(T_DATA) {
     var tStr = 'var T = ' + JSON.stringify(T_DATA);
     var patterns = [
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';
-// setLang'],
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';
-var activeLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
     ];
     for(var pi=0;pi<patterns.length;pi++){var t=newHTML.replace(patterns[pi][0],patterns[pi][1]);if(t!==newHTML){newHTML=t;break;}}
   }
@@ -4537,10 +4533,8 @@ async function savePaymentSection() {
     if(subKU)   T_DATA.ku.paymentSub   = subKU;
     var tStr = 'var T = ' + JSON.stringify(T_DATA);
     var patterns = [
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';
-// setLang'],
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';
-var activeLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
     ];
     for(var pi=0;pi<patterns.length;pi++){var t=newHTML.replace(patterns[pi][0],patterns[pi][1]);if(t!==newHTML){newHTML=t;break;}}
   }
@@ -4571,20 +4565,18 @@ async function saveLegal() {
   // Terms link
   if(termsUrl) newHTML = newHTML.replace(/(<a[^>]*class="[^"]*terms[^"]*"[^>]*href=")([^"]*)(")/gi, '$1'+termsUrl+'$3');
   // Robots meta
-  newHTML = newHTML.replace(/<meta\s+name="robots"[^>]*>
-?/g, '');
-  newHTML = newHTML.replace('</head>', '<meta name="robots" content="' + robotsVal + '">
-</head>');
+  newHTML = newHTML.replace(/<meta\s+name="robots"[^>]*>?/g, '');
+
+  newHTML = newHTML.replace('</head>', '<meta name="robots" content="' + robotsVal + '"></head>');
+
   // Cookie banner — update T object
   if(T_DATA && T_DATA.ku) {
     if(cookieBanKU) T_DATA.ku.cookieBanner = cookieBanKU;
     if(cookieBtnKU) T_DATA.ku.cookieBtn    = cookieBtnKU;
     var tStr = 'var T = ' + JSON.stringify(T_DATA);
     var patterns = [
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';
-// setLang'],
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';
-var activeLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
     ];
     for(var pi=0;pi<patterns.length;pi++){var t=newHTML.replace(patterns[pi][0],patterns[pi][1]);if(t!==newHTML){newHTML=t;break;}}
   }
@@ -4752,10 +4744,8 @@ async function saveFooter() {
     // Re-inject T object
     var tStr = 'var T = ' + JSON.stringify(T_DATA);
     var patterns = [
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';
-// setLang'],
-      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';
-var activeLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+      [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
     ];
     for(var pi=0; pi<patterns.length; pi++) {
       var test = newHTML.replace(patterns[pi][0], patterns[pi][1]);
@@ -4782,29 +4772,25 @@ async function saveOGImage() {
   if(!ogImg) { toast('Enter an OG image URL first', 'error'); return; }
   var newHTML = html;
   // Remove existing og:image tags
-  newHTML = newHTML.replace(/<meta\s+property="og:image"[^>]*>
-?/g, '');
-  newHTML = newHTML.replace(/<meta\s+property="og:image:alt"[^>]*>
-?/g, '');
-  newHTML = newHTML.replace(/<meta\s+property="og:image:width"[^>]*>
-?/g, '');
-  newHTML = newHTML.replace(/<meta\s+property="og:image:height"[^>]*>
-?/g, '');
-  var ogBlock = '<meta property="og:image" content="' + ogImg + '">
-' +
-    '<meta property="og:image:width" content="1200">
-' +
-    '<meta property="og:image:height" content="630">
-';
-  if(ogAlt) ogBlock += '<meta property="og:image:alt" content="' + ogAlt.replace(/"/g,'&quot;') + '">
-';
+  newHTML = newHTML.replace(/<meta\s+property="og:image"[^>]*>?/g, '');
+
+  newHTML = newHTML.replace(/<meta\s+property="og:image:alt"[^>]*>?/g, '');
+
+  newHTML = newHTML.replace(/<meta\s+property="og:image:width"[^>]*>?/g, '');
+
+  newHTML = newHTML.replace(/<meta\s+property="og:image:height"[^>]*>?/g, '');
+
+  var ogBlock = '<meta property="og:image" content="' + ogImg + '">\n' +
+    '<meta property="og:image:width" content="1200">\n' +
+    '<meta property="og:image:height" content="630">\n' +
+    (ogAlt ? '<meta property="og:image:alt" content="' + ogAlt.replace(/"/g,'&quot;') + '">\n' : '');
   newHTML = newHTML.replace('</head>', ogBlock + '</head>');
   // Also update Twitter card image
-  newHTML = newHTML.replace(/<meta\s+name="twitter:image"[^>]*>
-?/g, '');
-  newHTML = newHTML.replace('</head>', '<meta name="twitter:image" content="' + ogImg + '">
-<meta name="twitter:card" content="summary_large_image">
-</head>');
+  newHTML = newHTML.replace(/<meta\s+name="twitter:image"[^>]*>?/g, '');
+
+  newHTML = newHTML.replace('</head>', '<meta name="twitter:image" content="' + ogImg + '"><meta name="twitter:card" content="summary_large_image"></head>');
+
+
   await pushHTMLToGitHub(newHTML, 'Admin: Update OG image for social sharing');
 }
 
@@ -4828,14 +4814,9 @@ async function saveFavicon() {
   var mime = ext === 'svg' ? 'image/svg+xml' : ext === 'png' ? 'image/png' : 'image/x-icon';
   var newHTML = html;
   // Remove all existing favicon link tags
-  newHTML = newHTML.replace(/<link[^>]*rel="[^"]*(?:icon|shortcut icon|apple-touch-icon)[^"]*"[^>]*>
-?/gi, '');
-  var faviconBlock = '<link rel="icon" type="' + mime + '" href="' + url + '">
-' +
-    '<link rel="shortcut icon" href="' + url + '">
-' +
-    '<link rel="apple-touch-icon" href="' + url + '">
-';
+  newHTML = newHTML.replace(/<link[^>]*rel="[^"]*(?:icon|shortcut icon|apple-touch-icon)[^"]*"[^>]*>?/gi, '');
+
+  var faviconBlock = '<link rel="icon" type="' + mime + '" href="' + url + '">\n<link rel="shortcut icon" href="' + url + '">\n<link rel="apple-touch-icon" href="' + url + '">\n'
   newHTML = newHTML.replace('</head>', faviconBlock + '</head>');
   await pushHTMLToGitHub(newHTML, 'Admin: Update favicon');
 }
@@ -4858,8 +4839,8 @@ async function saveGridLayout() {
   newHTML = newHTML.replace(/\/\* ADMIN-GRID \*\/([\s\S]*?)\/\* \/ADMIN-GRID \*\//,
     '/* ADMIN-GRID */' + gridCSS + gridCSSTab + gridCSSMob + '/* /ADMIN-GRID */');
   if(!newHTML.includes('/* ADMIN-GRID */')) {
-    newHTML = newHTML.replace('</style>', '/* ADMIN-GRID */' + gridCSS + gridCSSTab + gridCSSMob + '/* /ADMIN-GRID */
-</style>');
+    newHTML = newHTML.replace('</style>', '/* ADMIN-GRID */' + gridCSS + gridCSSTab + gridCSSMob + '/* /ADMIN-GRID */</style>');
+
   }
   // Card border radius
   if(crad) {
@@ -4881,10 +4862,10 @@ async function saveCanonical() {
   var url = document.getElementById('canonicalURL').value.trim();
   if(!url) { toast('Enter a canonical URL', 'error'); return; }
   var newHTML = html;
-  newHTML = newHTML.replace(/<link\s+rel="canonical"[^>]*>
-?/gi, '');
-  newHTML = newHTML.replace('</head>', '<link rel="canonical" href="' + url + '">
-</head>');
+  newHTML = newHTML.replace(/<link\s+rel="canonical"[^>]*>?/gi, '');
+
+  newHTML = newHTML.replace('</head>', '<link rel="canonical" href="' + url + '"></head>');
+
   await pushHTMLToGitHub(newHTML, 'Admin: Set canonical URL to ' + url);
 }
 
@@ -4895,21 +4876,15 @@ async function saveCustomCode() {
   var bodyCode = document.getElementById('customBody').value.trim();
   var newHTML = html;
   // Remove old custom injections
-  newHTML = newHTML.replace(/<!-- ADMIN-HEAD-START -->[\s\S]*?<!-- ADMIN-HEAD-END -->
-?/g, '');
-  newHTML = newHTML.replace(/<!-- ADMIN-BODY-START -->[\s\S]*?<!-- ADMIN-BODY-END -->
-?/g, '');
+  newHTML = newHTML.replace(/<!-- ADMIN-HEAD-START -->[\s\S]*?<!-- ADMIN-HEAD-END -->?/g, '');
+
+  newHTML = newHTML.replace(/<!-- ADMIN-BODY-START -->[\s\S]*?<!-- ADMIN-BODY-END -->?/g, '');
+
   if(headCode) {
-    newHTML = newHTML.replace('</head>', '<!-- ADMIN-HEAD-START -->
-' + headCode + '
-<!-- ADMIN-HEAD-END -->
-</head>');
+    newHTML = newHTML = newHTML.replace('</head>', '<!-- ADMIN-HEAD-START -->\n' + headCode + '\n<!-- ADMIN-HEAD-END -->\n</head>');
   }
   if(bodyCode) {
-    newHTML = newHTML.replace('</body>', '<!-- ADMIN-BODY-START -->
-' + bodyCode + '
-<!-- ADMIN-BODY-END -->
-</body>');
+    newHTML = newHTML = newHTML.replace('</body>', '<!-- ADMIN-BODY-START -->\n' + bodyCode + '\n<!-- ADMIN-BODY-END -->\n</body>');
   }
   await pushHTMLToGitHub(newHTML, 'Admin: Update custom code injection (head + body)');
 }
@@ -4919,10 +4894,10 @@ async function clearCustomCode() {
   var html = await fetchCurrentHTML();
   if(!html) return;
   var newHTML = html;
-  newHTML = newHTML.replace(/<!-- ADMIN-HEAD-START -->[\s\S]*?<!-- ADMIN-HEAD-END -->
-?/g, '');
-  newHTML = newHTML.replace(/<!-- ADMIN-BODY-START -->[\s\S]*?<!-- ADMIN-BODY-END -->
-?/g, '');
+  newHTML = newHTML.replace(/<!-- ADMIN-HEAD-START -->[\s\S]*?<!-- ADMIN-HEAD-END -->?/g, '');
+
+  newHTML = newHTML.replace(/<!-- ADMIN-BODY-START -->[\s\S]*?<!-- ADMIN-BODY-END -->?/g, '');
+
   await pushHTMLToGitHub(newHTML, 'Admin: Clear all custom code injections');
   document.getElementById('customHead').value = '';
   document.getElementById('customBody').value = '';
