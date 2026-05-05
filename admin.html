@@ -1617,48 +1617,55 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
 <!-- PRODUCT EDIT MODAL -->
 <div class="modal-backdrop" id="prodModal">
-  <div class="modal-box" style="max-width:700px">
+  <div class="modal-box" style="max-width:860px;width:95vw">
     <div class="modal-close-x" onclick="closeProdModal()">✕</div>
     <div style="font-size:16px;font-weight:900;color:var(--text);margin-bottom:20px" id="prodModalTitle">Add Product</div>
-    
-    <div class="card-grid cols-2">
+
+    <div class="card-grid cols-2" style="gap:20px">
+
+      <!-- LEFT COLUMN: Info -->
       <div>
         <div class="field-group">
-          <label class="field-label">Product ID</label>
-          <input class="field-input" id="pID" placeholder="e.g. girls-21">
+          <label class="field-label">Product ID <span style="color:var(--text3);font-weight:400">(auto-generated, editable)</span></label>
+          <div style="display:flex;gap:6px">
+            <input class="field-input" id="pID" placeholder="Auto-generated from name" style="flex:1">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="autoGenID()" title="Regenerate ID from name">🔄</button>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px">Generated from English name + category. Edit if needed.</div>
         </div>
+
+        <div class="card-grid cols-2" style="gap:10px">
+          <div class="field-group">
+            <label class="field-label">Category</label>
+            <select class="field-select" id="pCat" onchange="autoGenID()"></select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Age Group</label>
+            <select class="field-select" id="pAge"></select>
+          </div>
+        </div>
+
+        <div class="card-grid cols-2" style="gap:10px">
+          <div class="field-group">
+            <label class="field-label">Price (IQD)</label>
+            <input class="field-input" type="number" id="pPrice" placeholder="15000">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Sale Price (IQD)</label>
+            <input class="field-input" type="number" id="pSalePrice" placeholder="Optional">
+          </div>
+        </div>
+
         <div class="field-group">
-          <label class="field-label">Category</label>
-          <select class="field-select" id="pCat">
-            <option value="newborn">newborn</option>
-            <option value="girls">girls</option>
-            <option value="boys">boys</option>
-            <option value="shoes">shoes</option>
-            <option value="toys">toys</option>
-            <option value="beauty">beauty</option>
-            <option value="gifts">gifts</option>
-            <option value="play">play</option>
+          <label class="field-label">Stock Status</label>
+          <select class="field-select" id="pStock">
+            <option value="instock">✅ In Stock</option>
+            <option value="low">⚠️ Low Stock</option>
+            <option value="soldout">❌ Sold Out</option>
           </select>
         </div>
-        <div class="field-group">
-          <label class="field-label">Age Group</label>
-          <select class="field-select" id="pAge">
-            <option value="0-3m">0-3m</option>
-            <option value="3-6m">3-6m</option>
-            <option value="6-12m">6-12m</option>
-            <option value="mini">mini (2-9 yrs)</option>
-            <option value="junior">junior (8-16 yrs)</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Price (IQD)</label>
-          <input class="field-input" type="number" id="pPrice" placeholder="15000">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Sale Price (IQD)</label>
-          <input class="field-input" type="number" id="pSalePrice" placeholder="Leave empty if no sale">
-        </div>
-        <div style="display:flex;gap:20px;margin-bottom:12px">
+
+        <div style="display:flex;gap:20px;margin-bottom:16px">
           <div class="toggle-wrap" onclick="toggleEl('pIsNew')">
             <div class="toggle" id="pIsNew"></div>
             <span style="font-size:12px;color:var(--text2)">isNew</span>
@@ -1668,32 +1675,22 @@ input[type=range]{flex:1;accent-color:var(--brand)}
             <span style="font-size:12px;color:var(--text2)">isFeat</span>
           </div>
         </div>
+
         <div class="field-group">
-          <label class="field-label">Stock Status</label>
-          <select class="field-select" id="pStock">
-            <option value="instock">✅ In Stock</option>
-            <option value="low">⚠️ Low Stock</option>
-            <option value="soldout">❌ Sold Out</option>
-          </select>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px">Sold Out disables the buy button on the live site.</div>
-        </div>
-      </div>
-      <div>
-        <div class="field-group">
-          <label class="field-label">Name — Kurdish (KU)</label>
-          <input class="field-input" id="pNameKU" placeholder="کاڵا">
+          <label class="field-label">Name — Kurdish 🇮🇶</label>
+          <input class="field-input" id="pNameKU" placeholder="ناوی کاڵا" style="direction:rtl" oninput="autoGenID()">
         </div>
         <div class="field-group">
-          <label class="field-label">Name — Arabic (AR)</label>
-          <input class="field-input" id="pNameAR" placeholder="اسم المنتج">
+          <label class="field-label">Name — Arabic 🇸🇦</label>
+          <input class="field-input" id="pNameAR" placeholder="اسم المنتج" style="direction:rtl">
         </div>
         <div class="field-group">
-          <label class="field-label">Name — English (EN)</label>
-          <input class="field-input" id="pNameEN" placeholder="Product Name">
+          <label class="field-label">Name — English 🇬🇧</label>
+          <input class="field-input" id="pNameEN" placeholder="Product Name" oninput="autoGenID()">
         </div>
         <div class="field-group">
           <label class="field-label">Description — Kurdish 🇮🇶</label>
-          <textarea class="field-textarea" id="pDescKU" rows="2"></textarea>
+          <textarea class="field-textarea" id="pDescKU" rows="2" style="direction:rtl"></textarea>
         </div>
         <div class="field-group">
           <label class="field-label">Description — Arabic 🇸🇦</label>
@@ -1703,44 +1700,93 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <label class="field-label">Description — English 🇬🇧</label>
           <textarea class="field-textarea" id="pDescEN" rows="2"></textarea>
         </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Images -->
+      <div>
         <div class="field-group">
-          <label class="field-label">Product Image</label>
-          <!-- 3-option Media Picker -->
-          <div style="display:flex;gap:4px;margin-bottom:8px">
-            <button type="button" class="btn btn-sm" id="mpTab1" onclick="setMPTab(1)" style="background:var(--brand);color:#fff;flex:1;font-size:10px">🔗 URL</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="mpTab2" onclick="setMPTab(2)" style="flex:1;font-size:10px">⬆️ Upload</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="mpTab3" onclick="setMPTab(3)" style="flex:1;font-size:10px">📁 Library</button>
-          </div>
-          <!-- Option 1: External URL -->
-          <div id="mpPane1">
-            <input class="field-input" id="pImage" placeholder="https://... or Cloudflare R2 URL" oninput="(function(){var u=document.getElementById('pImage').value.trim(),el=document.getElementById('pImgPrev');if(u){el.src=u;el.style.display='block';}else el.style.display='none';})()">
-            <div style="font-size:10px;color:var(--text3);margin-top:4px">Paste any URL — including Cloudflare R2/Images URLs</div>
-          </div>
-          <!-- Option 2: Native Upload + compress -->
-          <div id="mpPane2" style="display:none">
-            <div style="border:2px dashed var(--border2);border-radius:9px;padding:20px;text-align:center;cursor:pointer" onclick="document.getElementById('mpUploadFile').click()">
-              <div style="font-size:28px">📁</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:6px">Click to upload — auto-compressed before push</div>
+          <label class="field-label">📸 Product Images <span id="imgCount" style="color:var(--brand);font-weight:900">0</span> / unlimited</label>
+
+          <!-- Storage Destination Selector -->
+          <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📦 Upload Destination</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" id="storeGithub" value="github" checked style="accent-color:var(--brand)">
+                <span>🐙 GitHub Repo (<span style="font-family:JetBrains Mono,monospace;font-size:10px" id="storeGithubPath">assets/images/</span>)</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" id="storeR2" value="r2" style="accent-color:var(--brand)">
+                <span>☁️ Cloudflare R2</span>
+                <input class="field-input" id="r2BucketUrl" placeholder="https://pub-xxx.r2.dev/" style="flex:1;font-size:11px;padding:4px 8px;display:none">
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" id="storeExternal" value="external" style="accent-color:var(--brand)">
+                <span>🔗 External URL only (no upload)</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" id="storeCloudinary" value="cloudinary" style="accent-color:var(--brand)">
+                <span>🌥️ Cloudinary</span>
+                <input class="field-input" id="cloudinaryUrl" placeholder="https://res.cloudinary.com/..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
+              </label>
             </div>
-            <input type="file" id="mpUploadFile" accept="image/*" style="display:none" onchange="mpUploadImage(this)">
-            <div id="mpUploadStatus" style="font-size:11px;color:var(--text3);margin-top:6px"></div>
-          </div>
-          <!-- Option 3: Library Browser (repo assets) -->
-          <div id="mpPane3" style="display:none">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="mpScanLibrary()" style="width:100%;margin-bottom:8px">🔍 Scan Repo Assets</button>
-            <div id="mpLibraryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:180px;overflow-y:auto">
-              <div style="color:var(--text3);font-size:11px;grid-column:1/-1">Click Scan to browse /assets/</div>
+            <div style="margin-top:8px;display:flex;gap:6px">
+              <input class="field-input" id="githubSubfolder" value="assets/images/" placeholder="assets/images/" style="font-size:11px;flex:1">
+              <label style="font-size:10px;color:var(--text3);white-space:nowrap;align-self:center">GitHub subfolder</label>
             </div>
           </div>
-          <img id="pImgPrev" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-top:8px;display:none">
+
+          <!-- Image Gallery Grid -->
+          <div id="prodImgGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;min-height:60px">
+            <div id="imgGalleryEmpty" style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:12px;padding:20px">No images yet — add images below</div>
+          </div>
+
+          <!-- Add Image Controls -->
+          <div style="background:var(--surface2);border-radius:10px;border:1px solid var(--border);overflow:hidden">
+            <!-- Tabs -->
+            <div style="display:flex;border-bottom:1px solid var(--border)">
+              <button type="button" id="addImgTab1" onclick="setAddImgTab(1)" style="flex:1;padding:8px;font-size:10px;font-weight:900;background:var(--brand);color:#fff;border:none;cursor:pointer">🔗 URL</button>
+              <button type="button" id="addImgTab2" onclick="setAddImgTab(2)" style="flex:1;padding:8px;font-size:10px;font-weight:900;background:none;color:var(--text3);border:none;cursor:pointer">⬆️ Upload</button>
+              <button type="button" id="addImgTab3" onclick="setAddImgTab(3)" style="flex:1;padding:8px;font-size:10px;font-weight:900;background:none;color:var(--text3);border:none;cursor:pointer">📁 Library</button>
+            </div>
+
+            <!-- Pane 1: URL -->
+            <div id="addImgPane1" style="padding:10px">
+              <div style="display:flex;gap:6px">
+                <input class="field-input" id="addImgUrl" placeholder="https://... paste any image URL" style="flex:1">
+                <button type="button" class="btn btn-primary btn-sm" onclick="addImgFromUrl()">➕ Add</button>
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">Works with Cloudflare R2, Cloudinary, Google Drive (direct link), Unsplash, any image URL</div>
+            </div>
+
+            <!-- Pane 2: Upload (multiple files) -->
+            <div id="addImgPane2" style="padding:10px;display:none">
+              <div style="border:2px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s" onclick="document.getElementById('addImgFiles').click()" id="imgDropZone" ondragover="event.preventDefault();this.style.borderColor='var(--brand)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="handleImgDrop(event)">
+                <div style="font-size:28px">📸</div>
+                <div style="font-size:12px;color:var(--text2);margin-top:6px;font-weight:700">Click or drag images here</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:3px">Upload multiple images at once — auto-compressed</div>
+              </div>
+              <input type="file" id="addImgFiles" accept="image/*" multiple style="display:none" onchange="handleImgFilesSelected(this)">
+              <div id="uploadProgressList" style="margin-top:8px"></div>
+            </div>
+
+            <!-- Pane 3: Library -->
+            <div id="addImgPane3" style="padding:10px;display:none">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="loadImgLibrary()" style="width:100%;margin-bottom:8px">🔍 Scan Repo for Images</button>
+              <div id="imgLibraryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:200px;overflow-y:auto">
+                <div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center;padding:10px">Click Scan to browse images</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="field-group">
-          <label class="field-label">Extra Image URLs (one per line)</label>
-          <textarea class="field-textarea" id="pImages" rows="3" placeholder="https://...&#10;https://..."></textarea>
-        </div>
+
+        <!-- Hidden input to store all image data -->
+        <input type="hidden" id="pImage" value="">
+        <input type="hidden" id="pImages" value="">
       </div>
     </div>
-    <div style="display:flex;gap:12px;margin-top:8px">
+
+    <div style="display:flex;gap:12px;margin-top:20px">
       <button class="btn btn-primary" onclick="saveProdModal()">💾 Save Product</button>
       <button class="btn btn-danger btn-sm" onclick="deleteProdFromModal()" id="deleteProdBtn">🗑️ Delete</button>
       <button class="btn btn-secondary" onclick="closeProdModal()" style="margin-inline-start:auto">Cancel</button>
@@ -2355,9 +2401,7 @@ function openNewProduct() {
   editingProdIdx = -1;
   document.getElementById('prodModalTitle').textContent = 'Add New Product';
   document.getElementById('deleteProdBtn').style.display = 'none';
-  ['pID','pPrice','pSalePrice','pNameKU','pNameAR','pNameEN','pDescKU','pImage','pImages'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  ['pDescAR','pDescEN'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  var pp=document.getElementById('pImgPrev');if(pp)pp.style.display='none';
+  ['pID','pPrice','pSalePrice','pNameKU','pNameAR','pNameEN','pDescKU','pDescAR','pDescEN','pImage','pImages'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   setToggle('pIsNew', false);
   setToggle('pIsFeat', false);
   var stockEl = document.getElementById('pStock');
@@ -5075,6 +5119,304 @@ function doRawReplace() {
   editor.value = editor.value.split(find).join(replace);
   toast('Replaced ' + count + ' occurrence(s)', count ? 'success' : 'info');
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// PRODUCT MODAL — Image Management & Auto ID
+// ══════════════════════════════════════════════════════════════
+
+// All images for current product being edited (array of URL strings)
+var _prodImages = [];
+
+// ── Auto ID generation ─────────────────────────────────────
+function autoGenID() {
+  if(document.getElementById('prodModalTitle').textContent.indexOf('Edit') === 0) return; // Don't overwrite on edit
+  var nameEN = (document.getElementById('pNameEN')||{value:''}).value.trim();
+  var cat    = (document.getElementById('pCat')||{value:''}).value.trim();
+  if(!nameEN && !cat) return;
+  var base = (nameEN || cat)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')  // keep only alphanumeric
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 20);
+  if(!base) base = cat || 'product';
+  // Find next available number in this category
+  var prefix = cat ? cat + '-' : '';
+  var existing = PRODUCTS.filter(function(p){ return p.id && p.id.indexOf(prefix) === 0; });
+  var nums = existing.map(function(p){ return parseInt(p.id.replace(prefix,'')) || 0; }).filter(function(n){return !isNaN(n);});
+  var nextNum = nums.length ? Math.max.apply(null, nums) + 1 : 1;
+  var newId = prefix + nextNum;
+  var idEl = document.getElementById('pID');
+  if(idEl) idEl.value = newId;
+}
+
+// ── Storage radio toggle ───────────────────────────────────
+document.addEventListener('change', function(e) {
+  if(e.target && e.target.name === 'imgStorage') {
+    // Show/hide relevant inputs
+    document.getElementById('r2BucketUrl').style.display = e.target.value === 'r2' ? 'inline-block' : 'none';
+    document.getElementById('cloudinaryUrl').style.display = e.target.value === 'cloudinary' ? 'inline-block' : 'none';
+    document.getElementById('githubSubfolder').parentElement.style.display = e.target.value === 'github' ? 'flex' : 'none';
+  }
+});
+
+// ── Image tab switcher ─────────────────────────────────────
+function setAddImgTab(n) {
+  [1,2,3].forEach(function(i) {
+    var pane = document.getElementById('addImgPane'+i);
+    var tab  = document.getElementById('addImgTab'+i);
+    if(pane) pane.style.display = (i===n) ? 'block' : 'none';
+    if(tab) {
+      tab.style.background = (i===n) ? 'var(--brand)' : 'none';
+      tab.style.color = (i===n) ? '#fff' : 'var(--text3)';
+    }
+  });
+}
+
+// ── Render the image gallery ───────────────────────────────
+function renderProdImgGallery() {
+  var grid = document.getElementById('prodImgGallery');
+  var empty = document.getElementById('imgGalleryEmpty');
+  var counter = document.getElementById('imgCount');
+  if(counter) counter.textContent = _prodImages.length;
+  if(!_prodImages.length) {
+    if(empty) empty.style.display = 'block';
+    // Remove all image cards
+    Array.from(grid.children).forEach(function(c){ if(c.id !== 'imgGalleryEmpty') c.remove(); });
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  // Remove old cards
+  Array.from(grid.children).forEach(function(c){ if(c.id !== 'imgGalleryEmpty') c.remove(); });
+  // Render cards
+  _prodImages.forEach(function(url, idx) {
+    var card = document.createElement('div');
+    card.style.cssText = 'position:relative;border-radius:8px;overflow:hidden;border:2px solid ' + (idx===0?'var(--brand)':'var(--border)') + ';cursor:pointer;group';
+    card.title = idx===0 ? 'Main image (first one)' : 'Click to set as main';
+    card.onclick = function() { setMainImage(idx); };
+    card.innerHTML =
+      '<img src="' + url + '" style="width:100%;height:80px;object-fit:cover;display:block" onerror="this.style.opacity=0.3">' +
+      (idx===0 ? '<div style="position:absolute;top:3px;left:3px;background:var(--brand);color:#fff;font-size:8px;font-weight:900;padding:2px 6px;border-radius:4px">MAIN</div>' : '') +
+      '<div style="position:absolute;top:3px;right:3px;display:flex;gap:3px">' +
+        (idx > 0 ? '<button onclick="event.stopPropagation();moveImg('+idx+',-1)" style="background:rgba(0,0,0,.6);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">←</button>' : '') +
+        (idx < _prodImages.length-1 ? '<button onclick="event.stopPropagation();moveImg('+idx+',1)" style="background:rgba(0,0,0,.6);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">→</button>' : '') +
+        '<button onclick="event.stopPropagation();removeImg('+idx+')" style="background:rgba(239,68,68,.85);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">✕</button>' +
+      '</div>' +
+      '<div style="font-size:8px;color:var(--text3);padding:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + url.split('/').pop().substring(0,20) + '</div>';
+    grid.appendChild(card);
+  });
+  // Sync hidden fields
+  document.getElementById('pImage').value  = _prodImages[0] || '';
+  document.getElementById('pImages').value = _prodImages.join('\n');
+}
+
+function setMainImage(idx) {
+  if(idx===0) return;
+  var img = _prodImages.splice(idx,1)[0];
+  _prodImages.unshift(img);
+  renderProdImgGallery();
+}
+
+function removeImg(idx) {
+  _prodImages.splice(idx,1);
+  renderProdImgGallery();
+}
+
+function moveImg(idx, dir) {
+  var newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= _prodImages.length) return;
+  var tmp = _prodImages[idx];
+  _prodImages[idx] = _prodImages[newIdx];
+  _prodImages[newIdx] = tmp;
+  renderProdImgGallery();
+}
+
+// ── Add from URL ───────────────────────────────────────────
+function addImgFromUrl() {
+  var el = document.getElementById('addImgUrl');
+  if(!el) return;
+  var url = el.value.trim();
+  if(!url) { toast('Enter a URL first','error'); return; }
+  _prodImages.push(url);
+  el.value = '';
+  renderProdImgGallery();
+  toast('Image added','success');
+}
+
+// ── Handle file selection (multiple) ──────────────────────
+async function handleImgFilesSelected(input) {
+  var files = Array.from(input.files);
+  if(!files.length) return;
+  var progressList = document.getElementById('uploadProgressList');
+  for(var i=0; i<files.length; i++) {
+    var f = files[i];
+    var rowId = 'uprow_' + Date.now() + '_' + i;
+    if(progressList) {
+      var row = document.createElement('div');
+      row.id = rowId;
+      row.style.cssText = 'font-size:11px;color:var(--text3);padding:4px 0;border-bottom:1px solid var(--border)';
+      row.textContent = '⏳ ' + f.name + '...';
+      progressList.appendChild(row);
+    }
+    try {
+      var url = await uploadImgFile(f);
+      _prodImages.push(url);
+      renderProdImgGallery();
+      var r = document.getElementById(rowId);
+      if(r) r.innerHTML = '✅ <span style="color:var(--green)">' + f.name + '</span>';
+    } catch(e) {
+      var r2 = document.getElementById(rowId);
+      if(r2) r2.innerHTML = '❌ <span style="color:var(--red)">' + f.name + ': ' + e.message + '</span>';
+    }
+  }
+  input.value = '';
+}
+
+// ── Drag & drop on dropzone ────────────────────────────────
+function handleImgDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--border2)';
+  var files = Array.from(e.dataTransfer.files).filter(function(f){ return f.type.startsWith('image/'); });
+  if(!files.length) { toast('Drop image files only','error'); return; }
+  var fakeInput = {files: files};
+  handleImgFilesSelected(fakeInput);
+}
+
+// ── Upload a single image file to chosen storage ───────────
+async function uploadImgFile(file) {
+  var storage = document.querySelector('input[name="imgStorage"]:checked');
+  var storageVal = storage ? storage.value : 'github';
+
+  // Compress image first (client-side)
+  var b64 = await compressImage(file, 1200, 0.82);
+
+  if(storageVal === 'github') {
+    // Upload to GitHub repo
+    var subfolder = (document.getElementById('githubSubfolder')||{value:'assets/images/'}).value.trim();
+    if(!subfolder.endsWith('/')) subfolder += '/';
+    var path = subfolder + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    await pushFile(path, b64, 'Admin: upload product image ' + file.name);
+    return 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + path;
+
+  } else if(storageVal === 'r2') {
+    // Cloudflare R2: user must have a Worker or direct API
+    var r2Url = (document.getElementById('r2BucketUrl')||{value:''}).value.trim();
+    if(!r2Url) throw new Error('Enter Cloudflare R2 bucket URL first');
+    // Upload via fetch to CF Worker that handles R2 writes
+    var formData = new FormData();
+    formData.append('file', file);
+    var res = await fetch(r2Url + 'upload', {method:'POST', body:formData});
+    if(!res.ok) throw new Error('R2 upload failed: HTTP ' + res.status);
+    var data = await res.json();
+    return data.url || data.key || r2Url + file.name;
+
+  } else if(storageVal === 'cloudinary') {
+    var cloudUrl = (document.getElementById('cloudinaryUrl')||{value:''}).value.trim();
+    if(!cloudUrl) throw new Error('Enter Cloudinary upload URL first');
+    // Cloudinary unsigned upload
+    var fd = new FormData();
+    fd.append('file', 'data:' + file.type + ';base64,' + b64);
+    fd.append('upload_preset', 'ml_default');
+    var cr = await fetch(cloudUrl, {method:'POST', body:fd});
+    var cd = await cr.json();
+    if(cd.error) throw new Error(cd.error.message);
+    return cd.secure_url;
+
+  } else {
+    // External: just return base64 data URL as placeholder (user should paste real URL)
+    throw new Error('For External storage, paste the URL directly in the URL tab');
+  }
+}
+
+// ── Library browser ────────────────────────────────────────
+async function loadImgLibrary() {
+  var grid = document.getElementById('imgLibraryGrid');
+  if(!grid) return;
+  if(!GH.token || !GH.repo) { grid.innerHTML='<div style="color:var(--red);font-size:11px;grid-column:1/-1">Connect GitHub first</div>'; return; }
+  grid.innerHTML = '<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">⏳ Scanning...</div>';
+  try {
+    var res = await fetch('https://api.github.com/repos/' + GH.repo + '/git/trees/HEAD?recursive=1',
+      {headers:{'Authorization':'token ' + GH.token,'Accept':'application/vnd.github.v3+json'}});
+    var data = await res.json();
+    var imgs = (data.tree||[]).filter(function(f){ return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.path); });
+    if(!imgs.length){ grid.innerHTML='<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">No images found</div>'; return; }
+    // Build items using data attribute to avoid quote nesting
+    var html = imgs.map(function(f){
+      var url = 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + f.path;
+      var safeName = f.path.split('/').pop().substring(0,20);
+      var safeUrl = url.replace(/"/g,'&quot;');
+      return '<div data-imgurl="' + safeUrl + '" class="lib-img-item" style="cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid var(--border)">' +
+        '<img src="' + safeUrl + '" style="width:100%;height:60px;object-fit:cover" loading="lazy">' +
+        '<div style="font-size:8px;color:var(--text3);padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + safeName + '</div>' +
+      '</div>';
+    }).join('');
+    grid.innerHTML = html;
+    // Attach click handlers
+    Array.from(grid.querySelectorAll('.lib-img-item')).forEach(function(el) {
+      el.addEventListener('mouseover', function(){ this.style.borderColor='var(--brand)'; });
+      el.addEventListener('mouseout',  function(){ this.style.borderColor='var(--border)'; });
+      el.addEventListener('click', function(){ addImgFromLibrary(this.getAttribute('data-imgurl')); });
+    });
+  } catch(e) { grid.innerHTML='<div style="color:var(--red);font-size:11px;grid-column:1/-1">Error: ' + e.message + '</div>'; }
+}
+
+function addImgFromLibrary(url) {
+  _prodImages.push(url);
+  renderProdImgGallery();
+  toast('Image added from library','success');
+}
+
+// ══════════════════════════════════════════════════════════════
+// PATCH openNewProduct — auto-gen ID + clear gallery
+// ══════════════════════════════════════════════════════════════
+var _origOpenNewProduct = openNewProduct;
+openNewProduct = function() {
+  _prodImages = [];
+  renderProdImgGallery();
+  _origOpenNewProduct();
+  // Auto-generate initial ID
+  setTimeout(function() {
+    var cat = (document.getElementById('pCat')||{value:'product'}).value;
+    var existing = PRODUCTS.filter(function(p){ return p.id && p.id.indexOf(cat+'-') === 0; });
+    var nums = existing.map(function(p){ return parseInt(p.id.replace(cat+'-','')) || 0; }).filter(function(n){return !isNaN(n);});
+    var nextNum = nums.length ? Math.max.apply(null, nums) + 1 : 1;
+    var idEl = document.getElementById('pID');
+    if(idEl) idEl.value = cat + '-' + nextNum;
+  }, 50);
+};
+
+// ══════════════════════════════════════════════════════════════
+// PATCH editProduct — load images into gallery
+// ══════════════════════════════════════════════════════════════
+var _origEditProduct = editProduct;
+editProduct = function(idx) {
+  var p = PRODUCTS[idx];
+  _prodImages = [];
+  if(p) {
+    if(p.images && p.images.length) {
+      _prodImages = p.images.slice();
+    } else if(p.image) {
+      _prodImages = [p.image];
+    }
+  }
+  renderProdImgGallery();
+  _origEditProduct(idx);
+};
+
+// ══════════════════════════════════════════════════════════════
+// PATCH saveProdModalPatched — use _prodImages array
+// ══════════════════════════════════════════════════════════════
+var _oldSaveProdModal = saveProdModalPatched;
+saveProdModalPatched = function() {
+  // Auto-generate ID if empty
+  var idEl = document.getElementById('pID');
+  if(idEl && !idEl.value.trim()) autoGenID();
+  // Sync _prodImages to hidden fields
+  document.getElementById('pImage').value  = _prodImages[0] || '';
+  document.getElementById('pImages').value = _prodImages.join('\n');
+  _oldSaveProdModal();
+};
 
 </script>
 </body>
