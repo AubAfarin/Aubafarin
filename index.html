@@ -624,7 +624,7 @@ var activeThumb = 0;
 var PER_PAGE = 15;
 
 function filteredProds() {
-  return PRODUCTS.filter(function(p) {
+  var result = PRODUCTS.filter(function(p) {
     if (activecat !== 'all') {
       var inCat = Array.isArray(p.cat) ? p.cat.indexOf(activecat) !== -1 : p.cat === activecat;
       if(!inCat) return false;
@@ -632,6 +632,13 @@ function filteredProds() {
     if (activeAge && p.age !== activeAge) return false;
     return true;
   });
+  // Sort by addedAt descending — newest products first in every category
+  result.sort(function(a, b) {
+    var da = a.addedAt ? new Date(a.addedAt).getTime() : 0;
+    var db = b.addedAt ? new Date(b.addedAt).getTime() : 0;
+    return db - da; // newest first
+  });
+  return result;
 }
 
 function renderCats() {
