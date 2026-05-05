@@ -505,6 +505,10 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           </div>
         </div>
 
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <div id="catalogSortBar" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+          <div id="catalogPagination" style="margin-inline-start:auto;display:flex;align-items:center;gap:4px;flex-wrap:wrap"></div>
+        </div>
         <div class="card" style="padding:0;overflow:hidden">
           <table class="admin-table" id="prodTable">
             <thead>
@@ -2403,6 +2407,39 @@ function renderCatalogTable(filter) {
     'Showing ' + (pageStart+1) + '–' + pageEnd + ' of ' + totalItems + ' / ' + PRODUCTS.length + ' total';
 
   var tbody = document.getElementById('prodTableBody');
+
+  // ── Render sort bar ───────────────────────────────────
+  var _sortBar = document.getElementById('catalogSortBar');
+  if(_sortBar) {
+    var _cols = [['order','⠿ Order'],['date','📅 Date'],['name','🔤 Name'],['price','💰 Price']];
+    _sortBar.innerHTML = _cols.map(function(c){
+      var _act = _catalogSort===c[0];
+      var _btn = document.createElement('button');
+      _btn.textContent = c[1] + (_act ? (_catalogSortDir==='asc' ? ' ↑' : ' ↓') : '');
+      _btn.style.cssText = 'padding:5px 10px;font-size:10px;font-weight:'+(_act?'900':'500')+';border-radius:6px;border:1px solid var(--border2);background:'+(_act?'var(--brand)':'var(--surface2)')+';color:'+(_act?'#fff':'var(--text3)')+';cursor:pointer';
+      _btn.setAttribute('data-sortcol', c[0]);
+      return _btn.outerHTML;
+    }).join('');
+    Array.from(_sortBar.querySelectorAll('button')).forEach(function(b){
+      b.addEventListener('click', function(){ setCatalogSort(this.getAttribute('data-sortcol')); });
+    });
+  }
+
+  // ── Render pagination bar ─────────────────────────────
+  var _pc = document.getElementById('catalogPagination');
+  if(_pc) {
+    if(totalPages <= 1) { _pc.innerHTML = ''; }
+    else {
+      var _ph = '<button class="btn btn-secondary btn-sm" onclick="_catalogPage=Math.max(1,_catalogPage-1);renderCatalogTable()" style="padding:4px 8px" '+(_catalogPage===1?'disabled':'')+'>←</button>';
+      for(var _pg=1;_pg<=totalPages;_pg++){
+        _ph += '<button onclick="_catalogPage='+_pg+';renderCatalogTable()" style="width:26px;height:26px;border-radius:5px;border:1px solid var(--border2);font-size:11px;font-weight:'+(_pg===_catalogPage?'900':'400')+';background:'+(_pg===_catalogPage?'var(--brand)':'var(--surface2)')+';color:'+(_pg===_catalogPage?'#fff':'var(--text)')+';cursor:pointer">'+_pg+'</button>';
+      }
+      _ph += '<button class="btn btn-secondary btn-sm" onclick="_catalogPage=Math.min(totalPages,_catalogPage+1);renderCatalogTable()" style="padding:4px 8px" '+(pageEnd>=totalItems?'disabled':'')+'>→</button>';
+      _ph += '<span style="font-size:10px;color:var(--text3);margin-left:4px">'+_catalogPage+'/'+totalPages+'</span>';
+      _pc.innerHTML = _ph;
+    }
+  }
+
   if(!prods.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No products found.</td></tr>';
     // Clear pagination
@@ -2504,6 +2541,8 @@ function editProduct(idx) {
   rebuildProdModalDropdowns(p.cat || '', p.age || '');
   document.getElementById('pPrice').value = p.price || '';
   document.getElementById('pSalePrice').value = p.salePrice || '';
+  var _pDateEl = document.getElementById('pDate');
+  if(_pDateEl) _pDateEl.value = p.addedAt ? p.addedAt.slice(0,16) : '';
   document.getElementById('pNameKU').value = (p.name && p.name.ku) || '';
   document.getElementById('pNameAR').value = (p.name && p.name.ar) || '';
   document.getElementById('pNameEN').value = (p.name && p.name.en) || '';
@@ -4441,7 +4480,7 @@ function saveProdModalPatched() {
   };
   var sp = parseInt(document.getElementById('pSalePrice').value);
   if(sp) prod.salePrice = sp;
-  if(editingProdIdx === -1) { PRODUCTS.push(prod); toast('Product added!', 'success'); }
+  if(editingProdIdx === -1) { PRODUCTS.unshift(prod); toast('Product added!', 'success'); } // unshift = insert at top
   else { PRODUCTS[editingProdIdx] = prod; toast('Product updated!', 'success'); }
   closeProdModal();
   renderCatalogTable();
@@ -5878,7 +5917,8 @@ async function uploadImgFile(file) {
   } else if(v === 'gdrive') {
     var gdUrl = localStorage.getItem('aubStorage_gdrive') || (document.getElementById('gdriveUrl')||{value:''}).value.trim();
     if(!gdUrl) throw new Error('Google Drive URL not saved yet. Select 📂 Google Drive → enter your Apps Script URL → click 💾 Save Google Drive URL');
-    var bytes = atob(b64);
+    var rawB64 = b64.replace(/^data:[^;]+;base64,/, '');
+    var bytes = atob(rawB64);
     var arr = new Uint8Array(bytes.length);
     for(var i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
     var blob = new Blob([arr], {type:file.type});
