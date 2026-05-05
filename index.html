@@ -116,7 +116,7 @@ header{position:relative;background:#fff;border-bottom:1px solid var(--slate-100
 .prod-card{background:#fff;border-radius:16px;border:1px solid var(--slate-100);overflow:hidden;cursor:pointer;transition:all .3s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .prod-card:hover{box-shadow:0 20px 40px rgba(0,0,0,.1);transform:translateY(-8px)}
 .prod-img-wrap{position:relative;aspect-ratio:3/4;background:var(--slate-100);overflow:hidden}
-.prod-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+.prod-img-wrap img{width:100%;height:100%;object-fit:contain;background:#fff;transition:transform .7s}
 .prod-card:hover .prod-img-wrap img{transform:scale(1.1)}
 .prod-badge{position:absolute;top:12px;left:12px;background:var(--primary);color:#fff;font-size:9px;font-weight:900;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:2px}
 .prod-body{padding:16px}
@@ -520,7 +520,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
   <div class="modal-gallery">
-    <div class="modal-main-img"><img id="modalMainImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div>
+    <div class="modal-main-img"><img id="modalMainImg" src="" alt="" style="width:100%;height:100%;object-fit:contain;background:#fff;display:block;"></div>
     <div class="modal-thumbs" id="modalThumbs"></div>
   </div>
   <div class="modal-content">
@@ -625,7 +625,10 @@ var PER_PAGE = 15;
 
 function filteredProds() {
   return PRODUCTS.filter(function(p) {
-    if (activecat !== 'all' && p.cat !== activecat) return false;
+    if (activecat !== 'all') {
+      var inCat = Array.isArray(p.cat) ? p.cat.indexOf(activecat) !== -1 : p.cat === activecat;
+      if(!inCat) return false;
+    }
     if (activeAge && p.age !== activeAge) return false;
     return true;
   });
@@ -695,13 +698,23 @@ function renderProducts() {
   for (var i = 0; i < slice.length; i++) {
     var p = slice[i];
     var badge = p.isNew ? '<span class="prod-badge">نوێ</span>' : '';
+    var dateStr = '';
+    if(p.addedAt) {
+      var d = new Date(p.addedAt);
+      var now = new Date();
+      var daysDiff = Math.floor((now - d) / (1000*60*60*24));
+      if(daysDiff === 0) dateStr = T[activeLang].today || 'Today';
+      else if(daysDiff === 1) dateStr = T[activeLang].yesterday || 'Yesterday';
+      else if(daysDiff < 7) dateStr = daysDiff + (T[activeLang].daysAgo || ' days ago');
+      else dateStr = d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    }
     html += '<div class="prod-card" data-prodid="' + p.id + '">' +
       '<div class="prod-img-wrap">' +
       '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
       badge +
       '</div>' +
       '<div class="prod-body">' +
-      '<div class="prod-cat-label">' + CATS[p.cat] + '</div>' +
+      '<div class="prod-cat-label" style="display:flex;justify-content:space-between;align-items:center">' + (CATS[Array.isArray(p.cat)?p.cat[0]:p.cat] || '') + (dateStr ? '<span style="font-size:9px;color:var(--slate-400)">' + dateStr + '</span>' : '') + '</div>' +
       '<h3 class="prod-name">' + (typeof p.name === 'object' ? (p.name[activeLang] || p.name.ku) : p.name) + '</h3>' +
       '<div class="prod-footer">' +
       '<div class="prod-price">' + p.price.toLocaleString() + ' <span>د.ع</span></div>' +

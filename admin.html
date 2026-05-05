@@ -1665,6 +1665,14 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           </select>
         </div>
 
+        <div class="field-group">
+          <label class="field-label">Date Added <span style="color:var(--text3);font-weight:400">(shown to customers as "New" date)</span></label>
+          <div style="display:flex;gap:6px">
+            <input class="field-input" type="datetime-local" id="pDate" style="flex:1">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('pDate').value=new Date(new Date().getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)" title="Set to now">🕐 Now</button>
+          </div>
+        </div>
+
         <div style="display:flex;gap:20px;margin-bottom:16px">
           <div class="toggle-wrap" onclick="toggleEl('pIsNew')">
             <div class="toggle" id="pIsNew"></div>
@@ -2363,13 +2371,42 @@ function loadProductsFromHTML(html) {
   }
 }
 
+var _catalogPage = 1;
+var _catalogSort = 'order'; // 'order','date','name','price'
+var _catalogSortDir = 'asc';
+var _CATALOG_PER_PAGE = 25;
+
 function renderCatalogTable(filter) {
   var prods = filter ? PRODUCTS.filter(filter) : PRODUCTS;
   document.getElementById('prodCountBadge').textContent = PRODUCTS.length;
-  document.getElementById('catalogCount').textContent = prods.length + ' / ' + PRODUCTS.length + ' products';
+
+  // Apply sort
+  var sorted = prods.slice();
+  if(_catalogSort === 'date') {
+    sorted.sort(function(a,b){ return _catalogSortDir==='asc' ? new Date(a.addedAt||0)-new Date(b.addedAt||0) : new Date(b.addedAt||0)-new Date(a.addedAt||0); });
+  } else if(_catalogSort === 'price') {
+    sorted.sort(function(a,b){ return _catalogSortDir==='asc' ? (a.price||0)-(b.price||0) : (b.price||0)-(a.price||0); });
+  } else if(_catalogSort === 'name') {
+    sorted.sort(function(a,b){ var na=(a.name&&a.name.en)||a.id; var nb=(b.name&&b.name.en)||b.id; return _catalogSortDir==='asc'?na.localeCompare(nb):nb.localeCompare(na); });
+  }
+  // 'order' = array order (drag reorder)
+
+  // Pagination
+  var totalItems = sorted.length;
+  var totalPages = Math.max(1, Math.ceil(totalItems / _CATALOG_PER_PAGE));
+  if(_catalogPage > totalPages) _catalogPage = totalPages;
+  var pageStart = (_catalogPage-1)*_CATALOG_PER_PAGE;
+  var pageProds = sorted.slice(pageStart, pageStart+_CATALOG_PER_PAGE);
+  var pageEnd = Math.min(pageStart+_CATALOG_PER_PAGE, totalItems);
+
+  document.getElementById('catalogCount').textContent = 
+    'Showing ' + (pageStart+1) + '–' + pageEnd + ' of ' + totalItems + ' / ' + PRODUCTS.length + ' total';
+
   var tbody = document.getElementById('prodTableBody');
   if(!prods.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No products found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No products found.</td></tr>';
+    // Clear pagination
+    var pc = document.getElementById('catalogPagination'); if(pc) pc.innerHTML = '';
     return;
   }
   tbody.innerHTML = prods.map(function(p, idx) {
@@ -2446,6 +2483,9 @@ function openNewProduct() {
   setToggle('pIsFeat', false);
   var stockEl = document.getElementById('pStock');
   if(stockEl) stockEl.value = 'instock';
+  // Set date to now
+  var dateEl = document.getElementById('pDate');
+  if(dateEl) dateEl.value = new Date(new Date().getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
   // Populate dropdowns from live data
   rebuildProdModalDropdowns('', '');
   // Restore storage preference
@@ -2488,27 +2528,44 @@ function saveProdModal() {
   saveProdModalPatched();
 }
 
-function deleteProdFromModal() {
+async function deleteProdFromModal() {
   if(editingProdIdx === -1) return;
   var p = PRODUCTS[editingProdIdx];
   if(!p) return;
-  if(!confirm('Delete product "' + p.id + '"?\n\nThis removes it from the catalog. Click Save & Push Catalog to apply.')) return;
+  var imgList = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+  if(!confirm('Delete "' + p.id + '"?\n\n' +
+    (imgList.length ? imgList.length + ' image(s) will also be deleted from storage.\n' : '') +
+    'This cannot be undone.')) return;
+  if(imgList.length) {
+    toast('Deleting ' + imgList.length + ' image(s)...','info');
+    await deleteProductImages(imgList);
+  }
   PRODUCTS.splice(editingProdIdx, 1);
   editingProdIdx = -1;
   closeProdModal();
   renderCatalogTable();
   updateDashboardStats();
-  toast('Product deleted — click Save & Push Catalog to apply to live site', 'info');
+  toast('Product deleted — click Save & Push Catalog to apply','info');
 }
 
-function deleteProduct(idx) {
+async function deleteProduct(idx) {
   var p = PRODUCTS[idx];
   if(!p) return;
-  if(!confirm('Delete "' + (p.id||'product') + '"?')) return;
+  var imgList = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+  if(!confirm('Delete "' + (p.id||'product') + '"?\n\n' +
+    (imgList.length ? imgList.length + ' image(s) will also be deleted from storage.\n' : '') +
+    'This cannot be undone.')) return;
+
+  // Delete images from storage
+  if(imgList.length) {
+    toast('Deleting ' + imgList.length + ' image(s)...','info');
+    await deleteProductImages(imgList);
+  }
+
   PRODUCTS.splice(idx, 1);
   renderCatalogTable();
   updateDashboardStats();
-  toast('Deleted "' + (p.id||'product') + '" — click Save & Push Catalog to apply', 'info');
+  toast('Deleted "' + (p.id||'product') + '" + images — click Save & Push Catalog to apply','info');
 }
 
 function closeProdModal() {document.getElementById('prodModal').classList.remove('open');
@@ -4364,6 +4421,7 @@ function saveProdModalPatched() {
     id: id,
     cat: document.getElementById('pCat').value,
     age: document.getElementById('pAge').value,
+    addedAt: document.getElementById('pDate').value || new Date().toISOString().slice(0,16),
     name: {
       ku: document.getElementById('pNameKU').value,
       ar: document.getElementById('pNameAR').value,
@@ -5717,6 +5775,8 @@ editProduct = function(idx) {
   }
   renderProdImgGallery();
   _origEditProduct(idx);
+  // Load storage URLs for the modal
+  setTimeout(function(){ if(typeof loadStorageUrls==='function') loadStorageUrls(); }, 80);
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -5885,6 +5945,104 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(loadStorageUrls, 300);
 });
+
+
+// ══════════════════════════════════════════════════════════════
+// CATALOG SORT + DRAG REORDER + IMAGE DELETE
+// ══════════════════════════════════════════════════════════════
+
+function setCatalogSort(col) {
+  if(_catalogSort === col) {
+    _catalogSortDir = _catalogSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _catalogSort = col;
+    _catalogSortDir = col === 'date' ? 'desc' : 'asc'; // newest first for date
+  }
+  _catalogPage = 1;
+  renderCatalogTable();
+}
+
+// Drag-to-reorder rows
+var _dragFromIdx = null;
+function catRowDragStart(e, idx) {
+  _dragFromIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function catRowDrop(e, toIdx) {
+  e.preventDefault();
+  if(_dragFromIdx === null || _dragFromIdx === toIdx) { _dragFromIdx = null; return; }
+  var moved = PRODUCTS.splice(_dragFromIdx, 1)[0];
+  PRODUCTS.splice(toIdx, 0, moved);
+  _dragFromIdx = null;
+  renderCatalogTable();
+  toast('Product reordered — click Save & Push Catalog to apply', 'info');
+}
+
+// ── Delete product images from storage ────────────────────
+async function deleteProductImages(urls) {
+  if(!urls || !urls.length) return;
+  var r2Url   = localStorage.getItem('aubStorage_r2');
+  var gdUrl   = localStorage.getItem('aubStorage_gdrive');
+  var deleted = 0; var failed = 0;
+
+  for(var i = 0; i < urls.length; i++) {
+    var url = urls[i];
+    if(!url) continue;
+    try {
+      // ── R2: DELETE /file/{key} ──────────────────────────
+      if(r2Url && (url.includes(r2Url.replace(/\/+$/,'')) || url.includes('.workers.dev'))) {
+        var key = url.split('/file/').pop();
+        if(key) {
+          var res = await fetch(r2Url.replace(/\/+$/,'') + '/file/' + key, {method:'DELETE'});
+          if(res.ok) { deleted++; continue; }
+        }
+      }
+      // ── GitHub: delete via GitHub API ───────────────────
+      if(url.includes('raw.githubusercontent.com/' + GH.repo)) {
+        var parts = url.split('/' + GH.branch + '/');
+        if(parts[1]) {
+          var path = parts[1];
+          var sha = await getFileSHA(path);
+          if(sha) {
+            var freshSHA = await getFileSHA(path);
+            var del = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + path, {
+              method: 'DELETE',
+              headers: {'Authorization':'token '+GH.token,'Content-Type':'application/json'},
+              body: JSON.stringify({message:'Admin: delete product image '+path, sha: freshSHA})
+            });
+            if(del.ok) { deleted++; continue; }
+          }
+        }
+      }
+      // ── Google Drive: call Apps Script to delete ────────
+      if(gdUrl && url.includes('drive.google.com')) {
+        var fileId = url.split('id=').pop();
+        if(fileId) {
+          // Apps Script must support ?action=delete&id=XXX
+          var gr = await fetch(gdUrl + '?action=delete&id=' + fileId, {method:'GET'});
+          if(gr.ok) { deleted++; continue; }
+        }
+      }
+      failed++;
+    } catch(e) {
+      console.warn('Could not delete image:', url, e.message);
+      failed++;
+    }
+  }
+  if(deleted) toast('Deleted ' + deleted + ' image(s) from storage', 'success');
+  if(failed) toast(failed + ' image(s) could not be auto-deleted (external URLs). Delete manually if needed.', 'info');
+}
+
+// Helper to get GitHub file SHA
+async function getFileSHA(path) {
+  try {
+    var res = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + path,
+      {headers:{'Authorization':'token '+GH.token}});
+    if(!res.ok) return null;
+    var data = await res.json();
+    return data.sha || null;
+  } catch(e) { return null; }
+}
 
 </script>
 </body>
