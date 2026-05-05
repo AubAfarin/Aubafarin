@@ -2246,15 +2246,22 @@ var CAT_LABELS = {
 var AGE_LABELS = {'0-3m':'٠-٣ مانگ','3-6m':'٣-٦ مانگ','6-12m':'٦-١٢ مانگ','mini':'٢-٩ ساڵ','junior':'٨-١٦ ساڵ'};
 
 function loadProductsFromHTML(html) {
-  var m = html.match(/var\s+PRODUCTS\s*=\s*(\[[\s\S]*?\]);\s*var\s+CAT_IMGS/);
-  if(!m) return false;
+  // Try multiple patterns — handles both const/var and different terminators
+  var m =
+    html.match(/(?:const|var|let)\s+PRODUCTS\s*=\s*(\[[\s\S]*?\]);\s*\n\s*(?:var|const|let)\s+CATS/) ||
+    html.match(/(?:const|var|let)\s+PRODUCTS\s*=\s*(\[[\s\S]*?\]);\s*\n\s*(?:var|const|let)\s+CAT_IMGS/) ||
+    html.match(/(?:const|var|let)\s+PRODUCTS\s*=\s*(\[[\s\S]*?\]);/) ;
+  if(!m) {
+    toast('Could not find PRODUCTS array in index.html', 'error');
+    return false;
+  }
   try {
     PRODUCTS = JSON.parse(m[1]);
     renderCatalogTable();
     updateDashboardStats();
     return true;
-  } catch(e) {toast('Failed to parse PRODUCTS: ' + e.message, 'error');
-
+  } catch(e) {
+    toast('Failed to parse PRODUCTS: ' + e.message, 'error');
     return false;
   }
 }
@@ -2400,7 +2407,9 @@ async function saveCatalog() {
   var html = await fetchCurrentHTML();
   if(!html) return;
 
-  var newProdStr = 'var PRODUCTS = ' + JSON.stringify(PRODUCTS, null, 0) + ';';
+  // Save as const to match index.html format
+  var prodKeyword = cachedHTML && cachedHTML.match(/const\s+PRODUCTS/) ? 'const' : 'var';
+  var newProdStr = prodKeyword + ' PRODUCTS = ' + JSON.stringify(PRODUCTS, null, 0) + ';';
   // Use greedy-safe pattern for large PRODUCTS array
   var newHTML = html.replace(/var\s+PRODUCTS\s*=\s*\[[\s\S]*?\];(?=\s*var\s+CAT_IMGS)/, 
     newProdStr);
@@ -2465,7 +2474,12 @@ async function saveCatalog() {
 var T_DATA = {};
 
 function buildTextsEditor(html) {
-  var m = html.match(/var\s+T\s*=\s*(\{[\s\S]*?\});\s*\/\/ setLang/);
+  // Try multiple terminators — the T object ends differently in different site versions
+  var m =
+    html.match(/(?:var|const|let)\s+T\s*=\s*(\{[\s\S]*?\});\s*\/\/ setLang/) ||
+    html.match(/(?:var|const|let)\s+T\s*=\s*(\{[\s\S]*?\});\s*\n\s*function\s/) ||
+    html.match(/(?:var|const|let)\s+T\s*=\s*(\{[\s\S]*?\});\s*\n\s*(?:var|const|let)\s/) ||
+    html.match(/(?:var|const|let)\s+T\s*=\s*(\{[\s\S]*?\});/) ;
   if(!m) { 
     document.getElementById('textsEditor').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:20px">Could not parse T translation object from index.html. Fetch the file first via the GitHub config.</div>';
     return;
@@ -3890,16 +3904,56 @@ function deleteCategory(key) {
 }
 
 function parseCats(html) {
-  var m = html.match(/var\s+CATS\s*=\s*(\{[^}]+\})/);
-  if(m) try{ CATS_DATA = JSON.parse(m[1]); }catch(e){}
+  // Handle both single-line and multiline CATS objects
+  var m = html.match(/(?:var|const|let)\s+CATS\s*=\s*(\{[\s\S]*?\});/) ||
+          html.match(/(?:var|const|let)\s+CATS\s*=\s*(\{[^}]+\})/);
+  if(m) {
+    try {
+      // CATS may use single quotes — parse safely
+      var raw = m[1].replace(/'/g, '"');
+      CATS_DATA = JSON.parse(raw);
+    } catch(e) {
+      // Try eval-safe approach for single-quoted objects
+      try {
+        var cleaned = m[1].replace(/([{,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+                          .replace(/:\s*'([^']*)'/g, ':"$1"');
+        CATS_DATA = JSON.parse(cleaned);
+      } catch(e2) { console.warn('parseCats failed:', e2); }
+    }
+  }
 }
 function parseCatImgs(html) {
-  var m = html.match(/var\s+CAT_IMGS\s*=\s*(\{[\s\S]*?\});/);
-  if(m) try{ CAT_IMGS_DATA = JSON.parse(m[1]); }catch(e){}
+  var m = html.match(/(?:var|const|let)\s+CAT_IMGS\s*=\s*(\{[\s\S]*?\});/) ||
+          html.match(/(?:var|const|let)\s+CAT_IMGS\s*=\s*(\{[\s\S]*?\})/);
+  if(m) {
+    try {
+      // Try JSON parse first (double quotes)
+      CAT_IMGS_DATA = JSON.parse(m[1]);
+    } catch(e) {
+      try {
+        // Handle single-quoted values
+        var cleaned = m[1].replace(/([{,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+                          .replace(/:\s*'([^']*)'/g, ':"$1"');
+        CAT_IMGS_DATA = JSON.parse(cleaned);
+      } catch(e2) {}
+    }
+  }
 }
 function parseAges(html) {
-  var m = html.match(/var\s+AGES\s*=\s*(\{[^}]+\});/);
-  if(m) try{ AGES_DATA = JSON.parse(m[1]); }catch(e){}
+  var m = html.match(/(?:var|const|let)\s+AGES\s*=\s*(\{[\s\S]*?\});/) ||
+          html.match(/(?:var|const|let)\s+AGES\s*=\s*(\{[^}]+\})/);
+  if(m) {
+    try {
+      var raw = m[1].replace(/'/g, '"');
+      AGES_DATA = JSON.parse(raw);
+    } catch(e) {
+      try {
+        var cleaned = m[1].replace(/([{,])\s*([a-zA-Z0-9_\-]+)\s*:/g, '$1"$2":')
+                          .replace(/:\s*'([^']*)'/g, ':"$1"');
+        AGES_DATA = JSON.parse(cleaned);
+      } catch(e2) {}
+    }
+  }
 }
 
 async function saveStore() {
@@ -4074,8 +4128,11 @@ saveTexts = async function() {
   // Replace with multiple fallback patterns
   var newHTML = html;
   var patterns2 = [
-    [/var\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
-    [/var\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
+    [/(?:var|const|let)\s+T\s*=\s*\{[\s\S]*?\};\s*\/\/ setLang/, tStr + ';\n// setLang'],
+    [/(?:var|const|let)\s+T\s*=\s*\{[\s\S]*?\};\s*\n\s*function\s/, tStr + ';\n\nfunction '],
+    [/(?:var|const|let)\s+T\s*=\s*\{[\s\S]*?\};\s*\n\s*var\s+/, tStr + ';\n\nvar '],
+    [/(?:var|const|let)\s+T\s*=\s*\{[\s\S]*?\};\s*var\s+activeLang/, tStr + ';\nvar activeLang'],
+    [/(?:var|const|let)\s+T\s*=\s*\{[\s\S]*?\};/, tStr + ';'],
   ];
   var replaced = false;
   for(var pi=0;pi<patterns2.length;pi++){
