@@ -4023,35 +4023,39 @@ async function uploadCatNavImg(catKey, input) {
       url = 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + path;
 
     } else if(storageVal === 'r2') {
-      var r2Url = (document.getElementById('catR2Url')||{value:''}).value.trim();
-      if(!r2Url) throw new Error('Enter Cloudflare R2 Worker URL');
-      var fd = new FormData(); fd.append('file', f);
-      var r = await fetch(r2Url, {method:'POST', body:fd});
+      var r2Url = localStorage.getItem('aubStorage_r2') || (document.getElementById('catR2Url')||{value:''}).value.trim();
+      if(!r2Url) throw new Error('⚠️ R2 Worker URL not saved. Go to Add Product → Storage → R2 → enter URL → Save first.');
+      var r2End = r2Url.replace(/\/+$/,'') + '/upload';
+      var fd = new FormData(); fd.append('file', f, Date.now()+'_'+f.name);
+      var r = await fetch(r2End, {method:'POST', body:fd});
       if(!r.ok) throw new Error('R2 error: HTTP ' + r.status);
-      var rd = await r.json(); url = rd.url || rd.key;
+      var rd = await r.json();
+      url = rd.url || (r2Url.replace(/\/+$/,'') + '/file/' + (rd.key||f.name));
 
     } else if(storageVal === 'cloudinary') {
-      var clUrl = (document.getElementById('catCloudUrl')||{value:''}).value.trim();
-      if(!clUrl) throw new Error('Enter Cloudinary upload URL');
+      var clUrl = localStorage.getItem('aubStorage_cloudinary') || (document.getElementById('catCloudUrl')||{value:''}).value.trim();
+      var clPr = localStorage.getItem('aubStorage_cloudinary_preset') || 'ml_default';
+      if(!clUrl) throw new Error('⚠️ Cloudinary URL not saved. Go to Add Product → Storage → Cloudinary → enter URL → Save first.');
       var cfd = new FormData();
       cfd.append('file', 'data:' + f.type + ';base64,' + b64);
-      cfd.append('upload_preset', 'ml_default');
+      cfd.append('upload_preset', clPr);
       var cr = await fetch(clUrl, {method:'POST', body:cfd});
       var cd = await cr.json();
       if(cd.error) throw new Error(cd.error.message);
       url = cd.secure_url;
 
     } else if(storageVal === 'gdrive') {
-      var gdUrl = (document.getElementById('catGdriveUrl')||{value:''}).value.trim();
-      if(!gdUrl) throw new Error('Enter Google Apps Script Web App URL');
+      var gdUrl = localStorage.getItem('aubStorage_gdrive') || (document.getElementById('catGdriveUrl')||{value:''}).value.trim();
+      if(!gdUrl) throw new Error('⚠️ Google Drive URL not saved. Go to Add Product → Storage → Google Drive → enter URL → Save first.');
+      var safeName2 = Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
       var byteChars = atob(b64);
       var byteArr = new Uint8Array(byteChars.length);
       for(var bi=0;bi<byteChars.length;bi++) byteArr[bi]=byteChars.charCodeAt(bi);
       var blob = new Blob([byteArr], {type:f.type});
       var gfd = new FormData();
-      gfd.append('file', blob, f.name);
+      gfd.append('file', blob, safeName2);
       gfd.append('mimeType', f.type);
-      gfd.append('fileName', Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
+      gfd.append('fileName', safeName2);
       var gr = await fetch(gdUrl, {method:'POST', body:gfd});
       if(!gr.ok) throw new Error('Google Drive error: HTTP '+gr.status);
       var gd2 = await gr.json();
