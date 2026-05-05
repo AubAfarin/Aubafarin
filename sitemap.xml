@@ -12,7 +12,6 @@
   <url><loc>https://aubafarin.com/#play</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://aubafarin.com/#product-newborn-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-newborn-4</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-newborn-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-newborn-6</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-newborn-7</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-newborn-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -33,101 +32,45 @@
   <url><loc>https://aubafarin.com/#product-boys-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-10</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-boys-11</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-boys-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-14</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-15</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-16</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-17</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-boys-18</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-19</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-boys-20</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-2</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-3</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-4</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-6</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-7</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-10</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-11</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-14</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-15</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-16</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-17</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-18</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-shoes-19</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-shoes-20</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-2</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-3</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-4</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-6</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-7</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-10</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-11</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-14</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-toys-15</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-16</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-17</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-18</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-19</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-toys-20</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-2</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-3</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-4</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-6</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-7</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-10</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-11</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-14</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-15</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-beauty-16</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-17</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-18</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-19</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-beauty-20</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-2</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-3</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-4</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-gifts-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-gifts-6</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-7</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-8</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-gifts-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-10</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-11</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-14</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-15</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-16</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-17</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-18</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-19</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-gifts-20</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-play-1</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-play-2</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-play-3</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-play-5</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://aubafarin.com/#product-play-9</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-play-12</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-play-13</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://aubafarin.com/#product-girls-21</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
