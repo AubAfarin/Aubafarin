@@ -2378,8 +2378,8 @@ function loadProductsFromHTML(html) {
 }
 
 var _catalogPage = 1;
-var _catalogSort = 'order'; // 'order','date','name','price'
-var _catalogSortDir = 'asc';
+var _catalogSort = 'date'; // default: newest first
+var _catalogSortDir = 'desc';
 var _CATALOG_PER_PAGE = 25;
 
 function renderCatalogTable(filter) {
@@ -2676,10 +2676,7 @@ async function saveCatalog() {
     xml += '  <url><loc>https://aubafarin.com/#product-' + p.id + '</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n';
   });
   xml += '</urlset>';
-  if(GH.token) {
-    pushFile('sitemap.xml', btoa(unescape(encodeURIComponent(xml))), 'Auto: sitemap on catalog push');
-    pushFile('robots.txt', btoa('User-agent: *\nAllow: /\nSitemap: https://aubafarin.com/sitemap.xml\n'), 'Auto: robots.txt on catalog push');
-  }
+  // Sitemap pushed AFTER main HTML to avoid SHA conflict (see below)
   // Inject stock-disabling script into site so visitors see soldout state
   var stockScript = '<script id="aub-stock">' +
     '(function(){' +
@@ -2698,7 +2695,16 @@ async function saveCatalog() {
   newHTML = newHTML.replace(/<script id="aub-stock">[\s\S]*?<\/script>/g, '');
   newHTML = newHTML.replace('</body>', stockScript + '\n</body>');
 
-  await pushHTMLToGitHub(newHTML, 'Admin: Update catalog (' + PRODUCTS.length + ' items) + sitemap + stock');
+  await pushHTMLToGitHub(newHTML, 'Admin: Update catalog (' + PRODUCTS.length + ' items)');
+  // Push sitemap and robots AFTER main HTML push to avoid SHA conflicts
+  if(GH.token) {
+    setTimeout(async function() {
+      try {
+        await pushFile('sitemap.xml', btoa(unescape(encodeURIComponent(xml))), 'Auto: sitemap');
+        await pushFile('robots.txt', btoa('User-agent: *\nAllow: /\nSitemap: https://aubafarin.com/sitemap.xml\n'), 'Auto: robots.txt');
+      } catch(e) { console.warn('Sitemap push failed:', e.message); }
+    }, 2000); // 2 second delay ensures main push completes first
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
