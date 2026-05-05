@@ -1727,7 +1727,12 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
                 <input type="radio" name="imgStorage" id="storeCloudinary" value="cloudinary" style="accent-color:var(--brand)">
                 <span>🌥️ Cloudinary</span>
-                <input class="field-input" id="cloudinaryUrl" placeholder="https://res.cloudinary.com/..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
+                <input class="field-input" id="cloudinaryUrl" placeholder="https://api.cloudinary.com/v1_1/..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" id="storeGdrive" value="gdrive" style="accent-color:var(--brand)">
+                <span>📂 Google Drive</span>
+                <input class="field-input" id="gdriveUrl" placeholder="Apps Script Web App URL..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
               </label>
             </div>
             <div style="margin-top:8px;display:flex;gap:6px">
@@ -2352,7 +2357,10 @@ function renderCatalogTable(filter) {
         (p.stock === 'soldout' ? '<span class="badge badge-red" style="margin:2px">SOLD OUT</span>' : '') +
         (p.stock === 'low' ? '<span class="badge badge-amber" style="margin:2px;background:rgba(245,158,11,.15);color:var(--amber)">LOW</span>' : '') +
       '</td>' +
-      '<td><button class="btn btn-secondary btn-sm" onclick="editProduct(' + realIdx + ')">✏️ Edit</button></td>' +
+      '<td style="display:flex;gap:4px">' +
+        '<button class="btn btn-secondary btn-sm" onclick="editProduct(' + realIdx + ')">✏️ Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteProduct(' + realIdx + ')" title="Delete product">🗑</button>' +
+      '</td>' +
     '</tr>';
   }).join('');
 }
@@ -2361,7 +2369,7 @@ function filterCatalog() {
   var search = document.getElementById('catalogSearch').value.toLowerCase();
   var cat = document.getElementById('catalogCatFilter').value;
   renderCatalogTable(function(p) {
-    var matchCat = !cat || p.cat === cat;
+    var matchCat = !cat || cat === 'all' || p.cat === cat;
     var matchSearch = !search ||
       (p.id && p.id.includes(search)) ||
       (p.name && p.name.ku && p.name.ku.toLowerCase().includes(search)) ||
@@ -2446,12 +2454,25 @@ function saveProdModal() {
 
 function deleteProdFromModal() {
   if(editingProdIdx === -1) return;
-  if(!confirm('Delete product "' + PRODUCTS[editingProdIdx].id + '"? This cannot be undone.')) return;
+  var p = PRODUCTS[editingProdIdx];
+  if(!p) return;
+  if(!confirm('Delete product "' + p.id + '"?\n\nThis removes it from the catalog. Click Save & Push Catalog to apply.')) return;
   PRODUCTS.splice(editingProdIdx, 1);
+  editingProdIdx = -1;
   closeProdModal();
   renderCatalogTable();
   updateDashboardStats();
-  toast('Product deleted.', 'info');
+  toast('Product deleted — click Save & Push Catalog to apply to live site', 'info');
+}
+
+function deleteProduct(idx) {
+  var p = PRODUCTS[idx];
+  if(!p) return;
+  if(!confirm('Delete "' + (p.id||'product') + '"?')) return;
+  PRODUCTS.splice(idx, 1);
+  renderCatalogTable();
+  updateDashboardStats();
+  toast('Deleted "' + (p.id||'product') + '" — click Save & Push Catalog to apply', 'info');
 }
 
 function closeProdModal() {document.getElementById('prodModal').classList.remove('open');
@@ -2465,19 +2486,35 @@ async function saveCatalog() {
   var html = await fetchCurrentHTML();
   if(!html) return;
 
-  // Save as const to match index.html format
-  var prodKeyword = cachedHTML && cachedHTML.match(/const\s+PRODUCTS/) ? 'const' : 'var';
+  // Detect const vs var from the actual file
+  var prodKeyword = html.match(/const\s+PRODUCTS/) ? 'const' : 'var';
   var newProdStr = prodKeyword + ' PRODUCTS = ' + JSON.stringify(PRODUCTS, null, 0) + ';';
-  // Use greedy-safe pattern for large PRODUCTS array
-  var newHTML = html.replace(/var\s+PRODUCTS\s*=\s*\[[\s\S]*?\];(?=\s*var\s+CAT_IMGS)/, 
-    newProdStr);
-  if(newHTML === html) {
-    // fallback: simpler non-greedy
-    newHTML = html.replace(/var\s+PRODUCTS\s*=\s*\[[\s\S]*?\];\s*var\s+CAT_IMGS/, 
-      newProdStr + '\nvar CAT_IMGS');
-  }
-  if(newHTML === html) {toast('Could not find PRODUCTS block. Check regex.', 'error');
 
+  // Bracket-matching: finds exact array boundaries regardless of size or keyword
+  var bm_pos = html.search(/(?:const|var|let)\s+PRODUCTS\s*=/);
+  if(bm_pos === -1) {
+    toast('PRODUCTS array not found in index.html — check login file path', 'error');
+    return;
+  }
+  var bm_arr = html.indexOf('[', bm_pos);
+  var bm_depth = 0, bm_inStr = false, bm_ch = '', bm_i = bm_arr;
+  while(bm_i < html.length) {
+    var c = html[bm_i];
+    if(bm_inStr) {
+      if(c === '\\') { bm_i += 2; continue; }
+      if(c === bm_ch) bm_inStr = false;
+    } else {
+      if(c === '"' || c === "'") { bm_inStr = true; bm_ch = c; }
+      else if(c === '[' || c === '{') bm_depth++;
+      else if(c === ']' || c === '}') { bm_depth--; if(bm_depth===0){bm_i++;break;} }
+    }
+    bm_i++;
+  }
+  // consume trailing semicolon
+  while(bm_i < html.length && html[bm_i] === ';') bm_i++;
+  var newHTML = html.substring(0, bm_pos) + newProdStr + html.substring(bm_i);
+  if(newHTML === html) {
+    toast('PRODUCTS replacement failed — file structure unexpected', 'error');
     return;
   }
   // Inject sold-out state into buy buttons for each product
@@ -3845,13 +3882,224 @@ function buildCatImgsEditor() {
   if(!el) return;
   if(!keys.length){ el.innerHTML='<div style="color:var(--text3);font-size:12px">Fetch index.html first.</div>'; return; }
   el.innerHTML = keys.map(function(k) {
-    return '<div style="margin-bottom:10px">' +
-      '<label class="field-label">' + k + '</label>' +
-      '<div style="display:flex;gap:8px;align-items:center">' +
-        '<img src="' + (CAT_IMGS_DATA[k]||'') + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover">' +
-        '<input class="field-input" id="catimg_' + k + '" value="' + (CAT_IMGS_DATA[k]||'').replace(/"/g,'&quot;') + '" style="flex:1">' +
-      '</div></div>';
+    var imgUrl = (CAT_IMGS_DATA[k]||'').replace(/"/g,'&quot;');
+    return '<div style="margin-bottom:14px;background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)">' +
+      '<div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">' + k + '</div>' +
+      '<div style="display:flex;gap:10px;align-items:flex-start">' +
+        '<img id="catprev_' + k + '" src="' + imgUrl + '" style="width:64px;height:64px;border-radius:8px;object-fit:cover;border:2px solid var(--border);flex-shrink:0" onerror="this.style.opacity=0.2">' +
+        '<div style="flex:1">' +
+          '<input class="field-input" id="catimg_' + k + '" value="' + imgUrl + '" placeholder="Image URL..." style="margin-bottom:6px" ' +
+            'oninput="CAT_IMGS_DATA[\'' + k + '\']=this.value;var p=document.getElementById(\'catprev_' + k + '\');if(p)p.src=this.value;">' +
+          '<div style="display:flex;gap:5px;flex-wrap:wrap">' +
+            '<button class="btn btn-secondary btn-sm" style="font-size:9px;padding:4px 8px" onclick="openCatImgPicker(\'' + k + '\',\'url\')">🔗 URL</button>' +
+            '<button class="btn btn-secondary btn-sm" style="font-size:9px;padding:4px 8px" onclick="openCatImgPicker(\'' + k + '\',\'upload\')">⬆️ Upload</button>' +
+            '<button class="btn btn-secondary btn-sm" style="font-size:9px;padding:4px 8px" onclick="openCatImgPicker(\'' + k + '\',\'library\')">📁 Library</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
+}
+
+// ── Cat Image Picker modal ─────────────────────────────────
+function openCatImgPicker(catKey, mode) {
+  var old = document.getElementById('catImgPickerModal');
+  if(old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'catImgPickerModal';
+  modal._catKey = catKey;
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var storageRows = [
+    {v:'github',    l:'🐙 GitHub Repo', field:'', ph:''},
+    {v:'r2',        l:'☁️ Cloudflare R2', field:'catR2Url', ph:'https://your-worker.workers.dev/upload'},
+    {v:'cloudinary',l:'🌥️ Cloudinary', field:'catCloudUrl', ph:'https://api.cloudinary.com/v1_1/CLOUD/image/upload'},
+    {v:'gdrive',    l:'📂 Google Drive', field:'catGdriveUrl', ph:'https://script.google.com/macros/s/.../exec'},
+    {v:'external',  l:'🔗 External URL only', field:'', ph:''},
+  ];
+
+  var storageHTML = storageRows.map(function(o,i) {
+    var fieldHtml = o.field ? '<input class="field-input" id="' + o.field + '" placeholder="' + o.ph + '" style="flex:1;font-size:10px;padding:4px 8px;margin-left:8px;display:none">' : '';
+    return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2);margin-bottom:5px">' +
+      '<input type="radio" name="catImgStorage" value="' + o.v + '"' + (i===0?' checked':'') + ' style="accent-color:var(--brand)" onchange="document.querySelectorAll(\'[id^=catR2Url],[id^=catCloud],[id^=catGdrive]\').forEach(function(e){e.style.display=\'none\'});\'' +
+        (o.field ? ';document.getElementById(\'' + o.field + '\').style.display=\'inline-block\'' : '') + '">' +
+      o.l + fieldHtml + '</label>';
+  }).join('');
+
+  box = '<div style="background:var(--surface);border-radius:16px;padding:22px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;border:1px solid var(--border2)">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">' +
+      '<div style="font-size:14px;font-weight:900;color:var(--text)">📸 Image for <strong style="color:var(--brand)">' + catKey + '</strong></div>' +
+      '<button onclick="document.getElementById(\'catImgPickerModal\').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1">✕</button>' +
+    '</div>' +
+
+    // Tab bar
+    '<div style="display:flex;gap:5px;margin-bottom:14px">' +
+      ['🔗 URL','⬆️ Upload','📁 Library'].map(function(label,i) {
+        var m = ['url','upload','library'][i];
+        return '<button onclick="showCatPickPane(\'' + m + '\')" id="catPickTab_' + m + '" style="flex:1;padding:8px;font-size:10px;font-weight:900;border:1px solid var(--border2);border-radius:7px;cursor:pointer;background:' + (mode===m?'var(--brand)':'var(--surface2)') + ';color:' + (mode===m?'#fff':'var(--text3)') + '">' + label + '</button>';
+      }).join('') +
+    '</div>' +
+
+    // Storage selector
+    '<div style="background:var(--surface2);border-radius:9px;padding:10px;margin-bottom:14px;border:1px solid var(--border)">' +
+      '<div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📦 Upload Destination</div>' +
+      storageHTML +
+    '</div>' +
+
+    // URL pane
+    '<div id="catPickPane_url" style="' + (mode!=='url'?'display:none':'') + '">' +
+      '<div style="display:flex;gap:6px">' +
+        '<input class="field-input" id="catPickUrlInput" placeholder="https://... paste any image URL" style="flex:1">' +
+        '<button class="btn btn-primary btn-sm" onclick="applyCatUrl(\'' + catKey + '\')">✅ Use</button>' +
+      '</div>' +
+      '<div style="font-size:10px;color:var(--text3);margin-top:5px">Works with R2, Cloudinary, Google Drive direct links, Unsplash, any URL</div>' +
+    '</div>' +
+
+    // Upload pane
+    '<div id="catPickPane_upload" style="' + (mode!=='upload'?'display:none':'') + '">' +
+      '<div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer" onclick="document.getElementById(\'catPickFile\').click()">' +
+        '<div style="font-size:30px">📸</div>' +
+        '<div style="font-size:12px;color:var(--text2);margin-top:6px;font-weight:700">Click to upload image</div>' +
+        '<div style="font-size:10px;color:var(--text3);margin-top:3px">Auto-compressed · saved to chosen storage</div>' +
+      '</div>' +
+      '<input type="file" id="catPickFile" accept="image/*" style="display:none" onchange="uploadCatNavImg(\'' + catKey + '\',this)">' +
+      '<div id="catPickUploadStatus" style="font-size:11px;margin-top:8px"></div>' +
+    '</div>' +
+
+    // Library pane
+    '<div id="catPickPane_library" style="' + (mode!=='library'?'display:none':'') + '">' +
+      '<button class="btn btn-secondary btn-sm" onclick="loadCatImgLib()" style="width:100%;margin-bottom:8px">🔍 Scan Repo for Images</button>' +
+      '<div id="catPickLibGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:220px;overflow-y:auto">' +
+        '<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center;padding:10px">Click Scan to browse</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  modal.innerHTML = box;
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function showCatPickPane(mode) {
+  ['url','upload','library'].forEach(function(m) {
+    var p = document.getElementById('catPickPane_' + m);
+    var t = document.getElementById('catPickTab_' + m);
+    if(p) p.style.display = m===mode?'block':'none';
+    if(t) { t.style.background = m===mode?'var(--brand)':'var(--surface2)'; t.style.color = m===mode?'#fff':'var(--text3)'; }
+  });
+}
+
+function applyCatUrl(catKey) {
+  var input = document.getElementById('catPickUrlInput');
+  if(!input||!input.value.trim()){toast('Enter a URL first','error');return;}
+  setCatNavImg(catKey, input.value.trim());
+  document.getElementById('catImgPickerModal').remove();
+}
+
+function setCatNavImg(catKey, url) {
+  CAT_IMGS_DATA[catKey] = url;
+  var inp = document.getElementById('catimg_' + catKey);
+  var prv = document.getElementById('catprev_' + catKey);
+  if(inp) inp.value = url;
+  if(prv) { prv.src = url; prv.style.opacity = '1'; }
+  toast('Image set for "' + catKey + '" — click Save & Push Store Settings to apply', 'success');
+}
+
+async function uploadCatNavImg(catKey, input) {
+  var f = input.files[0]; if(!f) return;
+  var statusEl = document.getElementById('catPickUploadStatus');
+  if(statusEl) statusEl.textContent = '⏳ Uploading ' + f.name + '...';
+
+  var storage = document.querySelector('input[name="catImgStorage"]:checked');
+  var storageVal = storage ? storage.value : 'github';
+
+  try {
+    var b64 = await compressImage(f, 900, 0.85);
+    var url;
+
+    if(storageVal === 'github') {
+      var path = 'assets/categories/' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      await pushFile(path, b64, 'Admin: upload category image ' + f.name);
+      url = 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + path;
+
+    } else if(storageVal === 'r2') {
+      var r2Url = (document.getElementById('catR2Url')||{value:''}).value.trim();
+      if(!r2Url) throw new Error('Enter Cloudflare R2 Worker URL');
+      var fd = new FormData(); fd.append('file', f);
+      var r = await fetch(r2Url, {method:'POST', body:fd});
+      if(!r.ok) throw new Error('R2 error: HTTP ' + r.status);
+      var rd = await r.json(); url = rd.url || rd.key;
+
+    } else if(storageVal === 'cloudinary') {
+      var clUrl = (document.getElementById('catCloudUrl')||{value:''}).value.trim();
+      if(!clUrl) throw new Error('Enter Cloudinary upload URL');
+      var cfd = new FormData();
+      cfd.append('file', 'data:' + f.type + ';base64,' + b64);
+      cfd.append('upload_preset', 'ml_default');
+      var cr = await fetch(clUrl, {method:'POST', body:cfd});
+      var cd = await cr.json();
+      if(cd.error) throw new Error(cd.error.message);
+      url = cd.secure_url;
+
+    } else if(storageVal === 'gdrive') {
+      var gdUrl = (document.getElementById('catGdriveUrl')||{value:''}).value.trim();
+      if(!gdUrl) throw new Error('Enter Google Apps Script Web App URL');
+      var byteChars = atob(b64);
+      var byteArr = new Uint8Array(byteChars.length);
+      for(var bi=0;bi<byteChars.length;bi++) byteArr[bi]=byteChars.charCodeAt(bi);
+      var blob = new Blob([byteArr], {type:f.type});
+      var gfd = new FormData();
+      gfd.append('file', blob, f.name);
+      gfd.append('mimeType', f.type);
+      gfd.append('fileName', Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
+      var gr = await fetch(gdUrl, {method:'POST', body:gfd});
+      if(!gr.ok) throw new Error('Google Drive error: HTTP '+gr.status);
+      var gd2 = await gr.json();
+      if(gd2.error) throw new Error(gd2.error);
+      url = 'https://drive.google.com/uc?export=view&id=' + (gd2.id||gd2.fileId);
+
+    } else {
+      throw new Error('Choose a storage destination first');
+    }
+
+    setCatNavImg(catKey, url);
+    if(statusEl) statusEl.innerHTML = '✅ <span style="color:var(--green)">' + f.name + ' uploaded</span>';
+    input.value = '';
+  } catch(e) {
+    if(statusEl) statusEl.innerHTML = '❌ <span style="color:var(--red)">' + e.message + '</span>';
+    toast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+async function loadCatImgLib() {
+  var grid = document.getElementById('catPickLibGrid');
+  if(!grid) return;
+  if(!GH.token||!GH.repo){grid.innerHTML='<div style="color:var(--red);font-size:11px;grid-column:1/-1">Connect GitHub first</div>';return;}
+  grid.innerHTML='<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">⏳ Scanning...</div>';
+  try {
+    var res = await fetch('https://api.github.com/repos/'+GH.repo+'/git/trees/HEAD?recursive=1',
+      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'}});
+    var data = await res.json();
+    var imgs = (data.tree||[]).filter(function(f){return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.path);});
+    if(!imgs.length){grid.innerHTML='<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">No images found</div>';return;}
+    grid.innerHTML = imgs.map(function(f){
+      var url='https://raw.githubusercontent.com/'+GH.repo+'/'+GH.branch+'/'+f.path;
+      return '<div data-caturl="'+url.replace(/"/g,'&quot;')+'" class="catlib-item" style="cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid var(--border)">'+
+        '<img src="'+url+'" style="width:100%;height:56px;object-fit:cover" loading="lazy">'+
+        '<div style="font-size:8px;color:var(--text3);padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.path.split('/').pop()+'</div>'+
+      '</div>';
+    }).join('');
+    Array.from(grid.querySelectorAll('.catlib-item')).forEach(function(el){
+      el.addEventListener('mouseover',function(){this.style.borderColor='var(--brand)';});
+      el.addEventListener('mouseout', function(){this.style.borderColor='var(--border)';});
+      el.addEventListener('click',function(){
+        var url=this.getAttribute('data-caturl');
+        var modal=document.getElementById('catImgPickerModal');
+        var catKey=modal?modal._catKey:'';
+        if(catKey){setCatNavImg(catKey,url);modal.remove();}
+      });
+    });
+  }catch(e){grid.innerHTML='<div style="color:var(--red);font-size:11px;grid-column:1/-1">Error: '+e.message+'</div>';}
 }
 
 function buildAgesEditor() {
@@ -3902,8 +4150,8 @@ function rebuildCatalogFilter() {
     shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن'
   };
   var current = sel.value;
-  sel.innerHTML = '<option value="">All Categories</option>' +
-    Object.entries(cats).map(function(e){
+  sel.innerHTML = '<option value="">هەمووی — All</option>' +
+    Object.entries(cats).filter(function(e){ return e[0] !== 'all'; }).map(function(e){
       return '<option value="' + e[0] + '"' + (e[0]===current?' selected':'') + '>' + e[1] + '</option>';
     }).join('');
 }
@@ -5154,10 +5402,15 @@ function autoGenID() {
 // ── Storage radio toggle ───────────────────────────────────
 document.addEventListener('change', function(e) {
   if(e.target && e.target.name === 'imgStorage') {
-    // Show/hide relevant inputs
-    document.getElementById('r2BucketUrl').style.display = e.target.value === 'r2' ? 'inline-block' : 'none';
-    document.getElementById('cloudinaryUrl').style.display = e.target.value === 'cloudinary' ? 'inline-block' : 'none';
-    document.getElementById('githubSubfolder').parentElement.style.display = e.target.value === 'github' ? 'flex' : 'none';
+    var v = e.target.value;
+    var r2 = document.getElementById('r2BucketUrl');
+    var cl = document.getElementById('cloudinaryUrl');
+    var gd = document.getElementById('gdriveUrl');
+    var gh = document.getElementById('githubSubfolder');
+    if(r2) r2.style.display = v==='r2' ? 'inline-block' : 'none';
+    if(cl) cl.style.display = v==='cloudinary' ? 'inline-block' : 'none';
+    if(gd) gd.style.display = v==='gdrive' ? 'inline-block' : 'none';
+    if(gh && gh.parentElement) gh.parentElement.style.display = v==='github' ? 'flex' : 'none';
   }
 });
 
@@ -5323,8 +5576,30 @@ async function uploadImgFile(file) {
     if(cd.error) throw new Error(cd.error.message);
     return cd.secure_url;
 
+  } else if(storageVal === 'gdrive') {
+    // Google Drive upload via Apps Script Web App
+    // User must deploy a Google Apps Script as Web App and paste its URL
+    var gdriveUrl = (document.getElementById('gdriveUrl')||{value:''}).value.trim();
+    if(!gdriveUrl) throw new Error('Enter your Google Apps Script Web App URL for Google Drive upload. See instructions in storage settings.');
+    // Convert base64 to blob for FormData
+    var byteChars = atob(b64);
+    var byteArr = new Uint8Array(byteChars.length);
+    for(var bi=0; bi<byteChars.length; bi++) byteArr[bi] = byteChars.charCodeAt(bi);
+    var blob = new Blob([byteArr], {type: file.type});
+    var fd = new FormData();
+    fd.append('file', blob, file.name);
+    fd.append('mimeType', file.type);
+    fd.append('fileName', Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
+    var gr = await fetch(gdriveUrl, {method:'POST', body: fd});
+    if(!gr.ok) throw new Error('Google Drive upload failed: HTTP ' + gr.status);
+    var gd = await gr.json();
+    if(gd.error) throw new Error(gd.error);
+    // Return the direct sharing link
+    var fileId = gd.id || gd.fileId;
+    if(!fileId) throw new Error('Google Drive: no file ID returned. Check your Apps Script.');
+    return 'https://drive.google.com/uc?export=view&id=' + fileId;
+
   } else {
-    // External: just return base64 data URL as placeholder (user should paste real URL)
     throw new Error('For External storage, paste the URL directly in the URL tab');
   }
 }
