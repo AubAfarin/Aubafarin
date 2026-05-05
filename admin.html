@@ -515,6 +515,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               <tr>
                 <th>IMG</th>
                 <th>ID</th>
+                <th>📅 Date</th>
                 <th>Name KU</th>
                 <th>Name AR</th>
                 <th>Category</th>
@@ -2111,6 +2112,7 @@ async function doLogin() {
     GH.repo     = repo;
     GH.branch   = repoData.default_branch || 'main';
     GH.filePath = (document.getElementById('loginFilePath')||{value:'index.html'}).value.trim() || 'index.html';
+    GH.filePath = (document.getElementById('loginFilePath')||{value:'index.html'}).value.trim() || 'index.html';
     localStorage.setItem('aubGH', JSON.stringify(GH));
 
     // Pre-fill GitHub Config tab fields
@@ -2440,17 +2442,21 @@ function renderCatalogTable(filter) {
     }
   }
 
-  if(!prods.length) {
+  if(!pageProds.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No products found.</td></tr>';
-    // Clear pagination
-    var pc = document.getElementById('catalogPagination'); if(pc) pc.innerHTML = '';
     return;
   }
-  tbody.innerHTML = prods.map(function(p, idx) {
+  tbody.innerHTML = pageProds.map(function(p, idx) {
     var realIdx = PRODUCTS.indexOf(p);
-    return '<tr data-pid="' + p.id + '">' +
+    return '<tr data-pid="' + p.id + '" draggable="true" ' +
+      'ondragstart="catRowDragStart(event,' + realIdx + ')" ' +
+      'ondragover="event.preventDefault();this.style.background=\'rgba(59,130,246,.08)\'" ' +
+      'ondragleave="this.style.background=\'\''  +
+      'ondrop="catRowDrop(event,' + realIdx + ');this.style.background=\'\''  +
+      'style="cursor:grab">' +
       '<td><img class="prod-thumb" src="' + (p.image||'') + '" loading="lazy" onerror="this.src=\'\'"></td>' +
       '<td data-label="ID" style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--brand)">' + p.id + '</td>' +
+      '<td style="font-size:10px;color:var(--text3);white-space:nowrap">' + (p.addedAt ? p.addedAt.slice(0,10) : '—') + '</td>' +
       '<td data-label="KU" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.name && p.name.ku ? p.name.ku : '—') + '</td>' +
       '<td data-label="AR" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl">' + (p.name && p.name.ar ? p.name.ar : '—') + '</td>' +
       '<td data-label="Cat"><span class="badge badge-blue">' + (CATS_DATA[p.cat] || CAT_LABELS[p.cat] || p.cat) + '</span></td>' +
