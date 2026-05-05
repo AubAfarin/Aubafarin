@@ -1708,36 +1708,68 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <label class="field-label">📸 Product Images <span id="imgCount" style="color:var(--brand);font-weight:900">0</span> / unlimited</label>
 
           <!-- Storage Destination Selector -->
-          <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
-            <div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📦 Upload Destination</div>
-            <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">📦 Upload Destination</div>
+
+            <!-- Radio options -->
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
-                <input type="radio" name="imgStorage" id="storeGithub" value="github" checked style="accent-color:var(--brand)">
-                <span>🐙 GitHub Repo (<span style="font-family:JetBrains Mono,monospace;font-size:10px" id="storeGithubPath">assets/images/</span>)</span>
+                <input type="radio" name="imgStorage" value="github" style="accent-color:var(--brand)" onchange="switchStorage('github')">
+                🐙 GitHub Repo
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
-                <input type="radio" name="imgStorage" id="storeR2" value="r2" style="accent-color:var(--brand)">
-                <span>☁️ Cloudflare R2</span>
-                <input class="field-input" id="r2BucketUrl" placeholder="https://pub-xxx.r2.dev/" style="flex:1;font-size:11px;padding:4px 8px;display:none">
+                <input type="radio" name="imgStorage" value="r2" style="accent-color:var(--brand)" onchange="switchStorage('r2')">
+                ☁️ Cloudflare R2
+                <span id="r2StatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
-                <input type="radio" name="imgStorage" id="storeExternal" value="external" style="accent-color:var(--brand)">
-                <span>🔗 External URL only (no upload)</span>
+                <input type="radio" name="imgStorage" value="gdrive" style="accent-color:var(--brand)" onchange="switchStorage('gdrive')">
+                📂 Google Drive
+                <span id="gdriveStatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
-                <input type="radio" name="imgStorage" id="storeCloudinary" value="cloudinary" style="accent-color:var(--brand)">
-                <span>🌥️ Cloudinary</span>
-                <input class="field-input" id="cloudinaryUrl" placeholder="https://api.cloudinary.com/v1_1/..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
+                <input type="radio" name="imgStorage" value="cloudinary" style="accent-color:var(--brand)" onchange="switchStorage('cloudinary')">
+                🌥️ Cloudinary
+                <span id="cloudinaryStatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
-                <input type="radio" name="imgStorage" id="storeGdrive" value="gdrive" style="accent-color:var(--brand)">
-                <span>📂 Google Drive</span>
-                <input class="field-input" id="gdriveUrl" placeholder="Apps Script Web App URL..." style="flex:1;font-size:11px;padding:4px 8px;display:none">
+                <input type="radio" name="imgStorage" value="external" style="accent-color:var(--brand)" onchange="switchStorage('external')">
+                🔗 External URL only
               </label>
             </div>
-            <div style="margin-top:8px;display:flex;gap:6px">
-              <input class="field-input" id="githubSubfolder" value="assets/images/" placeholder="assets/images/" style="font-size:11px;flex:1">
-              <label style="font-size:10px;color:var(--text3);white-space:nowrap;align-self:center">GitHub subfolder</label>
+
+            <!-- GitHub panel -->
+            <div id="storagePanel_github" style="display:none;background:var(--surface3);border-radius:8px;padding:10px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:5px">Subfolder in repo:</div>
+              <input class="field-input" id="githubSubfolder" value="assets/images/" style="font-size:11px;width:100%">
+            </div>
+
+            <!-- R2 panel -->
+            <div id="storagePanel_r2" style="display:none;background:var(--surface3);border-radius:8px;padding:12px">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Enter your Worker URL once and click Save:</div>
+              <input class="field-input" id="r2BucketUrl" placeholder="https://aub-images-worker.afarin4business-fdf.workers.dev" style="font-size:11px;width:100%;margin-bottom:8px">
+              <button class="btn btn-primary" onclick="saveStorageUrl('r2')" style="width:100%;font-weight:900;font-size:12px">💾 Save R2 URL</button>
+              <div style="font-size:10px;color:var(--text3);margin-top:6px">After saving, just upload — images go to R2 automatically.</div>
+            </div>
+
+            <!-- Google Drive panel -->
+            <div id="storagePanel_gdrive" style="display:none;background:var(--surface3);border-radius:8px;padding:12px">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Enter your Google Apps Script URL once and click Save:</div>
+              <input class="field-input" id="gdriveUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="font-size:11px;width:100%;margin-bottom:8px">
+              <button class="btn btn-primary" onclick="saveStorageUrl('gdrive')" style="width:100%;font-weight:900;font-size:12px">💾 Save Google Drive URL</button>
+              <div style="font-size:10px;color:var(--text3);margin-top:6px">After saving, just upload — images go to Google Drive automatically.</div>
+            </div>
+
+            <!-- Cloudinary panel -->
+            <div id="storagePanel_cloudinary" style="display:none;background:var(--surface3);border-radius:8px;padding:12px">
+              <input class="field-input" id="cloudinaryUrl" placeholder="https://api.cloudinary.com/v1_1/YOUR_CLOUD/image/upload" style="font-size:11px;width:100%;margin-bottom:6px">
+              <input class="field-input" id="cloudinaryPreset" placeholder="Upload preset (e.g. ml_default)" style="font-size:11px;width:100%;margin-bottom:8px">
+              <button class="btn btn-primary" onclick="saveStorageUrl('cloudinary')" style="width:100%;font-weight:900;font-size:12px">💾 Save Cloudinary Settings</button>
+            </div>
+
+            <!-- External panel -->
+            <div id="storagePanel_external" style="display:none;background:var(--surface3);border-radius:8px;padding:10px;font-size:11px;color:var(--text3)">
+              Use the <strong>🔗 URL tab</strong> below to paste image links directly.
             </div>
           </div>
 
@@ -2414,6 +2446,11 @@ function openNewProduct() {
   setToggle('pIsFeat', false);
   var stockEl = document.getElementById('pStock');
   if(stockEl) stockEl.value = 'instock';
+  // Populate dropdowns from live data
+  rebuildProdModalDropdowns('', '');
+  // Restore storage preference
+  loadStorageUrls();
+  if(typeof setAddImgTab === 'function') setAddImgTab(1);
   document.getElementById('prodModal').classList.add('open');
 }
 
@@ -2424,8 +2461,7 @@ function editProduct(idx) {
   document.getElementById('prodModalTitle').textContent = 'Edit Product: ' + p.id;
   document.getElementById('deleteProdBtn').style.display = 'inline-flex';
   document.getElementById('pID').value = p.id || '';
-  document.getElementById('pCat').value = p.cat || 'girls';
-  document.getElementById('pAge').value = p.age || '0-3m';
+  rebuildProdModalDropdowns(p.cat || '', p.age || '');
   document.getElementById('pPrice').value = p.price || '';
   document.getElementById('pSalePrice').value = p.salePrice || '';
   document.getElementById('pNameKU').value = (p.name && p.name.ku) || '';
@@ -5696,6 +5732,159 @@ saveProdModalPatched = function() {
   document.getElementById('pImages').value = _prodImages.join('\n');
   _oldSaveProdModal();
 };
+
+
+// ══════════════════════════════════════════════════════════════
+// STORAGE MANAGEMENT — switchStorage, saveStorageUrl, loadStorageUrls
+// ══════════════════════════════════════════════════════════════
+function switchStorage(v) {
+  ['github','r2','gdrive','cloudinary','external'].forEach(function(s) {
+    var el = document.getElementById('storagePanel_' + s);
+    if(el) el.style.display = s === v ? 'block' : 'none';
+  });
+  localStorage.setItem('aubStoragePref', v);
+}
+
+function saveStorageUrl(type) {
+  var fieldMap = {r2:'r2BucketUrl', gdrive:'gdriveUrl', cloudinary:'cloudinaryUrl'};
+  var el = document.getElementById(fieldMap[type]);
+  if(!el || !el.value.trim()) { toast('Enter the URL first then click Save','error'); return; }
+  var url = el.value.trim();
+  if(!url.startsWith('http')) { toast('URL must start with https://','error'); return; }
+  localStorage.setItem('aubStorage_' + type, url);
+  if(type === 'cloudinary') {
+    var pr = document.getElementById('cloudinaryPreset');
+    localStorage.setItem('aubStorage_cloudinary_preset', (pr && pr.value.trim()) ? pr.value.trim() : 'ml_default');
+  }
+  // Show saved badge
+  var badge = document.getElementById(type + 'StatusBadge');
+  if(badge) badge.style.display = 'inline';
+  var names = {r2:'Cloudflare R2', gdrive:'Google Drive', cloudinary:'Cloudinary'};
+  toast('✅ ' + names[type] + ' URL saved! Now select it and upload — fully automatic.', 'success');
+}
+
+function loadStorageUrls() {
+  // Fill saved URLs into fields and show badges
+  var items = [
+    {type:'r2',         field:'r2BucketUrl',   badge:'r2StatusBadge'},
+    {type:'gdrive',     field:'gdriveUrl',      badge:'gdriveStatusBadge'},
+    {type:'cloudinary', field:'cloudinaryUrl',  badge:'cloudinaryStatusBadge'},
+  ];
+  items.forEach(function(item) {
+    var saved = localStorage.getItem('aubStorage_' + item.type);
+    if(saved) {
+      var el = document.getElementById(item.field);
+      if(el) el.value = saved;
+      var badge = document.getElementById(item.badge);
+      if(badge) badge.style.display = 'inline';
+    }
+  });
+  var preset = localStorage.getItem('aubStorage_cloudinary_preset');
+  if(preset) { var p = document.getElementById('cloudinaryPreset'); if(p) p.value = preset; }
+
+  // Restore last used storage
+  var pref = localStorage.getItem('aubStoragePref') || 'github';
+  var radio = document.querySelector('input[name="imgStorage"][value="' + pref + '"]');
+  if(radio) { radio.checked = true; }
+  switchStorage(pref);
+}
+
+// ══════════════════════════════════════════════════════════════
+// uploadImgFile — reads saved URLs from localStorage automatically
+// ══════════════════════════════════════════════════════════════
+async function uploadImgFile(file) {
+  var storage = document.querySelector('input[name="imgStorage"]:checked');
+  var v = storage ? storage.value : 'github';
+  var b64 = await compressImage(file, 1200, 0.82);
+  var safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+
+  if(v === 'github') {
+    var sub = (document.getElementById('githubSubfolder')||{value:'assets/images/'}).value.trim();
+    if(!sub.endsWith('/')) sub += '/';
+    await pushFile(sub + safeName, b64, 'Admin: upload image');
+    return 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + sub + safeName;
+
+  } else if(v === 'r2') {
+    var url = localStorage.getItem('aubStorage_r2') || (document.getElementById('r2BucketUrl')||{value:''}).value.trim();
+    if(!url) throw new Error('Cloudflare R2 URL not saved yet. Select ☁️ Cloudflare R2 → enter your Worker URL → click 💾 Save R2 URL');
+    var endpoint = url.replace(/\/+$/,'') + '/upload';
+    var fd = new FormData();
+    fd.append('file', file, safeName);
+    var res = await fetch(endpoint, {method:'POST', body:fd});
+    if(!res.ok) throw new Error('R2 upload failed: HTTP ' + res.status);
+    var data = await res.json();
+    return data.url || (url.replace(/\/+$/,'') + '/file/' + (data.key || safeName));
+
+  } else if(v === 'gdrive') {
+    var gdUrl = localStorage.getItem('aubStorage_gdrive') || (document.getElementById('gdriveUrl')||{value:''}).value.trim();
+    if(!gdUrl) throw new Error('Google Drive URL not saved yet. Select 📂 Google Drive → enter your Apps Script URL → click 💾 Save Google Drive URL');
+    var bytes = atob(b64);
+    var arr = new Uint8Array(bytes.length);
+    for(var i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    var blob = new Blob([arr], {type:file.type});
+    var fd2 = new FormData();
+    fd2.append('file', blob, safeName);
+    fd2.append('mimeType', file.type);
+    fd2.append('fileName', safeName);
+    var gr = await fetch(gdUrl, {method:'POST', body:fd2});
+    if(!gr.ok) throw new Error('Google Drive upload failed: HTTP ' + gr.status);
+    var gd = await gr.json();
+    if(gd.error) throw new Error('Google Drive: ' + gd.error);
+    var fid = gd.id || gd.fileId;
+    if(!fid) throw new Error('Google Drive: no file ID returned. Make sure the Apps Script is deployed as Web App with "Anyone" access.');
+    return 'https://drive.google.com/uc?export=view&id=' + fid;
+
+  } else if(v === 'cloudinary') {
+    var clUrl = localStorage.getItem('aubStorage_cloudinary') || (document.getElementById('cloudinaryUrl')||{value:''}).value.trim();
+    var clPr  = localStorage.getItem('aubStorage_cloudinary_preset') || 'ml_default';
+    if(!clUrl) throw new Error('Cloudinary URL not saved yet. Select 🌥️ Cloudinary → enter URL + preset → click 💾 Save');
+    var fd3 = new FormData();
+    fd3.append('file', 'data:' + file.type + ';base64,' + b64);
+    fd3.append('upload_preset', clPr);
+    var cr = await fetch(clUrl, {method:'POST', body:fd3});
+    var cd = await cr.json();
+    if(cd.error) throw new Error('Cloudinary: ' + cd.error.message);
+    return cd.secure_url;
+
+  } else {
+    throw new Error('For External storage — use the URL tab to paste image links directly.');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// rebuildProdModalDropdowns — populate cat/age before modal opens
+// ══════════════════════════════════════════════════════════════
+function rebuildProdModalDropdowns(selectedCat, selectedAge) {
+  var catSel = document.getElementById('pCat');
+  var ageSel = document.getElementById('pAge');
+
+  if(catSel) {
+    var cats = Object.keys(CATS_DATA).length ? CATS_DATA : {
+      newborn:'منداڵی ساوا', girls:'بۆ کچان', boys:'بۆ کوڕان',
+      shoes:'پێڵاو', toys:'یارییەکان', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن'
+    };
+    var catKeys = Object.keys(cats).filter(function(k){return k!=='all';});
+    catSel.innerHTML = catKeys.map(function(k){
+      return '<option value="'+k+'"'+(k===selectedCat?' selected':'')+'>'+k+' — '+cats[k]+'</option>';
+    }).join('');
+    if(!selectedCat && catKeys.length) catSel.value = catKeys[0];
+  }
+
+  if(ageSel) {
+    var ages = Object.keys(AGES_DATA).length ? AGES_DATA : {
+      '0-3m':'٣-٠ مانگ','3-6m':'٦-٣ مانگ','6-12m':'١٢-٦ مانگ','mini':'٩-٢ ساڵ','junior':'١٦-٨ ساڵ'
+    };
+    ageSel.innerHTML = Object.entries(ages).map(function(e){
+      return '<option value="'+e[0]+'"'+(e[0]===selectedAge?' selected':'')+'>'+e[1]+' ('+e[0]+')</option>';
+    }).join('');
+    if(!selectedAge && Object.keys(ages).length) ageSel.value = Object.keys(ages)[0];
+  }
+}
+
+// Init on page load
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(loadStorageUrls, 300);
+});
 
 </script>
 </body>
