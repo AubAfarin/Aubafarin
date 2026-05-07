@@ -1188,6 +1188,57 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:12px">
             <div style="color:var(--text3);font-size:11px;padding:20px;text-align:center;border:1px dashed var(--border);border-radius:8px">⏳ Loads from index.html after login…</div>
           </div>
+          <!-- Storage selector for hero card uploads -->
+          <div style="margin-top:14px;background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📦 Image Upload Destination</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" value="github" style="accent-color:var(--brand)" onchange="switchStorage('github')"> 🐙 GitHub Repo
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" value="r2" style="accent-color:var(--brand)" onchange="switchStorage('r2')"> ☁️ Cloudflare R2
+                <span id="r2StatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" value="gdrive" style="accent-color:var(--brand)" onchange="switchStorage('gdrive')"> 📂 Google Drive
+                <span id="gdriveStatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
+                <input type="radio" name="imgStorage" value="cloudinary" style="accent-color:var(--brand)" onchange="switchStorage('cloudinary')"> 🌥️ Cloudinary
+                <span id="cloudinaryStatusBadge" style="display:none;font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:10px;font-weight:900">✅ Saved</span>
+              </label>
+            </div>
+            <!-- GitHub subfolder (shown when GitHub selected) -->
+            <div id="storagePanel_github">
+              <input class="field-input" id="githubSubfolder" value="assets/images/" style="font-size:11px;width:100%">
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">GitHub subfolder path</div>
+            </div>
+            <!-- R2 panel -->
+            <div id="storagePanel_r2" style="display:none">
+              <div style="display:flex;gap:6px">
+                <input class="field-input" id="r2BucketUrl" placeholder="https://aub-images-worker.afarin4business-fdf.workers.dev" style="font-size:11px;flex:1">
+                <button class="btn btn-primary btn-sm" onclick="saveStorageUrl('r2')" style="white-space:nowrap;font-weight:900">💾 Save</button>
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">Enter once → Save → uploads go to R2 automatically</div>
+            </div>
+            <!-- Google Drive panel -->
+            <div id="storagePanel_gdrive" style="display:none">
+              <div style="display:flex;gap:6px">
+                <input class="field-input" id="gdriveUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="font-size:11px;flex:1">
+                <button class="btn btn-primary btn-sm" onclick="saveStorageUrl('gdrive')" style="white-space:nowrap;font-weight:900">💾 Save</button>
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">Enter once → Save → uploads go to Google Drive automatically</div>
+            </div>
+            <!-- Cloudinary panel -->
+            <div id="storagePanel_cloudinary" style="display:none">
+              <input class="field-input" id="cloudinaryUrl" placeholder="https://api.cloudinary.com/v1_1/YOUR_CLOUD/image/upload" style="font-size:11px;width:100%;margin-bottom:6px">
+              <input class="field-input" id="cloudinaryPreset" placeholder="Upload preset name" style="font-size:11px;width:100%;margin-bottom:6px">
+              <button class="btn btn-primary btn-sm" onclick="saveStorageUrl('cloudinary')" style="width:100%;font-weight:900">💾 Save Cloudinary</button>
+            </div>
+            <div id="storagePanel_external" style="display:none">
+              <div style="font-size:11px;color:var(--text3);padding:8px;background:var(--surface3);border-radius:6px">Paste URLs directly in the URL fields above.</div>
+            </div>
+          </div>
           <button class="btn btn-primary" style="margin-top:14px;width:100%;font-size:13px" onclick="saveHeroCards()">💾 Save &amp; Push Hero Cards</button>
         </div>
 
@@ -2259,6 +2310,9 @@ updateClock();
 // TAB SWITCHING
 // ══════════════════════════════════════════════════════════════
 function switchTab(tab) {
+  if(tab === 'hero' && typeof loadStorageUrls === 'function') {
+    setTimeout(loadStorageUrls, 50);
+  }
   document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
   document.querySelectorAll('.mob-nav-btn').forEach(function(n) { n.classList.remove('active'); });
