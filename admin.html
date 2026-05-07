@@ -349,6 +349,9 @@ input[type=range]{flex:1;accent-color:var(--brand)}
       </div>
 
       <div class="sidebar-section" id="navSec2">STOREFRONT</div>
+      <div class="nav-item" onclick="switchTab('hero')" id="nav-hero">
+        <span class="nav-icon">🖼️</span><span class="nav-label">Hero Editor</span>
+      </div>
       <div class="nav-item" onclick="switchTab('texts')" id="nav-texts">
         <span class="nav-icon">🌐</span><span class="nav-label">Texts & Translations</span>
       </div>
@@ -1169,7 +1172,75 @@ input[type=range]{flex:1;accent-color:var(--brand)}
       <!-- ══════════════════════════════════════════════
            SITE CONTROLS TAB — Every remaining element
       ══════════════════════════════════════════════ -->
-      <div class="tab-content" id="tab-sitecontrols">
+            <!-- HERO EDITOR TAB -->
+      <div class="tab-content" id="tab-hero">
+        <div class="page-header" style="padding-top:0;border:none;margin-bottom:20px">
+          <div>
+            <div class="page-title">🖼️ Hero Editor</div>
+            <div class="page-sub">Edit hero image cards, headline, description and fonts</div>
+          </div>
+        </div>
+
+        <!-- Hero Image Cards -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">🖼️ Hero Image Cards</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:14px">4 cards on the right side of the hero. Each links to a category — clicking scrolls visitors to that category.</div>
+          <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:12px">
+            <div style="color:var(--text3);font-size:11px;padding:20px;text-align:center;border:1px dashed var(--border);border-radius:8px">⏳ Loads from index.html after login…</div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;width:100%;font-size:13px" onclick="saveHeroCards()">💾 Save &amp; Push Hero Cards</button>
+        </div>
+
+        <!-- Hero Text & Fonts -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">✍️ Hero Text &amp; Fonts</div>
+          <div class="card-grid cols-2">
+            <div>
+              <div class="field-group">
+                <label class="field-label">Badge Text</label>
+                <input class="field-input" id="heroBadge" placeholder="✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت" style="direction:rtl">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Headline (HTML allowed e.g. &lt;span&gt;word&lt;/span&gt;)</label>
+                <input class="field-input" id="heroH1" placeholder="جوانترین پۆشاک بۆ منداڵەکەت" style="direction:rtl">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description</label>
+                <textarea class="field-textarea" id="heroDesc2" rows="3" style="direction:rtl"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Button Text</label>
+                <input class="field-input" id="heroCta" placeholder="بگەڕێ بۆ بەرهەمەکان ←" style="direction:rtl">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Button Links to Category</label>
+                <select class="field-select" id="heroCtaCat"><option value="all">all — هەمووی</option></select>
+              </div>
+            </div>
+            <div>
+              <div class="field-group">
+                <label class="field-label">Headline Font Size (e.g. 4rem)</label>
+                <input class="field-input" id="heroH1Size" placeholder="4rem">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Headline Line Height (e.g. 1.1)</label>
+                <input class="field-input" id="heroH1LH" placeholder="1.1">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description Font Size (e.g. 1.2rem)</label>
+                <input class="field-input" id="heroDescSize" placeholder="1.2rem">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description Line Height (e.g. 1.8)</label>
+                <input class="field-input" id="heroDescLH" placeholder="1.8">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px;width:100%;font-size:13px" onclick="saveHeroText()">💾 Save &amp; Push Hero Text &amp; Fonts</button>
+        </div>
+      </div>
+
+<div class="tab-content" id="tab-sitecontrols">
         <div class="page-header" style="padding-top:0;border:none;margin-bottom:20px">
           <div>
             <div class="page-title">🌐 Site Controls</div>
@@ -1338,65 +1409,9 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
         <!-- ── HERO CARDS ──────────────────────────────── -->
                 <!-- ── HERO TEXT & FONTS ───────────────────────────── -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-title">✍️ Hero Text & Fonts</div>
-          <div class="card-grid cols-2">
-            <div>
-              <div class="field-group">
-                <label class="field-label">Badge Text</label>
-                <input class="field-input" id="heroBadge" placeholder="✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Headline (HTML allowed)</label>
-                <input class="field-input" id="heroH1" placeholder="جوانترین &lt;span&gt;پۆشاک&lt;/span&gt;" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description</label>
-                <textarea class="field-textarea" id="heroDesc2" rows="2" style="direction:rtl"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Button Text</label>
-                <input class="field-input" id="heroCta" placeholder="بگەڕێ بۆ بەرهەمەکان ←" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Button Links To Category</label>
-                <select class="field-select" id="heroCtaCat"></select>
-              </div>
-            </div>
-            <div>
-              <div class="field-group">
-                <label class="field-label">Headline Font Size (e.g. 4rem, 48px)</label>
-                <input class="field-input" id="heroH1Size" placeholder="4rem">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Headline Line Height (e.g. 1.1)</label>
-                <input class="field-input" id="heroH1LH" placeholder="1.1">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description Font Size (e.g. 1.2rem)</label>
-                <input class="field-input" id="heroDescSize" placeholder="1.2rem">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description Line Height (e.g. 1.8)</label>
-                <input class="field-input" id="heroDescLH" placeholder="1.8">
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="saveHeroText()">💾 Save & Push Hero Text</button>
-        </div>
+        
 
-        <!-- ── HERO IMAGE CARDS ───────────────────────── -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-title">🖼️ Hero Image Cards</div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">4 cards on the right side of the hero. Each links to a category when clicked.</div>
-          <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:10px">
-            <div style="color:var(--text3);font-size:11px">Loads from index.html after login…</div>
-          </div>
-          <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="saveHeroCards()">💾 Save &amp; Push Hero Cards</button>
-        </div>
-
-        <!-- ── HERO TEXT & FONTS ──────────────────────── -->
-                <!-- ── HERO SECTION ───────────────────────────── -->
+        <!-- ── HERO SECTION ───────────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">🦸 Hero Section</div>
           <div class="card-grid cols-2">
