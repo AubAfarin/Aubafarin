@@ -1337,14 +1337,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         </div>
 
         <!-- ── HERO CARDS ──────────────────────────────── -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-title">🖼️ Hero Image Cards (4 category cards)</div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Each card links to a category. Click the card → user goes to that category in the product grid.</div>
-          <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:12px"></div>
-          <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveHeroCards()">💾 Save & Push Hero Cards</button>
-        </div>
-
-        <!-- ── HERO TEXT & FONTS ───────────────────────────── -->
+                <!-- ── HERO TEXT & FONTS ───────────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">✍️ Hero Text & Fonts</div>
           <div class="card-grid cols-2">
@@ -1395,71 +1388,15 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         <!-- ── HERO IMAGE CARDS ───────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">🖼️ Hero Image Cards</div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">
-            4 category cards shown on the right side of the hero. Each links to a category when clicked.
-          </div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">4 cards on the right side of the hero. Each links to a category when clicked.</div>
           <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:10px">
-            <div style="color:var(--text3);font-size:11px">Loading from index.html...</div>
+            <div style="color:var(--text3);font-size:11px">Loads from index.html after login…</div>
           </div>
-          <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="saveHeroCards()">
-            💾 Save & Push Hero Cards
-          </button>
+          <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="saveHeroCards()">💾 Save &amp; Push Hero Cards</button>
         </div>
 
         <!-- ── HERO TEXT & FONTS ──────────────────────── -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-title">✍️ Hero Text & Fonts</div>
-          <div class="card-grid cols-2">
-            <div>
-              <div class="field-group">
-                <label class="field-label">Badge Text</label>
-                <input class="field-input" id="heroBadge" placeholder="✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Headline (HTML allowed e.g. &lt;span&gt;)</label>
-                <input class="field-input" id="heroH1" placeholder="جوانترین پۆشاک" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description</label>
-                <textarea class="field-textarea" id="heroDesc2" rows="3" style="direction:rtl"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Button Text</label>
-                <input class="field-input" id="heroCta" placeholder="بگەڕێ بۆ بەرهەمەکان ←" style="direction:rtl">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Button Links to Category</label>
-                <select class="field-select" id="heroCtaCat">
-                  <option value="all">all — هەمووی</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <div class="field-group">
-                <label class="field-label">Headline Font Size</label>
-                <input class="field-input" id="heroH1Size" placeholder="4rem">
-                <div style="font-size:10px;color:var(--text3);margin-top:3px">e.g. 4rem, 48px, 3em</div>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Headline Line Height</label>
-                <input class="field-input" id="heroH1LH" placeholder="1.1">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description Font Size</label>
-                <input class="field-input" id="heroDescSize" placeholder="1.2rem">
-              </div>
-              <div class="field-group">
-                <label class="field-label">Description Line Height</label>
-                <input class="field-input" id="heroDescLH" placeholder="1.8">
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-primary" style="margin-top:8px;width:100%" onclick="saveHeroText()">
-            💾 Save & Push Hero Text & Fonts
-          </button>
-        </div>
-
-        <!-- ── HERO SECTION ───────────────────────────── -->
+                <!-- ── HERO SECTION ───────────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">🦸 Hero Section</div>
           <div class="card-grid cols-2">
@@ -4135,7 +4072,7 @@ async function initAdmin() {
       rebuildCatalogFilter();
       rebuildModalCatDropdown();
       buildAgesEditor();
-      buildHeroCardsEditor(html);
+      if(typeof buildHeroCardsEditor === 'function') buildHeroCardsEditor(html);
     }
   } else {
     renderCatalogTable();
@@ -6184,73 +6121,17 @@ var _heroText  = {};
 
 
 
-async function uploadHeroCardImg(idx, input) {
-  var f = input.files[0]; if(!f) return;
-  var prevEl = document.getElementById('hcprev_'+idx);
-  if(prevEl) prevEl.style.opacity = '0.5';
-  try {
-    var b64 = await compressImage(f, 800, 0.85);
-    var url = await uploadImgFile(f);
-    _heroCards[idx].img = url;
-    var imgEl = document.getElementById('hcimg_'+idx);
-    if(imgEl) imgEl.value = url;
-    if(prevEl) { prevEl.src = url; prevEl.style.opacity = '1'; }
-    toast('Image uploaded for card '+(idx+1),'success');
-  } catch(e) { toast('Upload failed: '+e.message,'error'); if(prevEl) prevEl.style.opacity='1'; }
-  input.value = '';
-}
-
-async function saveHeroCards() {
-  var html = await fetchCurrentHTML(); if(!html) return;
-  // Sync current field values into _heroCards
-  _heroCards.forEach(function(c,i) {
-    c.img   = (document.getElementById('hcimg_'+i)||{value:c.img}).value.trim();
-    c.label = (document.getElementById('hclabel_'+i)||{value:c.label}).value.trim();
-    c.cat   = (document.getElementById('hccat_'+i)||{value:c.cat}).value;
-  });
-  var newVar = 'var HERO_CARDS = ' + JSON.stringify(_heroCards) + ';';
-  var newHTML = html.replace(/var HERO_CARDS = \[[\s\S]*?\];/, newVar);
-  if(newHTML === html) { toast('HERO_CARDS not found in index.html','error'); return; }
-  await pushHTMLToGitHub(newHTML, 'Admin: update hero cards');
-}
-
-async function saveHeroText() {
-  var html = await fetchCurrentHTML(); if(!html) return;
-  _heroText.badge      = (document.getElementById('heroBadge')||{value:''}).value;
-  _heroText.h1         = (document.getElementById('heroH1')||{value:''}).value;
-  _heroText.desc       = (document.getElementById('heroDesc2')||{value:''}).value;
-  _heroText.cta        = (document.getElementById('heroCta')||{value:''}).value;
-  _heroText.ctaCat     = (document.getElementById('heroCtaCat')||{value:'all'}).value;
-  _heroText.h1Size     = (document.getElementById('heroH1Size')||{value:'4rem'}).value || '4rem';
-  _heroText.h1LH       = (document.getElementById('heroH1LH')||{value:'1.1'}).value || '1.1';
-  _heroText.descSize   = (document.getElementById('heroDescSize')||{value:'1.2rem'}).value || '1.2rem';
-  _heroText.descLH     = (document.getElementById('heroDescLH')||{value:'1.8'}).value || '1.8';
-  var newVar = 'var HERO_TEXT = ' + JSON.stringify(_heroText) + ';';
-  var newHTML = html.replace(/var HERO_TEXT = \{[\s\S]*?\};/, newVar);
-  if(newHTML === html) { toast('HERO_TEXT not found in index.html','error'); return; }
-  await pushHTMLToGitHub(newHTML, 'Admin: update hero text & fonts');
-}
-
-// Hook into initAdmin to load hero data
-var _origInitAdminForHero = initAdmin;
-initAdmin = async function() {
-  await _origInitAdminForHero();
-  var html = cachedHTML;
-  if(html) buildHeroCardsEditor(html);
-};
-
-
 // ══════════════════════════════════════════════════════════════
-// HERO CARDS + HERO TEXT ADMIN FUNCTIONS
+// HERO ADMIN — buildHeroCardsEditor, saveHeroCards, saveHeroText
 // ══════════════════════════════════════════════════════════════
 
 var _heroCards = [];
 var _heroText  = {};
 
 function buildHeroCardsEditor(html) {
-  // Parse HERO_CARDS from index.html
-  var m = html.match(/var HERO_CARDS\s*=\s*(\[[\s\S]*?\]);/);
-  if(m) { try { _heroCards = JSON.parse(m[1]); } catch(e) { _heroCards = []; } }
+  // ── Parse HERO_CARDS ──────────────────────────────────────
+  var mc = html.match(/var HERO_CARDS\s*=\s*(\[[\s\S]*?\]);/);
+  if(mc) { try { _heroCards = JSON.parse(mc[1]); } catch(e) { _heroCards = []; } }
   if(!_heroCards.length) {
     _heroCards = [
       {"img":"","label":"جلی کچان","cat":"girls"},
@@ -6260,60 +6141,58 @@ function buildHeroCardsEditor(html) {
     ];
   }
 
-  // Parse HERO_TEXT
+  // ── Parse HERO_TEXT ───────────────────────────────────────
   var mt = html.match(/var HERO_TEXT\s*=\s*(\{[\s\S]*?\});/);
   if(mt) { try { _heroText = JSON.parse(mt[1]); } catch(e) { _heroText = {}; } }
 
-  // Populate text fields
-  var fields = {
-    heroBadge:'badge', heroH1:'h1', heroDesc2:'desc', heroCta:'cta',
-    heroCtaCat:'ctaCat', heroH1Size:'h1Size', heroH1LH:'h1LH',
-    heroDescSize:'descSize', heroDescLH:'descLH'
-  };
-  Object.keys(fields).forEach(function(id) {
+  // ── Populate text fields ──────────────────────────────────
+  var tmap = {heroBadge:'badge',heroH1:'h1',heroDesc2:'desc',heroCta:'cta',
+              heroCtaCat:'ctaCat',heroH1Size:'h1Size',heroH1LH:'h1LH',
+              heroDescSize:'descSize',heroDescLH:'descLH'};
+  Object.keys(tmap).forEach(function(id) {
     var el = document.getElementById(id);
-    var key = fields[id];
-    if(el && _heroText[key] !== undefined) el.value = _heroText[key];
+    if(el && _heroText[tmap[id]] !== undefined) el.value = _heroText[tmap[id]];
   });
 
-  // Populate ctaCat dropdown
+  // ── Populate ctaCat dropdown ──────────────────────────────
   var catSel = document.getElementById('heroCtaCat');
   if(catSel && Object.keys(CATS_DATA).length) {
     catSel.innerHTML = Object.entries(CATS_DATA).map(function(e) {
-      return '<option value="' + e[0] + '"' + (_heroText.ctaCat === e[0] ? ' selected' : '') + '>' + e[0] + ' — ' + e[1] + '</option>';
+      return '<option value="'+e[0]+'"'+(_heroText.ctaCat===e[0]?' selected':'')+'>'+e[0]+' — '+e[1]+'</option>';
     }).join('');
   }
 
-  // Build card editors using DOM (avoids quote nesting)
+  // ── Build card editors (DOM-based, no quote issues) ───────
   var editor = document.getElementById('heroCardsEditor');
   if(!editor) return;
   editor.innerHTML = '';
 
   _heroCards.forEach(function(card, i) {
+    var cats = Object.keys(CATS_DATA).length ? CATS_DATA
+      : {girls:'بۆ کچان',boys:'بۆ کوڕان',newborn:'منداڵی ساوا',shoes:'پێڵاو'};
+
     var wrap = document.createElement('div');
     wrap.style.cssText = 'background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)';
 
-    // Card title
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px';
-    title.textContent = 'Card ' + (i+1) + ' of 4';
-    wrap.appendChild(title);
+    var ttl = document.createElement('div');
+    ttl.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px';
+    ttl.textContent = 'Card '+(i+1)+' of 4';
+    wrap.appendChild(ttl);
 
     var grid = document.createElement('div');
     grid.style.cssText = 'display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:start';
 
-    // Preview image
+    // Preview
     var prev = document.createElement('img');
-    prev.className = 'hc-prev';
-    prev.dataset.idx = i;
-    prev.src = card.img || '';
+    prev.className = 'hc-prev'; prev.dataset.idx = i;
+    prev.src = card.img || ''; prev.alt = '';
     prev.style.cssText = 'width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid var(--border)';
-    prev.onerror = function(){ this.style.opacity = '0.2'; };
+    prev.onerror = function(){ this.style.opacity='0.2'; };
     grid.appendChild(prev);
 
     var right = document.createElement('div');
 
-    // Image URL row
+    // Image URL + upload row
     var imgLbl = document.createElement('div');
     imgLbl.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
     imgLbl.textContent = 'Image URL';
@@ -6322,67 +6201,56 @@ function buildHeroCardsEditor(html) {
     var imgRow = document.createElement('div');
     imgRow.style.cssText = 'display:flex;gap:4px;margin-bottom:8px';
 
-    var imgInput = document.createElement('input');
-    imgInput.className = 'field-input hc-img';
-    imgInput.dataset.idx = i;
-    imgInput.value = card.img || '';
-    imgInput.placeholder = 'https://...';
-    imgInput.style.cssText = 'flex:1;font-size:11px';
-    imgRow.appendChild(imgInput);
+    var imgInp = document.createElement('input');
+    imgInp.className = 'field-input hc-img'; imgInp.dataset.idx = i;
+    imgInp.value = card.img || ''; imgInp.placeholder = 'https://...';
+    imgInp.style.cssText = 'flex:1;font-size:11px';
+    imgRow.appendChild(imgInp);
 
     var upBtn = document.createElement('button');
-    upBtn.className = 'btn btn-secondary btn-sm';
-    upBtn.title = 'Upload image';
+    upBtn.className = 'btn btn-secondary btn-sm'; upBtn.title = 'Upload';
     upBtn.innerHTML = '⬆️';
-    upBtn.onclick = (function(idx) { return function() { document.getElementById('hcfile_' + idx).click(); }; })(i);
+    upBtn.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
     imgRow.appendChild(upBtn);
 
     var fileInp = document.createElement('input');
-    fileInp.type = 'file';
-    fileInp.id = 'hcfile_' + i;
-    fileInp.accept = 'image/*';
-    fileInp.style.display = 'none';
-    fileInp.onchange = (function(idx) { return function() { uploadHeroCardImg(idx, this); }; })(i);
+    fileInp.type = 'file'; fileInp.id = 'hcf_'+i;
+    fileInp.accept = 'image/*'; fileInp.style.display = 'none';
+    fileInp.onchange = (function(idx){ return function(){ uploadHeroCardImg(idx, this); }; })(i);
     imgRow.appendChild(fileInp);
     right.appendChild(imgRow);
 
-    // Label + Category row
+    // Label + Category
     var twoCol = document.createElement('div');
     twoCol.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px';
 
-    var labelDiv = document.createElement('div');
-    var labelLbl = document.createElement('div');
-    labelLbl.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
-    labelLbl.textContent = 'Label (hover text)';
-    labelDiv.appendChild(labelLbl);
-    var labelInput = document.createElement('input');
-    labelInput.className = 'field-input hc-label';
-    labelInput.dataset.idx = i;
-    labelInput.value = card.label || '';
-    labelInput.placeholder = 'جلی کچان';
-    labelInput.dir = 'rtl';
-    labelInput.style.fontSize = '11px';
-    labelDiv.appendChild(labelInput);
-    twoCol.appendChild(labelDiv);
+    // Label
+    var lblDiv = document.createElement('div');
+    var lblHdr = document.createElement('div');
+    lblHdr.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
+    lblHdr.textContent = 'Label (hover text)';
+    lblDiv.appendChild(lblHdr);
+    var lblInp = document.createElement('input');
+    lblInp.className = 'field-input hc-label'; lblInp.dataset.idx = i;
+    lblInp.value = card.label || ''; lblInp.dir = 'rtl'; lblInp.style.fontSize = '11px';
+    lblDiv.appendChild(lblInp);
+    twoCol.appendChild(lblDiv);
 
+    // Category dropdown
     var catDiv = document.createElement('div');
-    var catLbl = document.createElement('div');
-    catLbl.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
-    catLbl.textContent = 'Links to Category';
-    catDiv.appendChild(catLbl);
-    var catSel2 = document.createElement('select');
-    catSel2.className = 'field-select hc-cat';
-    catSel2.dataset.idx = i;
-    catSel2.style.fontSize = '11px';
-    var cats = Object.keys(CATS_DATA).length ? CATS_DATA : {girls:'بۆ کچان',boys:'بۆ کوڕان',newborn:'منداڵی ساوا',shoes:'پێڵاو'};
+    var catHdr = document.createElement('div');
+    catHdr.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
+    catHdr.textContent = 'Links to Category';
+    catDiv.appendChild(catHdr);
+    var catDrop = document.createElement('select');
+    catDrop.className = 'field-select hc-cat'; catDrop.dataset.idx = i; catDrop.style.fontSize = '11px';
     Object.entries(cats).filter(function(e){return e[0]!=='all';}).forEach(function(e) {
       var opt = document.createElement('option');
-      opt.value = e[0];
-      opt.textContent = e[0] + ' — ' + e[1];
+      opt.value = e[0]; opt.textContent = e[0]+' — '+e[1];
       if(card.cat === e[0]) opt.selected = true;
-      catSel2.appendChild(opt);
+      catDrop.appendChild(opt);
     });
-    catDiv.appendChild(catSel2);
+    catDiv.appendChild(catDrop);
     twoCol.appendChild(catDiv);
     right.appendChild(twoCol);
 
@@ -6391,39 +6259,36 @@ function buildHeroCardsEditor(html) {
     editor.appendChild(wrap);
   });
 
-  // Live update via event delegation
+  // Live sync via event delegation
   editor.addEventListener('input', function(e) {
-    var el = e.target;
-    var idx = parseInt(el.dataset.idx);
-    if(isNaN(idx)) return;
+    var el = e.target; var idx = parseInt(el.dataset.idx); if(isNaN(idx)) return;
     if(el.classList.contains('hc-img')) {
       _heroCards[idx].img = el.value;
-      var pv = editor.querySelector('.hc-prev[data-idx="' + idx + '"]');
+      var pv = editor.querySelector('.hc-prev[data-idx="'+idx+'"]');
       if(pv) { pv.src = el.value; pv.style.opacity = '1'; }
     }
     if(el.classList.contains('hc-label')) _heroCards[idx].label = el.value;
   });
   editor.addEventListener('change', function(e) {
-    var el = e.target;
-    var idx = parseInt(el.dataset.idx);
-    if(!isNaN(idx) && el.classList.contains('hc-cat')) _heroCards[idx].cat = el.value;
+    var el = e.target; var idx = parseInt(el.dataset.idx); if(isNaN(idx)) return;
+    if(el.classList.contains('hc-cat')) _heroCards[idx].cat = el.value;
   });
 }
 
 async function uploadHeroCardImg(idx, input) {
   var f = input.files[0]; if(!f) return;
   var editor = document.getElementById('heroCardsEditor');
-  var pv = editor ? editor.querySelector('.hc-prev[data-idx="' + idx + '"]') : null;
+  var pv = editor && editor.querySelector('.hc-prev[data-idx="'+idx+'"]');
   if(pv) pv.style.opacity = '0.4';
   try {
     var url = await uploadImgFile(f);
     _heroCards[idx].img = url;
-    var imgEl = editor ? editor.querySelector('.hc-img[data-idx="' + idx + '"]') : null;
-    if(imgEl) imgEl.value = url;
+    var iv = editor && editor.querySelector('.hc-img[data-idx="'+idx+'"]');
+    if(iv) iv.value = url;
     if(pv) { pv.src = url; pv.style.opacity = '1'; }
-    toast('Card ' + (idx+1) + ' image uploaded', 'success');
+    toast('Card '+(idx+1)+' image uploaded', 'success');
   } catch(e) {
-    toast('Upload failed: ' + e.message, 'error');
+    toast('Upload failed: '+e.message, 'error');
     if(pv) pv.style.opacity = '1';
   }
   input.value = '';
@@ -6431,25 +6296,15 @@ async function uploadHeroCardImg(idx, input) {
 
 async function saveHeroCards() {
   var html = await fetchCurrentHTML(); if(!html) return;
-  // Sync current field values
   var editor = document.getElementById('heroCardsEditor');
   if(editor) {
-    editor.querySelectorAll('.hc-img').forEach(function(el) {
-      var i = parseInt(el.dataset.idx);
-      if(!isNaN(i)) _heroCards[i].img = el.value.trim();
-    });
-    editor.querySelectorAll('.hc-label').forEach(function(el) {
-      var i = parseInt(el.dataset.idx);
-      if(!isNaN(i)) _heroCards[i].label = el.value.trim();
-    });
-    editor.querySelectorAll('.hc-cat').forEach(function(el) {
-      var i = parseInt(el.dataset.idx);
-      if(!isNaN(i)) _heroCards[i].cat = el.value;
-    });
+    editor.querySelectorAll('.hc-img').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].img=el.value.trim(); });
+    editor.querySelectorAll('.hc-label').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].label=el.value.trim(); });
+    editor.querySelectorAll('.hc-cat').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].cat=el.value; });
   }
   var newVar = 'var HERO_CARDS = ' + JSON.stringify(_heroCards) + ';';
   var newHTML = html.replace(/var HERO_CARDS\s*=\s*\[[\s\S]*?\];/, newVar);
-  if(newHTML === html) { toast('HERO_CARDS not found in index.html — make sure you are pointing to the right file', 'error'); return; }
+  if(newHTML === html) { toast('HERO_CARDS not found in index.html', 'error'); return; }
   await pushHTMLToGitHub(newHTML, 'Admin: update hero cards');
 }
 
@@ -6466,7 +6321,7 @@ async function saveHeroText() {
   _heroText.descLH   = (document.getElementById('heroDescLH')  ||{value:'1.8'}).value   || '1.8';
   var newVar = 'var HERO_TEXT = ' + JSON.stringify(_heroText) + ';';
   var newHTML = html.replace(/var HERO_TEXT\s*=\s*\{[\s\S]*?\};/, newVar);
-  if(newHTML === html) { toast('HERO_TEXT not found in index.html — make sure you are pointing to the right file', 'error'); return; }
+  if(newHTML === html) { toast('HERO_TEXT not found in index.html', 'error'); return; }
   await pushHTMLToGitHub(newHTML, 'Admin: update hero text & fonts');
 }
 
