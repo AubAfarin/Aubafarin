@@ -2483,24 +2483,7 @@ function renderCatalogTable(filter) {
       return _btn.outerHTML;
     }).join('');
 
-  // Attach live update handlers via event delegation
-  editor.addEventListener('input', function(e) {
-    var el = e.target;
-    var idx = parseInt(el.getAttribute('data-idx'));
-    if(isNaN(idx)) return;
-    if(el.classList.contains('hc-img-input')) {
-      _heroCards[idx].img = el.value;
-      var prev = editor.querySelector('.hc-prev-img[data-idx="'+idx+'"]');
-      if(prev) prev.src = el.value;
-    }
-    if(el.classList.contains('hc-label-input')) _heroCards[idx].label = el.value;
-  });
-  editor.addEventListener('change', function(e) {
-    var el = e.target;
-    var idx = parseInt(el.getAttribute('data-idx'));
-    if(isNaN(idx)) return;
-    if(el.classList.contains('hc-cat-select')) _heroCards[idx].cat = el.value;
-  });
+
     Array.from(_sortBar.querySelectorAll('button')).forEach(function(b){
       b.addEventListener('click', function(){ setCatalogSort(this.getAttribute('data-sortcol')); });
     });
