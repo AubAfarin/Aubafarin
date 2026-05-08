@@ -6214,81 +6214,96 @@ function buildHeroCardsEditor(html) {
     }).join('');
   }
 
-  // ── Build card editors (DOM-based, no quote issues) ───────
+  // ── Build card editors ────────────────────────────────────
   var editor = document.getElementById('heroCardsEditor');
   if(!editor) return;
   editor.innerHTML = '';
 
+  var cats = Object.keys(CATS_DATA).length ? CATS_DATA
+    : {girls:'بۆ کچان',boys:'بۆ کوڕان',newborn:'منداڵی ساوا',shoes:'پێڵاو'};
+
   _heroCards.forEach(function(card, i) {
-    var cats = Object.keys(CATS_DATA).length ? CATS_DATA
-      : {girls:'بۆ کچان',boys:'بۆ کوڕان',newborn:'منداڵی ساوا',shoes:'پێڵاو'};
 
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)';
+    wrap.style.cssText = 'background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border)';
 
+    // ── Card title ──────────────────────────────────────────
     var ttl = document.createElement('div');
-    ttl.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px';
+    ttl.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px';
     ttl.textContent = 'Card '+(i+1)+' of 4';
     wrap.appendChild(ttl);
 
-    var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:start';
+    // ── Top row: preview + URL + per-card upload button ─────
+    var topRow = document.createElement('div');
+    topRow.style.cssText = 'display:flex;gap:10px;align-items:flex-start;margin-bottom:10px';
 
-    // Preview
+    // Preview image (clickable = triggers file picker)
     var prev = document.createElement('img');
     prev.className = 'hc-prev'; prev.dataset.idx = i;
-    prev.src = card.img || ''; prev.alt = '';
-    prev.style.cssText = 'width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid var(--border)';
+    prev.src = card.img || ''; prev.alt = 'Card '+(i+1);
+    prev.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0;cursor:pointer;transition:opacity .2s';
+    prev.title = 'Click to upload new image';
+    prev.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
     prev.onerror = function(){ this.style.opacity='0.2'; };
-    grid.appendChild(prev);
+    topRow.appendChild(prev);
 
-    var right = document.createElement('div');
+    var urlCol = document.createElement('div');
+    urlCol.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:6px';
 
-    // Image URL + upload row
-    var imgLbl = document.createElement('div');
-    imgLbl.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
-    imgLbl.textContent = 'Image URL';
-    right.appendChild(imgLbl);
-
-    var imgRow = document.createElement('div');
-    imgRow.style.cssText = 'display:flex;gap:4px;margin-bottom:8px';
-
+    // URL field
     var imgInp = document.createElement('input');
     imgInp.className = 'field-input hc-img'; imgInp.dataset.idx = i;
-    imgInp.value = card.img || ''; imgInp.placeholder = 'https://...';
-    imgInp.style.cssText = 'flex:1;font-size:11px';
-    imgRow.appendChild(imgInp);
+    imgInp.value = card.img || ''; imgInp.placeholder = 'https://... or upload below';
+    imgInp.style.cssText = 'width:100%;font-size:11px';
+    urlCol.appendChild(imgInp);
+
+    // Upload button row
+    var uploadRow = document.createElement('div');
+    uploadRow.style.cssText = 'display:flex;gap:6px;align-items:center';
 
     var upBtn = document.createElement('button');
-    upBtn.className = 'btn btn-secondary btn-sm'; upBtn.title = 'Upload';
-    upBtn.innerHTML = '⬆️';
+    upBtn.className = 'btn btn-primary btn-sm';
+    upBtn.style.cssText = 'white-space:nowrap;font-weight:900;font-size:11px;flex-shrink:0';
+    upBtn.innerHTML = '⬆️ Upload Image';
     upBtn.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
-    imgRow.appendChild(upBtn);
+    uploadRow.appendChild(upBtn);
 
+    // Status text
+    var statusTxt = document.createElement('span');
+    statusTxt.id = 'hcstatus_'+i;
+    statusTxt.style.cssText = 'font-size:10px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    statusTxt.textContent = card.img ? '✅ Image set' : '📷 No image yet';
+    uploadRow.appendChild(statusTxt);
+
+    urlCol.appendChild(uploadRow);
+
+    // Hidden file input
     var fileInp = document.createElement('input');
     fileInp.type = 'file'; fileInp.id = 'hcf_'+i;
     fileInp.accept = 'image/*'; fileInp.style.display = 'none';
     fileInp.onchange = (function(idx){ return function(){ uploadHeroCardImg(idx, this); }; })(i);
-    imgRow.appendChild(fileInp);
-    right.appendChild(imgRow);
+    urlCol.appendChild(fileInp);
 
-    // Label + Category
-    var twoCol = document.createElement('div');
-    twoCol.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px';
+    topRow.appendChild(urlCol);
+    wrap.appendChild(topRow);
+
+    // ── Bottom row: label + category ────────────────────────
+    var botRow = document.createElement('div');
+    botRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px';
 
     // Label
     var lblDiv = document.createElement('div');
     var lblHdr = document.createElement('div');
     lblHdr.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
-    lblHdr.textContent = 'Label (hover text)';
+    lblHdr.textContent = 'Label (shown on hover)';
     lblDiv.appendChild(lblHdr);
     var lblInp = document.createElement('input');
     lblInp.className = 'field-input hc-label'; lblInp.dataset.idx = i;
     lblInp.value = card.label || ''; lblInp.dir = 'rtl'; lblInp.style.fontSize = '11px';
     lblDiv.appendChild(lblInp);
-    twoCol.appendChild(lblDiv);
+    botRow.appendChild(lblDiv);
 
-    // Category dropdown
+    // Category
     var catDiv = document.createElement('div');
     var catHdr = document.createElement('div');
     catHdr.style.cssText = 'font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px';
@@ -6303,21 +6318,21 @@ function buildHeroCardsEditor(html) {
       catDrop.appendChild(opt);
     });
     catDiv.appendChild(catDrop);
-    twoCol.appendChild(catDiv);
-    right.appendChild(twoCol);
+    botRow.appendChild(catDiv);
+    wrap.appendChild(botRow);
 
-    grid.appendChild(right);
-    wrap.appendChild(grid);
     editor.appendChild(wrap);
   });
 
-  // Live sync via event delegation
+  // ── Live sync via event delegation ───────────────────────
   editor.addEventListener('input', function(e) {
     var el = e.target; var idx = parseInt(el.dataset.idx); if(isNaN(idx)) return;
     if(el.classList.contains('hc-img')) {
       _heroCards[idx].img = el.value;
       var pv = editor.querySelector('.hc-prev[data-idx="'+idx+'"]');
-      if(pv) { pv.src = el.value; pv.style.opacity = '1'; }
+      if(pv) { pv.src = el.value; pv.style.opacity='1'; }
+      var st = document.getElementById('hcstatus_'+idx);
+      if(st) st.textContent = el.value ? '✅ Image set' : '📷 No image yet';
     }
     if(el.classList.contains('hc-label')) _heroCards[idx].label = el.value;
   });
@@ -6327,21 +6342,28 @@ function buildHeroCardsEditor(html) {
   });
 }
 
+
 async function uploadHeroCardImg(idx, input) {
   var f = input.files[0]; if(!f) return;
-  var editor = document.getElementById('heroCardsEditor');
-  var pv = editor && editor.querySelector('.hc-prev[data-idx="'+idx+'"]');
+  var editor  = document.getElementById('heroCardsEditor');
+  var pv      = editor && editor.querySelector('.hc-prev[data-idx="'+idx+'"]');
+  var iv      = editor && editor.querySelector('.hc-img[data-idx="'+idx+'"]');
+  var statusEl= document.getElementById('hcstatus_'+idx);
+
   if(pv) pv.style.opacity = '0.4';
+  if(statusEl) statusEl.textContent = '⏳ Uploading ' + f.name + '…';
+
   try {
     var url = await uploadImgFile(f);
     _heroCards[idx].img = url;
-    var iv = editor && editor.querySelector('.hc-img[data-idx="'+idx+'"]');
-    if(iv) iv.value = url;
-    if(pv) { pv.src = url; pv.style.opacity = '1'; }
-    toast('Card '+(idx+1)+' image uploaded', 'success');
+    if(iv)  { iv.value = url; }
+    if(pv)  { pv.src = url; pv.style.opacity = '1'; }
+    if(statusEl) statusEl.textContent = '✅ Uploaded: ' + f.name;
+    toast('Card '+(idx+1)+' image uploaded successfully', 'success');
   } catch(e) {
-    toast('Upload failed: '+e.message, 'error');
     if(pv) pv.style.opacity = '1';
+    if(statusEl) statusEl.innerHTML = '<span style="color:var(--red)">❌ ' + e.message + '</span>';
+    toast('Upload failed: ' + e.message, 'error');
   }
   input.value = '';
 }
