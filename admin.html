@@ -1377,15 +1377,25 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         <!-- Hero Text & Fonts -->
         <div class="card" style="margin-bottom:20px">
           <div class="card-title">✍️ Hero Text &amp; Fonts</div>
+
+          <!-- Language tabs -->
+          <div style="display:flex;gap:6px;margin-bottom:16px">
+            <button id="htab_ku" class="btn btn-primary btn-sm" onclick="switchHeroLangTab('ku')">🇮🇶 Kurdish</button>
+            <button id="htab_ar" class="btn btn-secondary btn-sm" onclick="switchHeroLangTab('ar')">🇸🇦 Arabic</button>
+            <button id="htab_en" class="btn btn-secondary btn-sm" onclick="switchHeroLangTab('en')">🇬🇧 English</button>
+          </div>
+
+          <!-- KU panel -->
+          <div id="htabpanel_ku">
           <div class="card-grid cols-2">
             <div>
               <div class="field-group">
-                <label class="field-label">Badge Text</label>
-                <input class="field-input" id="heroBadge" placeholder="✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت" style="direction:rtl">
+                <label class="field-label">🇮🇶 Badge Text</label>
+                <input class="field-input" id="heroBadge" placeholder="✨ کۆلیکشنی نوێی" style="direction:rtl">
               </div>
               <div class="field-group">
-                <label class="field-label">Headline (HTML allowed e.g. &lt;span&gt;word&lt;/span&gt;)</label>
-                <input class="field-input" id="heroH1" placeholder="جوانترین پۆشاک بۆ منداڵەکەت" style="direction:rtl">
+                <label class="field-label">Headline</label>
+                <input class="field-input" id="heroH1" placeholder="جوانترین ۾ۆشاک" style="direction:rtl">
               </div>
               <div class="field-group">
                 <label class="field-label">Description</label>
@@ -1393,11 +1403,11 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               </div>
               <div class="field-group">
                 <label class="field-label">Button Text</label>
-                <input class="field-input" id="heroCta" placeholder="بگەڕێ بۆ بەرهەمەکان ←" style="direction:rtl">
+                <input class="field-input" id="heroCta" placeholder="بگەڕێ بۆ بەرۇەمەکان" style="direction:rtl">
               </div>
               <div class="field-group">
                 <label class="field-label">Button Links to Category</label>
-                <select class="field-select" id="heroCtaCat"><option value="all">all — هەمووی</option></select>
+                <select class="field-select" id="heroCtaCat"><option value="all">all — ۇەمووۊ</option></select>
               </div>
             </div>
             <div>
@@ -1406,18 +1416,73 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                 <input class="field-input" id="heroH1Size" placeholder="4rem">
               </div>
               <div class="field-group">
-                <label class="field-label">Headline Line Height (e.g. 1.1)</label>
+                <label class="field-label">Headline Line Height</label>
                 <input class="field-input" id="heroH1LH" placeholder="1.1">
               </div>
               <div class="field-group">
-                <label class="field-label">Description Font Size (e.g. 1.2rem)</label>
+                <label class="field-label">Description Font Size</label>
                 <input class="field-input" id="heroDescSize" placeholder="1.2rem">
               </div>
               <div class="field-group">
-                <label class="field-label">Description Line Height (e.g. 1.8)</label>
+                <label class="field-label">Description Line Height</label>
                 <input class="field-input" id="heroDescLH" placeholder="1.8">
               </div>
             </div>
+          </div>
+          </div>
+
+          <!-- AR panel -->
+          <div id="htabpanel_ar" style="display:none">
+          <div class="card-grid cols-2">
+            <div>
+              <div class="field-group">
+                <label class="field-label">🇸🇦 Badge Text — Arabic</label>
+                <input class="field-input" id="heroBadgeAR" style="direction:rtl" placeholder="✨ مجموعة جديدة 2026">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Headline — Arabic</label>
+                <input class="field-input" id="heroH1AR" style="direction:rtl" placeholder="أجمل الملابس لطفلك">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description — Arabic</label>
+                <textarea class="field-textarea" id="heroDescAR" rows="3" style="direction:rtl"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Button Text — Arabic</label>
+                <input class="field-input" id="heroCtaAR" style="direction:rtl" placeholder="تصفح المنتجات ←">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div style="font-size:11px;color:var(--text3);text-align:center;padding:20px;border:1px dashed var(--border);border-radius:8px;line-height:1.9">🖥️ Font size &amp; line height<br>are shared across all languages.<br>Edit them in the Kurdish tab.</div>
+            </div>
+          </div>
+          </div>
+
+          <!-- EN panel -->
+          <div id="htabpanel_en" style="display:none">
+          <div class="card-grid cols-2">
+            <div>
+              <div class="field-group">
+                <label class="field-label">🇬🇧 Badge Text — English</label>
+                <input class="field-input" id="heroBadgeEN" placeholder="✨ New Collection 2026">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Headline — English</label>
+                <input class="field-input" id="heroH1EN" placeholder="The Best Kids Fashion">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Description — English</label>
+                <textarea class="field-textarea" id="heroDescEN" rows="3"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Button Text — English</label>
+                <input class="field-input" id="heroCtaEN" placeholder="Browse Products →">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div style="font-size:11px;color:var(--text3);text-align:center;padding:20px;border:1px dashed var(--border);border-radius:8px;line-height:1.9">🖥️ Font size &amp; line height<br>are shared across all languages.<br>Edit them in the Kurdish tab.</div>
+            </div>
+          </div>
           </div>
           <!-- Hero Card Size Controls -->
           <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
@@ -1454,6 +1519,31 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                   <div class="range-row">
                     <input type="range" min="80" max="300" step="2" value="140" id="heroCardHMob" oninput="document.getElementById('heroCardHMobVal').textContent=this.value+'px'">
                     <span class="range-val" id="heroCardHMobVal">140px</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gap between cards -->
+            <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:10px;font-weight:900;color:#a855f7;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">🗂️ Gap Between Hero Cards</div>
+              <div class="card-grid cols-2" style="gap:16px">
+                <div>
+                  <div class="field-group">
+                    <label class="field-label">Card Gap — Desktop (px)</label>
+                    <div class="range-row">
+                      <input type="range" min="0" max="60" step="2" value="16" id="heroCardGapHero" oninput="document.getElementById('heroCardGapHeroVal').textContent=this.value+'px'">
+                      <span class="range-val" id="heroCardGapHeroVal">16px</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="field-group">
+                    <label class="field-label">Card Gap — Mobile (px)</label>
+                    <div class="range-row">
+                      <input type="range" min="0" max="40" step="2" value="8" id="heroCardGapHeroMob" oninput="document.getElementById('heroCardGapHeroMobVal').textContent=this.value+'px'">
+                      <span class="range-val" id="heroCardGapHeroMobVal">8px</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6502,6 +6592,19 @@ var _heroText  = {};
 
 // ══════════════════════════════════════════════════════════════
 // HERO ADMIN — buildHeroCardsEditor, saveHeroCards, saveHeroText
+function switchHeroLangTab(lang) {
+  ['ku','ar','en'].forEach(function(l) {
+    var panel = document.getElementById('htabpanel_' + l);
+    var btn   = document.getElementById('htab_' + l);
+    if(panel) panel.style.display = (l === lang) ? '' : 'none';
+    if(btn) {
+      btn.className = (l === lang)
+        ? 'btn btn-primary btn-sm'
+        : 'btn btn-secondary btn-sm';
+    }
+  });
+}
+
 // ══════════════════════════════════════════════════════════════
 
 var _heroCards = [];
@@ -6535,15 +6638,20 @@ function buildHeroCardsEditor(html) {
   }
 
   // ── Populate text fields ──────────────────────────────────
+  // Populate all text fields from _heroText
   var tmap = {heroBadge:'badge',heroH1:'h1',heroDesc2:'desc',heroCta:'cta',
               heroCtaCat:'ctaCat',heroH1Size:'h1Size',heroH1LH:'h1LH',
-              heroDescSize:'descSize',heroDescLH:'descLH'};
+              heroDescSize:'descSize',heroDescLH:'descLH',
+              heroBadgeAR:'badgeAR',heroH1AR:'h1AR',heroDescAR:'descAR',heroCtaAR:'ctaAR',
+              heroBadgeEN:'badgeEN',heroH1EN:'h1EN',heroDescEN:'descEN',heroCtaEN:'ctaEN'};
   Object.keys(tmap).forEach(function(id) {
     var el = document.getElementById(id);
     if(el && _heroText[tmap[id]] !== undefined) el.value = _heroText[tmap[id]];
   });
-  // Prefill card size sliders
-  var sizeMap = {heroCardWDesk:'cardWDesk',heroCardHDesk:'cardHDesk',heroCardWMob:'cardWMob',heroCardHMob:'cardHMob'};
+  // Prefill card size + gap sliders
+  var sizeMap = {heroCardWDesk:'cardWDesk',heroCardHDesk:'cardHDesk',
+                 heroCardWMob:'cardWMob',heroCardHMob:'cardHMob',
+                 heroCardGapHero:'cardGapDesk',heroCardGapHeroMob:'cardGapMob'};
   Object.keys(sizeMap).forEach(function(id) {
     var el = document.getElementById(id);
     var valEl = document.getElementById(id+'Val');
@@ -6729,6 +6837,7 @@ async function saveHeroCards() {
 
 async function saveHeroText() {
   var html = await fetchCurrentHTML(); if(!html) return;
+  // Kurdish
   _heroText.badge    = (document.getElementById('heroBadge')   ||{value:''}).value;
   _heroText.h1       = (document.getElementById('heroH1')      ||{value:''}).value;
   _heroText.desc     = (document.getElementById('heroDesc2')   ||{value:''}).value;
@@ -6738,11 +6847,24 @@ async function saveHeroText() {
   _heroText.h1LH     = (document.getElementById('heroH1LH')    ||{value:'1.1'}).value   || '1.1';
   _heroText.descSize = (document.getElementById('heroDescSize')||{value:'1.2rem'}).value|| '1.2rem';
   _heroText.descLH   = (document.getElementById('heroDescLH')  ||{value:'1.8'}).value   || '1.8';
-  // Save card sizes into HERO_TEXT
-  _heroText.cardWDesk = (document.getElementById('heroCardWDesk')||{value:'200'}).value + 'px';
-  _heroText.cardHDesk = (document.getElementById('heroCardHDesk')||{value:'280'}).value + 'px';
-  _heroText.cardWMob  = (document.getElementById('heroCardWMob') ||{value:'110'}).value + 'px';
-  _heroText.cardHMob  = (document.getElementById('heroCardHMob') ||{value:'140'}).value + 'px';
+  // Arabic
+  _heroText.badgeAR  = (document.getElementById('heroBadgeAR') ||{value:''}).value;
+  _heroText.h1AR     = (document.getElementById('heroH1AR')    ||{value:''}).value;
+  _heroText.descAR   = (document.getElementById('heroDescAR')  ||{value:''}).value;
+  _heroText.ctaAR    = (document.getElementById('heroCtaAR')   ||{value:''}).value;
+  // English
+  _heroText.badgeEN  = (document.getElementById('heroBadgeEN') ||{value:''}).value;
+  _heroText.h1EN     = (document.getElementById('heroH1EN')    ||{value:''}).value;
+  _heroText.descEN   = (document.getElementById('heroDescEN')  ||{value:''}).value;
+  _heroText.ctaEN    = (document.getElementById('heroCtaEN')   ||{value:''}).value;
+  // Card size
+  _heroText.cardWDesk  = (document.getElementById('heroCardWDesk')   ||{value:'200'}).value + 'px';
+  _heroText.cardHDesk  = (document.getElementById('heroCardHDesk')   ||{value:'280'}).value + 'px';
+  _heroText.cardWMob   = (document.getElementById('heroCardWMob')    ||{value:'110'}).value + 'px';
+  _heroText.cardHMob   = (document.getElementById('heroCardHMob')    ||{value:'140'}).value + 'px';
+  // Card gap
+  _heroText.cardGapDesk = (document.getElementById('heroCardGapHero')   ||{value:'16'}).value + 'px';
+  _heroText.cardGapMob  = (document.getElementById('heroCardGapHeroMob')||{value:'8'}).value  + 'px';
   var newVar = 'var HERO_TEXT = ' + JSON.stringify(_heroText) + ';';
   var newHTML = html.replace(/var HERO_TEXT\s*=\s*\{[\s\S]*?\};/, newVar);
   if(newHTML === html) { toast('HERO_TEXT not found in index.html', 'error'); return; }
@@ -6755,8 +6877,11 @@ async function saveHeroText() {
   newHTML = newHTML.replace(/(\.hero-img\{[^}]*)width:[^;]+/, '$1width:' + cwd);
   newHTML = newHTML.replace(/(\.hero-img\{[^}]*)height:[^;]+/, '$1height:' + chd);
   // Always inject/replace admin-hero-card-size block
+  var cgd = _heroText.cardGapDesk || '16px';
+  var cgm = _heroText.cardGapMob  || '8px';
   var cardCSS = '.hero-card,.hero-img{width:' + cwd + ';height:' + chd + '}' +
-    '@media(max-width:768px){.hero-card,.hero-img{width:' + cwm + ';height:' + chm + '}}';
+    '.hero-cards,.hero-images,.hero-grid{gap:' + cgd + '}' +
+    '@media(max-width:768px){.hero-card,.hero-img{width:' + cwm + ';height:' + chm + '}.hero-cards,.hero-images,.hero-grid{gap:' + cgm + '}}';
   if(newHTML.includes('/* admin-hero-card-size */')) {
     newHTML = newHTML.replace(/\/\* admin-hero-card-size \*\/[\s\S]*?\/\* end-admin-hero-card-size \*\//, '/* admin-hero-card-size */' + cardCSS + '/* end-admin-hero-card-size */');
   } else {
