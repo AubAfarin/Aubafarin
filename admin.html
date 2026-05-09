@@ -1957,10 +1957,14 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
             <!-- Google Drive panel -->
             <div id="storagePanel_gdrive" style="display:none;background:var(--surface3);border-radius:8px;padding:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Enter your Google Apps Script URL once and click Save:</div>
+              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Google Apps Script URL:</div>
               <input class="field-input" id="gdriveUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="font-size:11px;width:100%;margin-bottom:8px">
               <button class="btn btn-primary" onclick="saveStorageUrl('gdrive')" style="width:100%;font-weight:900;font-size:12px">💾 Save Google Drive URL</button>
               <div style="font-size:10px;color:var(--text3);margin-top:6px">After saving, just upload — images go to Google Drive automatically.</div>
+              <div style="margin-top:10px;padding:8px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:6px;font-size:10px;color:#fbbf24;line-height:1.6">
+                ⚠️ <strong>Apps Script must use JSON body.</strong> Your <code>doPost</code> must read <code>e.postData.contents</code> not FormData.<br>
+                <span style="color:var(--text3)">function doPost(e) {<br>&nbsp;&nbsp;var p = JSON.parse(e.postData.contents);<br>&nbsp;&nbsp;var blob = Utilities.newBlob(Utilities.base64Decode(p.data), p.mimeType, p.fileName);<br>&nbsp;&nbsp;var file = DriveApp.getFolderById('FOLDER_ID').createFile(blob);<br>&nbsp;&nbsp;file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);<br>&nbsp;&nbsp;return ContentService.createTextOutput(JSON.stringify({id:file.getId()})).setMimeType(ContentService.MimeType.JSON);<br>}</span>
+              </div>
             </div>
 
             <!-- Cloudinary panel -->
@@ -5930,7 +5934,8 @@ async function loadImgLibrary() {
         });
 
     } else if(pref === 'gdrive') {
-      throw new Error('Google Drive library browsing is not supported — use the URL tab to paste Drive links directly.');
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:12px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.6">📂 <strong>Google Drive library browsing is not available.</strong><br>Switch to the <strong>🔗 URL tab</strong> and paste your Google Drive image link directly.<br><span style="font-size:10px;color:var(--text3)">Format: https://drive.google.com/uc?export=view&id=FILE_ID</span></div>';
+      return;
 
     } else {
       // GitHub (default)
