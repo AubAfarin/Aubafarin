@@ -578,6 +578,8 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           </div>
           <div class="card">
             <div class="card-title" data-card-al="cardTypography">📐 Typography</div>
+
+            <!-- Font family -->
             <div class="field-group">
               <label class="field-label">Body Font Family</label>
               <select class="field-select" id="fontFamily">
@@ -586,20 +588,74 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                 <option value="'Rubik', sans-serif">Rubik</option>
               </select>
             </div>
+
+            <!-- DESKTOP section -->
+            <div style="margin:16px 0 8px;padding:8px 12px;background:rgba(59,130,246,0.08);border-left:3px solid var(--brand);border-radius:0 8px 8px 0;font-size:10px;font-weight:900;color:var(--brand);text-transform:uppercase;letter-spacing:1px">🖥️ Desktop</div>
+
             <div class="field-group">
-              <label class="field-label">Hero Title Size (rem)</label>
+              <label class="field-label">Hero Title Size — Desktop (rem)</label>
               <div class="range-row">
-                <input type="range" min="1.5" max="5" step="0.1" value="2.5" id="heroFontSize" oninput="document.getElementById('heroFontSizeVal').textContent=this.value+'rem'">
+                <input type="range" min="1.5" max="6" step="0.1" value="2.5" id="heroFontSize" oninput="document.getElementById('heroFontSizeVal').textContent=this.value+'rem'">
                 <span class="range-val" id="heroFontSizeVal">2.5rem</span>
               </div>
             </div>
             <div class="field-group">
-              <label class="field-label">Body Line Height</label>
+              <label class="field-label">Body Font Size — Desktop (px)</label>
               <div class="range-row">
-                <input type="range" min="1.2" max="2.2" step="0.05" value="1.7" id="lineHeight" oninput="document.getElementById('lineHeightVal').textContent=this.value">
+                <input type="range" min="10" max="22" step="1" value="16" id="bodyFontSizeDesk" oninput="document.getElementById('bodyFontSizeDeskVal').textContent=this.value+'px'">
+                <span class="range-val" id="bodyFontSizeDeskVal">16px</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Body Line Height — Desktop</label>
+              <div class="range-row">
+                <input type="range" min="1.2" max="2.5" step="0.05" value="1.7" id="lineHeight" oninput="document.getElementById('lineHeightVal').textContent=this.value">
                 <span class="range-val" id="lineHeightVal">1.7</span>
               </div>
             </div>
+            <div class="field-group">
+              <label class="field-label">Hero Description Font Size — Desktop (px)</label>
+              <div class="range-row">
+                <input type="range" min="10" max="24" step="1" value="16" id="heroDescFS" oninput="document.getElementById('heroDescFSVal').textContent=this.value+'px'">
+                <span class="range-val" id="heroDescFSVal">16px</span>
+              </div>
+            </div>
+
+            <!-- MOBILE section -->
+            <div style="margin:16px 0 8px;padding:8px 12px;background:rgba(16,185,129,0.08);border-left:3px solid #10b981;border-radius:0 8px 8px 0;font-size:10px;font-weight:900;color:#10b981;text-transform:uppercase;letter-spacing:1px">📱 Mobile</div>
+
+            <div class="field-group">
+              <label class="field-label">Hero Title Size — Mobile (rem)</label>
+              <div class="range-row">
+                <input type="range" min="1" max="4" step="0.1" value="1.8" id="heroFontSizeMob" oninput="document.getElementById('heroFontSizeMobVal').textContent=this.value+'rem'">
+                <span class="range-val" id="heroFontSizeMobVal">1.8rem</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Body Font Size — Mobile (px)</label>
+              <div class="range-row">
+                <input type="range" min="10" max="20" step="1" value="14" id="bodyFontSizeMob" oninput="document.getElementById('bodyFontSizeMobVal').textContent=this.value+'px'">
+                <span class="range-val" id="bodyFontSizeMobVal">14px</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Body Line Height — Mobile</label>
+              <div class="range-row">
+                <input type="range" min="1.2" max="2.5" step="0.05" value="1.6" id="lineHeightMob" oninput="document.getElementById('lineHeightMobVal').textContent=this.value">
+                <span class="range-val" id="lineHeightMobVal">1.6</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Description Font Size — Mobile (px)</label>
+              <div class="range-row">
+                <input type="range" min="10" max="20" step="1" value="13" id="heroDescFSMob" oninput="document.getElementById('heroDescFSMobVal').textContent=this.value+'px'">
+                <span class="range-val" id="heroDescFSMobVal">13px</span>
+              </div>
+            </div>
+
+            <!-- Shared -->
+            <div style="margin:16px 0 8px;padding:8px 12px;background:rgba(245,158,11,0.08);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;font-size:10px;font-weight:900;color:#f59e0b;text-transform:uppercase;letter-spacing:1px">⚙️ Shared (All Screens)</div>
+
             <div class="field-group">
               <label class="field-label">Letter Spacing (px)</label>
               <div class="range-row">
@@ -628,14 +684,26 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                 <span class="range-val" id="catLabelFSVal">10px</span>
               </div>
             </div>
+
+            <!-- Hero card gap -->
+            <div style="margin:16px 0 8px;padding:8px 12px;background:rgba(168,85,247,0.08);border-left:3px solid #a855f7;border-radius:0 8px 8px 0;font-size:10px;font-weight:900;color:#a855f7;text-transform:uppercase;letter-spacing:1px">🗂️ Hero Cards Spacing</div>
+
             <div class="field-group">
-              <label class="field-label">Hero Description Font Size (px)</label>
+              <label class="field-label">Hero Cards Gap — Desktop (px)</label>
               <div class="range-row">
-                <input type="range" min="10" max="20" step="1" value="16" id="heroDescFS" oninput="document.getElementById('heroDescFSVal').textContent=this.value+'px'">
-                <span class="range-val" id="heroDescFSVal">16px</span>
+                <input type="range" min="0" max="60" step="2" value="16" id="heroCardGapDesk" oninput="document.getElementById('heroCardGapDeskVal').textContent=this.value+'px'">
+                <span class="range-val" id="heroCardGapDeskVal">16px</span>
               </div>
             </div>
             <div class="field-group">
+              <label class="field-label">Hero Cards Gap — Mobile (px)</label>
+              <div class="range-row">
+                <input type="range" min="0" max="40" step="2" value="10" id="heroCardGapMob" oninput="document.getElementById('heroCardGapMobVal').textContent=this.value+'px'">
+                <span class="range-val" id="heroCardGapMobVal">10px</span>
+              </div>
+            </div>
+
+            <div class="field-group" style="margin-top:16px">
               <label class="field-label">Custom @font-face CSS</label>
               <textarea class="field-textarea" id="fontFaceCSS" placeholder="Paste @font-face rules here..."></textarea>
             </div>
@@ -1351,7 +1419,48 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               </div>
             </div>
           </div>
-          <button class="btn btn-primary" style="margin-top:12px;width:100%;font-size:13px" onclick="saveHeroText()">💾 Save &amp; Push Hero Text &amp; Fonts</button>
+          <!-- Hero Card Size Controls -->
+          <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">🖼️ Hero Image Card Size</div>
+            <div class="card-grid cols-2" style="gap:16px">
+              <div>
+                <div style="margin-bottom:10px;padding:6px 10px;background:rgba(59,130,246,0.08);border-left:3px solid var(--brand);border-radius:0 6px 6px 0;font-size:10px;font-weight:900;color:var(--brand);text-transform:uppercase">🖥️ Desktop</div>
+                <div class="field-group">
+                  <label class="field-label">Card Width — Desktop (px)</label>
+                  <div class="range-row">
+                    <input type="range" min="80" max="400" step="4" value="200" id="heroCardWDesk" oninput="document.getElementById('heroCardWDeskVal').textContent=this.value+'px'">
+                    <span class="range-val" id="heroCardWDeskVal">200px</span>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Card Height — Desktop (px)</label>
+                  <div class="range-row">
+                    <input type="range" min="100" max="600" step="4" value="280" id="heroCardHDesk" oninput="document.getElementById('heroCardHDeskVal').textContent=this.value+'px'">
+                    <span class="range-val" id="heroCardHDeskVal">280px</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style="margin-bottom:10px;padding:6px 10px;background:rgba(16,185,129,0.08);border-left:3px solid #10b981;border-radius:0 6px 6px 0;font-size:10px;font-weight:900;color:#10b981;text-transform:uppercase">📱 Mobile</div>
+                <div class="field-group">
+                  <label class="field-label">Card Width — Mobile (px)</label>
+                  <div class="range-row">
+                    <input type="range" min="60" max="200" step="2" value="110" id="heroCardWMob" oninput="document.getElementById('heroCardWMobVal').textContent=this.value+'px'">
+                    <span class="range-val" id="heroCardWMobVal">110px</span>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Card Height — Mobile (px)</label>
+                  <div class="range-row">
+                    <input type="range" min="80" max="300" step="2" value="140" id="heroCardHMob" oninput="document.getElementById('heroCardHMobVal').textContent=this.value+'px'">
+                    <span class="range-val" id="heroCardHMobVal">140px</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:16px;width:100%;font-size:13px" onclick="saveHeroText()">💾 Save &amp; Push Hero Text, Fonts &amp; Card Size</button>
         </div>
       </div>
 
@@ -3122,9 +3231,53 @@ async function saveDesign() {
   // Category label font size
   var clfs = document.getElementById('catLabelFS') ? document.getElementById('catLabelFS').value + 'px' : '';
   if(clfs) newHTML = newHTML.replace(/\.cat-label\{font-size:[^;]+;/, '.cat-label{font-size:' + clfs + ';');
-  // Hero description font size
+  // Hero description font size - Desktop
   var hdfs = document.getElementById('heroDescFS') ? document.getElementById('heroDescFS').value + 'px' : '';
   if(hdfs) newHTML = newHTML.replace(/\.hero-desc\{([^}]*)\}/, function(m){ return m.replace(/font-size:[^;]+/, 'font-size:' + hdfs); });
+
+  // Body font size - Desktop
+  var bfsd = document.getElementById('bodyFontSizeDesk') ? document.getElementById('bodyFontSizeDesk').value + 'px' : '';
+  if(bfsd) {
+    if(/body\{[^}]*font-size:/.test(newHTML)) {
+      newHTML = newHTML.replace(/body\{([^}]*)\}/, function(m){ return m.replace(/font-size:[^;]+/, 'font-size:' + bfsd); });
+    } else {
+      newHTML = newHTML.replace(/body\{/, 'body{font-size:' + bfsd + ';');
+    }
+  }
+
+  // Mobile typography overrides
+  var hfsMob  = document.getElementById('heroFontSizeMob')  ? document.getElementById('heroFontSizeMob').value  + 'rem' : '';
+  var bfsMob  = document.getElementById('bodyFontSizeMob')  ? document.getElementById('bodyFontSizeMob').value  + 'px'  : '';
+  var lhMob   = document.getElementById('lineHeightMob')    ? document.getElementById('lineHeightMob').value            : '';
+  var hdfsMob = document.getElementById('heroDescFSMob')    ? document.getElementById('heroDescFSMob').value   + 'px'  : '';
+  if(hfsMob || bfsMob || lhMob || hdfsMob) {
+    var mobCSS = '@media(max-width:768px){' +
+      (bfsMob ? 'body{font-size:' + bfsMob + '!important;' + (lhMob ? 'line-height:' + lhMob + '!important' : '') + '}' : '') +
+      (hfsMob  ? '.hero-title{font-size:' + hfsMob  + '!important}' : '') +
+      (hdfsMob ? '.hero-desc{font-size:'  + hdfsMob + '!important}' : '') +
+    '}';
+    if(newHTML.includes('/* admin-mobile-typo */')) {
+      newHTML = newHTML.replace(/\/\* admin-mobile-typo \*\/[\s\S]*?\/\* end-admin-mobile-typo \*\//, '/* admin-mobile-typo */' + mobCSS + '/* end-admin-mobile-typo */');
+    } else {
+      newHTML = newHTML.replace('</style>', '/* admin-mobile-typo */' + mobCSS + '/* end-admin-mobile-typo */\n</style>');
+    }
+  }
+
+  // Hero card gap - Desktop + Mobile
+  var hcgDesk = document.getElementById('heroCardGapDesk') ? document.getElementById('heroCardGapDesk').value + 'px' : '';
+  var hcgMob  = document.getElementById('heroCardGapMob')  ? document.getElementById('heroCardGapMob').value  + 'px' : '';
+  if(hcgDesk) {
+    newHTML = newHTML.replace(/(\.hero-cards\{[^}]*)gap:[^;]+/, '$1gap:' + hcgDesk);
+    newHTML = newHTML.replace(/(\.hero-images\{[^}]*)gap:[^;]+/, '$1gap:' + hcgDesk);
+    newHTML = newHTML.replace(/(\.hero-grid\{[^}]*)gap:[^;]+/, '$1gap:' + hcgDesk);
+    var gapCSS = '.hero-cards,.hero-images,.hero-grid{gap:' + hcgDesk + '}';
+    if(hcgMob) gapCSS += '@media(max-width:768px){.hero-cards,.hero-images,.hero-grid{gap:' + hcgMob + '}}';
+    if(newHTML.includes('/* admin-hero-gap */')) {
+      newHTML = newHTML.replace(/\/\* admin-hero-gap \*\/[\s\S]*?\/\* end-admin-hero-gap \*\//, '/* admin-hero-gap */' + gapCSS + '/* end-admin-hero-gap */');
+    } else {
+      newHTML = newHTML.replace('</style>', '/* admin-hero-gap */' + gapCSS + '/* end-admin-hero-gap */\n</style>');
+    }
+  }
 
   await pushHTMLToGitHub(newHTML, 'Admin: Update design/colors/typography');
 }
@@ -6369,7 +6522,17 @@ function buildHeroCardsEditor(html) {
 
   // ── Parse HERO_TEXT ───────────────────────────────────────
   var mt = html.match(/var HERO_TEXT\s*=\s*(\{[\s\S]*?\});/);
-  if(mt) { try { _heroText = JSON.parse(mt[1]); } catch(e) { _heroText = {}; } }
+  if(mt) {
+    try { _heroText = JSON.parse(mt[1]); } catch(e) {
+      try {
+        var _ht = mt[1]
+          .replace(/'((?:[^'\\]|\\.)*)'/g, function(_,s){ return '"'+s.replace(/\\'/, "'").replace(/"/g,'\\"')+'"'; })
+          .replace(/([{,\n\r]\s*)([A-Za-z_$][A-Za-z0-9_$]*)(\s*:)/g,'$1"$2"$3')
+          .replace(/,(\s*[}\]])/g,'$1');
+        _heroText = JSON.parse(_ht);
+      } catch(e2) { _heroText = {}; }
+    }
+  }
 
   // ── Populate text fields ──────────────────────────────────
   var tmap = {heroBadge:'badge',heroH1:'h1',heroDesc2:'desc',heroCta:'cta',
@@ -6378,6 +6541,14 @@ function buildHeroCardsEditor(html) {
   Object.keys(tmap).forEach(function(id) {
     var el = document.getElementById(id);
     if(el && _heroText[tmap[id]] !== undefined) el.value = _heroText[tmap[id]];
+  });
+  // Prefill card size sliders
+  var sizeMap = {heroCardWDesk:'cardWDesk',heroCardHDesk:'cardHDesk',heroCardWMob:'cardWMob',heroCardHMob:'cardHMob'};
+  Object.keys(sizeMap).forEach(function(id) {
+    var el = document.getElementById(id);
+    var valEl = document.getElementById(id+'Val');
+    var saved = _heroText[sizeMap[id]];
+    if(el && saved) { el.value = parseInt(saved); if(valEl) valEl.textContent = parseInt(saved)+'px'; }
   });
 
   // ── Populate ctaCat dropdown ──────────────────────────────
@@ -6567,10 +6738,31 @@ async function saveHeroText() {
   _heroText.h1LH     = (document.getElementById('heroH1LH')    ||{value:'1.1'}).value   || '1.1';
   _heroText.descSize = (document.getElementById('heroDescSize')||{value:'1.2rem'}).value|| '1.2rem';
   _heroText.descLH   = (document.getElementById('heroDescLH')  ||{value:'1.8'}).value   || '1.8';
+  // Save card sizes into HERO_TEXT
+  _heroText.cardWDesk = (document.getElementById('heroCardWDesk')||{value:'200'}).value + 'px';
+  _heroText.cardHDesk = (document.getElementById('heroCardHDesk')||{value:'280'}).value + 'px';
+  _heroText.cardWMob  = (document.getElementById('heroCardWMob') ||{value:'110'}).value + 'px';
+  _heroText.cardHMob  = (document.getElementById('heroCardHMob') ||{value:'140'}).value + 'px';
   var newVar = 'var HERO_TEXT = ' + JSON.stringify(_heroText) + ';';
   var newHTML = html.replace(/var HERO_TEXT\s*=\s*\{[\s\S]*?\};/, newVar);
   if(newHTML === html) { toast('HERO_TEXT not found in index.html', 'error'); return; }
-  await pushHTMLToGitHub(newHTML, 'Admin: update hero text & fonts');
+  // Inject/replace hero card size CSS
+  var cwd = _heroText.cardWDesk; var chd = _heroText.cardHDesk;
+  var cwm = _heroText.cardWMob;  var chm = _heroText.cardHMob;
+  // Try to patch existing class rules first
+  newHTML = newHTML.replace(/(\.hero-card\{[^}]*)width:[^;]+/, '$1width:' + cwd);
+  newHTML = newHTML.replace(/(\.hero-card\{[^}]*)height:[^;]+/, '$1height:' + chd);
+  newHTML = newHTML.replace(/(\.hero-img\{[^}]*)width:[^;]+/, '$1width:' + cwd);
+  newHTML = newHTML.replace(/(\.hero-img\{[^}]*)height:[^;]+/, '$1height:' + chd);
+  // Always inject/replace admin-hero-card-size block
+  var cardCSS = '.hero-card,.hero-img{width:' + cwd + ';height:' + chd + '}' +
+    '@media(max-width:768px){.hero-card,.hero-img{width:' + cwm + ';height:' + chm + '}}';
+  if(newHTML.includes('/* admin-hero-card-size */')) {
+    newHTML = newHTML.replace(/\/\* admin-hero-card-size \*\/[\s\S]*?\/\* end-admin-hero-card-size \*\//, '/* admin-hero-card-size */' + cardCSS + '/* end-admin-hero-card-size */');
+  } else {
+    newHTML = newHTML.replace('</style>', '/* admin-hero-card-size */' + cardCSS + '/* end-admin-hero-card-size */\n</style>');
+  }
+  await pushHTMLToGitHub(newHTML, 'Admin: update hero text, fonts & card size');
 }
 
 </script>
