@@ -2012,7 +2012,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
             <!-- Pane 3: Library -->
             <div id="addImgPane3" style="padding:10px;display:none">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="loadImgLibrary()" style="width:100%;margin-bottom:8px">🔍 Scan Repo for Images</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="loadImgLibrary()" style="width:100%;margin-bottom:8px">🔍 Scan for Images</button>
               <div id="imgLibraryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:200px;overflow-y:auto">
                 <div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center;padding:10px">Click Scan to browse images</div>
               </div>
@@ -5907,26 +5907,57 @@ function handleImgDrop(e) {
 async function loadImgLibrary() {
   var grid = document.getElementById('imgLibraryGrid');
   if(!grid) return;
-  if(!GH.token || !GH.repo) { grid.innerHTML='<div style="color:var(--red);font-size:11px;grid-column:1/-1">Connect GitHub first</div>'; return; }
-  grid.innerHTML = '<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">⏳ Scanning...</div>';
+  var pref = localStorage.getItem('aubStoragePref') || 'github';
+  grid.innerHTML = '<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">⏳ Scanning ' + pref + '...</div>';
+
   try {
-    var res = await fetch('https://api.github.com/repos/' + GH.repo + '/git/trees/HEAD?recursive=1',
-      {headers:{'Authorization':'token ' + GH.token,'Accept':'application/vnd.github.v3+json'}});
-    var data = await res.json();
-    var imgs = (data.tree||[]).filter(function(f){ return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.path); });
-    if(!imgs.length){ grid.innerHTML='<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">No images found</div>'; return; }
-    // Build items using data attribute to avoid quote nesting
-    var html = imgs.map(function(f){
-      var url = 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + f.path;
-      var safeName = f.path.split('/').pop().substring(0,20);
-      var safeUrl = url.replace(/"/g,'&quot;');
+    var imgs = []; // [{url, name}]
+
+    if(pref === 'r2') {
+      // R2: call /list endpoint on the worker
+      var r2Url = localStorage.getItem('aubStorage_r2') || '';
+      if(!r2Url) throw new Error('R2 URL not saved. Go to 📦 Storage URLs → save R2 URL first.');
+      var endpoint = r2Url.replace(/\/+$/,'') + '/list';
+      var res = await fetch(endpoint);
+      if(!res.ok) throw new Error('R2 list failed: HTTP ' + res.status);
+      var data = await res.json();
+      var files = data.files || data.keys || data.objects || [];
+      imgs = files
+        .filter(function(f){ var n = typeof f==='string'?f:(f.key||f.name||''); return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(n); })
+        .map(function(f){
+          var n = typeof f==='string'?f:(f.key||f.name||'');
+          return {url: r2Url.replace(/\/+$/,'') + '/file/' + n, name: n.split('/').pop().substring(0,20)};
+        });
+
+    } else if(pref === 'gdrive') {
+      throw new Error('Google Drive library browsing is not supported — use the URL tab to paste Drive links directly.');
+
+    } else {
+      // GitHub (default)
+      if(!GH.token || !GH.repo) throw new Error('Connect GitHub first');
+      var res2 = await fetch('https://api.github.com/repos/' + GH.repo + '/git/trees/HEAD?recursive=1',
+        {headers:{'Authorization':'token ' + GH.token,'Accept':'application/vnd.github.v3+json'}});
+      var data2 = await res2.json();
+      imgs = (data2.tree||[])
+        .filter(function(f){ return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.path); })
+        .map(function(f){
+          return {
+            url: 'https://raw.githubusercontent.com/' + GH.repo + '/' + GH.branch + '/' + f.path,
+            name: f.path.split('/').pop().substring(0,20)
+          };
+        });
+    }
+
+    if(!imgs.length){ grid.innerHTML='<div style="color:var(--text3);font-size:11px;grid-column:1/-1;text-align:center">No images found in ' + pref + '</div>'; return; }
+
+    var html = imgs.map(function(item){
+      var safeUrl = item.url.replace(/"/g,'&quot;');
       return '<div data-imgurl="' + safeUrl + '" class="lib-img-item" style="cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid var(--border)">' +
         '<img src="' + safeUrl + '" style="width:100%;height:60px;object-fit:cover" loading="lazy">' +
-        '<div style="font-size:8px;color:var(--text3);padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + safeName + '</div>' +
+        '<div style="font-size:8px;color:var(--text3);padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + item.name + '</div>' +
       '</div>';
     }).join('');
     grid.innerHTML = html;
-    // Attach click handlers
     Array.from(grid.querySelectorAll('.lib-img-item')).forEach(function(el) {
       el.addEventListener('mouseover', function(){ this.style.borderColor='var(--brand)'; });
       el.addEventListener('mouseout',  function(){ this.style.borderColor='var(--border)'; });
@@ -6130,18 +6161,13 @@ async function uploadImgFile(file) {
   } else if(v === 'gdrive') {
     var gdUrl = localStorage.getItem('aubStorage_gdrive') || (document.getElementById('gdriveUrl')||{value:''}).value.trim();
     if(!gdUrl) throw new Error('Google Drive URL not saved yet. Select 📂 Google Drive → enter your Apps Script URL → click 💾 Save Google Drive URL');
+    // Send as plain JSON string body (no FormData) to avoid CORS preflight that Apps Script blocks
     var rawB64 = b64.replace(/^data:[^;]+;base64,/, '');
-    var bytes = atob(rawB64);
-    var arr = new Uint8Array(bytes.length);
-    for(var i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
-    var blob = new Blob([arr], {type:file.type});
-    var fd2 = new FormData();
-    fd2.append('file', blob, safeName);
-    fd2.append('mimeType', file.type);
-    fd2.append('fileName', safeName);
-    var gr = await fetch(gdUrl, {method:'POST', body:fd2});
+    var payload = JSON.stringify({data: rawB64, mimeType: file.type, fileName: safeName});
+    var gr = await fetch(gdUrl, {method:'POST', body: payload});
     if(!gr.ok) throw new Error('Google Drive upload failed: HTTP ' + gr.status);
-    var gd = await gr.json();
+    var gdText = await gr.text();
+    var gd; try { gd = JSON.parse(gdText); } catch(pe) { throw new Error('Google Drive bad response: ' + gdText.substring(0,120)); }
     if(gd.error) throw new Error('Google Drive: ' + gd.error);
     var fid = gd.id || gd.fileId;
     if(!fid) throw new Error('Google Drive: no file ID returned. Make sure the Apps Script is deployed as Web App with "Anyone" access.');
