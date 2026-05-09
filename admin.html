@@ -373,6 +373,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         <span class="nav-icon">🖼️</span><span class="nav-label">Media Vault</span>
       </div>
       <div class="nav-item" onclick="switchTab('store')" id="nav-store"><span class="nav-icon">⚙️</span><span class="nav-label">Store Settings</span></div>
+      <div class="nav-item" onclick="switchTab('storage'); loadStorageSettingsTab();" id="nav-storage"><span class="nav-icon">📦</span><span class="nav-label">Storage URLs</span></div>
       <div class="nav-item" onclick="switchTab('seo')" id="nav-seo">
         <span class="nav-icon">🔍</span><span class="nav-label">SEO Suite</span>
       </div>
@@ -1126,6 +1127,69 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         </div>
       </div>
 
+
+      <!-- STORAGE URLS TAB -->
+      <div class="tab-content" id="tab-storage">
+        <div class="page-header" style="padding-top:0;border:none;margin-bottom:20px">
+          <div>
+            <div class="page-title">📦 Storage URLs</div>
+            <div class="page-sub">Edit the saved upload destination URLs</div>
+          </div>
+        </div>
+
+        <div class="card" style="max-width:640px;margin:0 auto">
+
+          <!-- Google Drive -->
+          <div style="margin-bottom:24px">
+            <div style="font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📂 Google Drive Apps Script URL</div>
+            <div id="gdrive_current" style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;min-height:32px">Not saved yet</div>
+            <div style="display:flex;gap:8px">
+              <input class="field-input" id="st_gdriveUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="flex:1;font-size:12px">
+              <button class="btn btn-primary" onclick="saveStorageSettingUrl('gdrive')" style="white-space:nowrap;font-weight:900">💾 Save</button>
+              <button class="btn" onclick="clearStorageSettingUrl('gdrive')" style="white-space:nowrap;color:var(--red);border-color:var(--red);background:transparent" title="Clear saved URL">🗑️</button>
+            </div>
+            <div id="gdrive_status" style="font-size:11px;margin-top:6px;color:var(--green);display:none">✅ Saved!</div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:24px">
+
+          <!-- Cloudflare R2 -->
+          <div style="margin-bottom:24px">
+            <div style="font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">☁️ Cloudflare R2 Worker URL</div>
+            <div id="r2_current" style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;min-height:32px">Not saved yet</div>
+            <div style="display:flex;gap:8px">
+              <input class="field-input" id="st_r2Url" placeholder="https://aub-images-worker.afarin4business-fdf.workers.dev" style="flex:1;font-size:12px">
+              <button class="btn btn-primary" onclick="saveStorageSettingUrl('r2')" style="white-space:nowrap;font-weight:900">💾 Save</button>
+              <button class="btn" onclick="clearStorageSettingUrl('r2')" style="white-space:nowrap;color:var(--red);border-color:var(--red);background:transparent" title="Clear saved URL">🗑️</button>
+            </div>
+            <div id="r2_status" style="font-size:11px;margin-top:6px;color:var(--green);display:none">✅ Saved!</div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:24px">
+
+          <!-- Cloudinary -->
+          <div style="margin-bottom:24px">
+            <div style="font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🌥️ Cloudinary Upload URL</div>
+            <div id="cloudinary_current" style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;min-height:32px">Not saved yet</div>
+            <div style="display:flex;gap:8px">
+              <input class="field-input" id="st_cloudinaryUrl" placeholder="https://api.cloudinary.com/v1_1/YOUR_CLOUD/image/upload" style="flex:1;font-size:12px">
+              <button class="btn btn-primary" onclick="saveStorageSettingUrl('cloudinary')" style="white-space:nowrap;font-weight:900">💾 Save</button>
+              <button class="btn" onclick="clearStorageSettingUrl('cloudinary')" style="white-space:nowrap;color:var(--red);border-color:var(--red);background:transparent" title="Clear saved URL">🗑️</button>
+            </div>
+            <div id="cloudinary_status" style="font-size:11px;margin-top:6px;color:var(--green);display:none">✅ Saved!</div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:24px">
+
+          <!-- Current preference -->
+          <div>
+            <div style="font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✅ Active Upload Destination</div>
+            <div id="st_activePref" style="font-size:13px;font-weight:700;color:var(--brand);padding:10px;background:var(--surface3);border-radius:8px">Loading...</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:6px">Change it by selecting a radio button in Add Product → Upload Destination</div>
+          </div>
+
+        </div>
+      </div>
 
       <!-- ══════════ STORE SETTINGS TAB ══════════ -->
       <div class="tab-content" id="tab-store">
@@ -2312,6 +2376,9 @@ updateClock();
 function switchTab(tab) {
   if(tab === 'hero' && typeof loadStorageUrls === 'function') {
     setTimeout(loadStorageUrls, 50);
+  }
+  if(tab === 'storage' && typeof loadStorageSettingsTab === 'function') {
+    setTimeout(loadStorageSettingsTab, 50);
   }
   document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
@@ -5955,6 +6022,57 @@ function saveStorageUrl(type) {
   if(badge) badge.style.display = 'inline';
   var names = {r2:'Cloudflare R2', gdrive:'Google Drive', cloudinary:'Cloudinary'};
   toast('✅ ' + names[type] + ' URL saved! Now select it and upload — fully automatic.', 'success');
+}
+
+function loadStorageSettingsTab() {
+  var labels = {gdrive:'Google Drive', r2:'Cloudflare R2', cloudinary:'Cloudinary'};
+  ['gdrive','r2','cloudinary'].forEach(function(type) {
+    var saved = localStorage.getItem('aubStorage_' + type);
+    var el = document.getElementById(type + '_current');
+    if(el) el.textContent = saved || 'Not saved yet';
+    var inp = document.getElementById('st_' + type + 'Url');
+    if(inp && saved) inp.value = saved;
+  });
+  var pref = localStorage.getItem('aubStoragePref') || 'github';
+  var prefMap = {github:'🐙 GitHub Repo', r2:'☁️ Cloudflare R2', gdrive:'📂 Google Drive', cloudinary:'🌥️ Cloudinary', external:'🔗 External URL only'};
+  var el = document.getElementById('st_activePref');
+  if(el) el.textContent = prefMap[pref] || pref;
+}
+
+function saveStorageSettingUrl(type) {
+  var inp = document.getElementById('st_' + type + 'Url');
+  if(!inp || !inp.value.trim()) { toast('Enter the URL first', 'error'); return; }
+  var url = inp.value.trim();
+  if(!url.startsWith('http')) { toast('URL must start with https://', 'error'); return; }
+  localStorage.setItem('aubStorage_' + type, url);
+  // Also update the inline storage panels so they stay in sync
+  var fieldMap = {r2:'r2BucketUrl', gdrive:'gdriveUrl', cloudinary:'cloudinaryUrl'};
+  var inline = document.getElementById(fieldMap[type]);
+  if(inline) inline.value = url;
+  var badge = document.getElementById(type + 'StatusBadge');
+  if(badge) badge.style.display = 'inline';
+  // Update current display
+  var cur = document.getElementById(type + '_current');
+  if(cur) cur.textContent = url;
+  var st = document.getElementById(type + '_status');
+  if(st) { st.style.display = 'block'; setTimeout(function(){ st.style.display='none'; }, 3000); }
+  var names = {r2:'Cloudflare R2', gdrive:'Google Drive', cloudinary:'Cloudinary'};
+  toast('✅ ' + names[type] + ' URL saved!', 'success');
+}
+
+function clearStorageSettingUrl(type) {
+  if(!confirm('Clear saved ' + type + ' URL?')) return;
+  localStorage.removeItem('aubStorage_' + type);
+  var inp = document.getElementById('st_' + type + 'Url');
+  if(inp) inp.value = '';
+  var cur = document.getElementById(type + '_current');
+  if(cur) cur.textContent = 'Not saved yet';
+  var badge = document.getElementById(type + 'StatusBadge');
+  if(badge) badge.style.display = 'none';
+  var fieldMap = {r2:'r2BucketUrl', gdrive:'gdriveUrl', cloudinary:'cloudinaryUrl'};
+  var inline = document.getElementById(fieldMap[type]);
+  if(inline) inline.value = '';
+  toast(type + ' URL cleared', 'info');
 }
 
 function loadStorageUrls() {
