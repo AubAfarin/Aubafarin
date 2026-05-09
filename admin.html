@@ -2656,7 +2656,7 @@ function renderCatalogTable(filter) {
       'ondragleave="this.style.background=\'\''  +
       'ondrop="catRowDrop(event,' + realIdx + ');this.style.background=\'\''  +
       'style="cursor:grab">' +
-      '<td><img class="prod-thumb" src="' + (p.image||'') + '" loading="lazy" onerror="this.src=\'\'"></td>' +
+      '<td><img class="prod-thumb" src="' + driveThumb(p.image||'') + '" loading="lazy" onerror="this.src=\'\'"></td>' +
       '<td data-label="ID" style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--brand)">' + p.id + '</td>' +
       '<td style="font-size:10px;color:var(--text3);white-space:nowrap">' + (p.addedAt ? p.addedAt.slice(0,10) : '—') + '</td>' +
       '<td data-label="KU" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.name && p.name.ku ? p.name.ku : '—') + '</td>' +
@@ -3820,7 +3820,7 @@ async function scanMediaVault() {
       var name = f.path.split('/').pop();
       return '<div class="media-item" data-path="' + f.path + '">' +
         '<div class="media-check" onclick="toggleMediaSelect(this.parentElement)">✓</div>' +
-        '<img class="media-img" src="' + url + '" loading="lazy" onclick="toggleMediaSelect(this.parentElement)">' +
+        '<img class="media-img" src="' + driveThumb(url) + '" loading="lazy" onclick="toggleMediaSelect(this.parentElement)">' +
         '<div class="media-name" title="' + f.path + '">' + name + '</div>' +
         '<div style="display:flex;gap:4px;padding:4px">' +
           '<button class="btn btn-secondary btn-sm" style="flex:1;padding:3px 0;font-size:9px" onclick="useMediaAsProductImage(' + JSON.stringify(url) + ')">🖼️ Use</button>' +
@@ -5797,6 +5797,14 @@ function setAddImgTab(n) {
 }
 
 // ── Render the image gallery ───────────────────────────────
+// Convert Google Drive view URL -> thumbnail URL for <img> display
+function driveThumb(url) {
+  var m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(!m) m = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+  if(m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w400';
+  return url;
+}
+
 function renderProdImgGallery() {
   var grid = document.getElementById('prodImgGallery');
   var empty = document.getElementById('imgGalleryEmpty');
@@ -5818,7 +5826,7 @@ function renderProdImgGallery() {
     card.title = idx===0 ? 'Main image (first one)' : 'Click to set as main';
     card.onclick = function() { setMainImage(idx); };
     card.innerHTML =
-      '<img src="' + url + '" style="width:100%;height:80px;object-fit:cover;display:block" onerror="this.style.opacity=0.3">' +
+      '<img src="' + driveThumb(url) + '" style="width:100%;height:80px;object-fit:cover;display:block" onerror="this.style.opacity=0.3">' +
       (idx===0 ? '<div style="position:absolute;top:3px;left:3px;background:var(--brand);color:#fff;font-size:8px;font-weight:900;padding:2px 6px;border-radius:4px">MAIN</div>' : '') +
       '<div style="position:absolute;top:3px;right:3px;display:flex;gap:3px">' +
         (idx > 0 ? '<button onclick="event.stopPropagation();moveImg('+idx+',-1)" style="background:rgba(0,0,0,.6);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">←</button>' : '') +
