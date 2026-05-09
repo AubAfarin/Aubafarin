@@ -2855,10 +2855,27 @@ function buildTextsEditor(html) {
     return;
   }
   try {
+    // First try strict JSON (for files already saved by admin)
     T_DATA = JSON.parse(m[1]);
   } catch(e) {
-    document.getElementById('textsEditor').innerHTML = '<div style="color:var(--red);font-size:12px">Parse error: ' + e.message + '</div>';
-    return;
+    // Fallback: convert JS object literal syntax → valid JSON
+    // Handles: unquoted keys, single-quoted strings, trailing commas
+    try {
+      var jsStr = m[1];
+      // Step 1: replace single-quoted strings with double-quoted,
+      //         escaping any internal double quotes and preserving escaped single quotes
+      jsStr = jsStr.replace(/'((?:[^'\\]|\\.)*)'/g, function(_, inner) {
+        return '"' + inner.replace(/\\'/g, "'").replace(/"/g, '\\"') + '"';
+      });
+      // Step 2: quote unquoted object keys  (word chars before colon)
+      jsStr = jsStr.replace(/([{,\n\r]\s*)([A-Za-z_$][A-Za-z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+      // Step 3: remove trailing commas before } or ]
+      jsStr = jsStr.replace(/,(\s*[}\]])/g, '$1');
+      T_DATA = JSON.parse(jsStr);
+    } catch(e2) {
+      document.getElementById('textsEditor').innerHTML = '<div style="color:var(--red);font-size:12px">Parse error: ' + e2.message + '</div>';
+      return;
+    }
   }
 
   var langs = ['ku', 'ar', 'en'];
