@@ -6879,9 +6879,9 @@ async function saveHeroText() {
   // Always inject/replace admin-hero-card-size block
   var cgd = _heroText.cardGapDesk || '16px';
   var cgm = _heroText.cardGapMob  || '8px';
-  var cardCSS = '.hero-card,.hero-img{width:' + cwd + ';height:' + chd + '}' +
-    '.hero-cards,.hero-images,.hero-grid{gap:' + cgd + '}' +
-    '@media(max-width:768px){.hero-card,.hero-img{width:' + cwm + ';height:' + chm + '}.hero-cards,.hero-images,.hero-grid{gap:' + cgm + '}}';
+  var cardCSS = '.hero-card,.hero-img{width:' + cwd + '!important;height:' + chd + '!important}' +
+    '.hero-cards,.hero-images,.hero-grid{gap:' + cgd + '!important}' +
+    '@media(max-width:768px){.hero-card,.hero-img{width:' + cwm + '!important;height:' + chm + '!important}.hero-cards,.hero-images,.hero-grid{gap:' + cgm + '!important}}';
   if(newHTML.includes('/* admin-hero-card-size */')) {
     newHTML = newHTML.replace(/\/\* admin-hero-card-size \*\/[\s\S]*?\/\* end-admin-hero-card-size \*\//, '/* admin-hero-card-size */' + cardCSS + '/* end-admin-hero-card-size */');
   } else {
