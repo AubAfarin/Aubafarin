@@ -3483,7 +3483,8 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // 1. Restore any previously hidden sectionsmodified = modified.replace(/<!--\s*AUB-HIDDEN-START:[^>]*>/g, '');
+  // 1. Restore any previously hidden sections
+  modified = modified.replace(/<!--\s*AUB-HIDDEN-START:[^>]*>/g, '');
 
   modified = modified.replace(/<!--\s*AUB-HIDDEN-END:[^>]*-->/g, '');
 
