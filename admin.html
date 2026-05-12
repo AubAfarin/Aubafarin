@@ -1316,7 +1316,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         <!-- Hero Image Cards -->
         <div class="card" style="margin-bottom:20px">
           <div class="card-title">🖼️ Hero Image Cards</div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:14px">4 cards on the right side of the hero. Each links to a category — clicking scrolls visitors to that category.</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:14px">5 cards: 1 tall card on the left + 4 square cards on the right. Each links to a category — clicking scrolls visitors to that category.</div>
           <div id="heroCardsEditor" style="display:flex;flex-direction:column;gap:12px">
             <div style="color:var(--text3);font-size:11px;padding:20px;text-align:center;border:1px dashed var(--border);border-radius:8px">⏳ Loads from index.html after login…</div>
           </div>
@@ -6048,6 +6048,23 @@ function driveThumb(url) {
   return url;
 }
 
+// Image position state: array of {x,y} per image index
+var _prodImgPos = [];
+
+function updateProdImgPos(slider) {
+  var idx = parseInt(slider.dataset.pidx);
+  var axis = slider.dataset.axis;
+  if(isNaN(idx)) return;
+  if(!_prodImgPos[idx]) _prodImgPos[idx] = {x:50, y:50};
+  _prodImgPos[idx][axis] = parseInt(slider.value);
+  // Update label
+  var lbl = document.querySelector('.' + (axis==='x'?'pi-xval':'pi-yval') + '[data-pidx="'+idx+'"]');
+  if(lbl) lbl.textContent = slider.value + '%';
+  // Live preview on the thumbnail
+  var prev = document.getElementById('prodimg_prev_' + idx);
+  if(prev) prev.style.objectPosition = (_prodImgPos[idx].x||50) + '% ' + (_prodImgPos[idx].y||50) + '%';
+}
+
 function renderProdImgGallery() {
   var grid = document.getElementById('prodImgGallery');
   var empty = document.getElementById('imgGalleryEmpty');
@@ -6068,15 +6085,28 @@ function renderProdImgGallery() {
     card.style.cssText = 'position:relative;border-radius:8px;overflow:hidden;border:2px solid ' + (idx===0?'var(--brand)':'var(--border)') + ';cursor:pointer;group';
     card.title = idx===0 ? 'Main image (first one)' : 'Click to set as main';
     card.onclick = function() { setMainImage(idx); };
+    var imgPos = (_prodImgPos && _prodImgPos[idx]) || {x:50,y:50};
     card.innerHTML =
-      '<img src="' + driveThumb(url) + '" style="width:100%;height:80px;object-fit:cover;display:block" onerror="this.style.opacity=0.3">' +
+      '<img id="prodimg_prev_'+idx+'" src="' + driveThumb(url) + '" style="width:100%;height:80px;object-fit:cover;object-position:'+imgPos.x+'% '+imgPos.y+'%;display:block" onerror="this.style.opacity=0.3">' +
       (idx===0 ? '<div style="position:absolute;top:3px;left:3px;background:var(--brand);color:#fff;font-size:8px;font-weight:900;padding:2px 6px;border-radius:4px">MAIN</div>' : '') +
       '<div style="position:absolute;top:3px;right:3px;display:flex;gap:3px">' +
         (idx > 0 ? '<button onclick="event.stopPropagation();moveImg('+idx+',-1)" style="background:rgba(0,0,0,.6);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">←</button>' : '') +
         (idx < _prodImages.length-1 ? '<button onclick="event.stopPropagation();moveImg('+idx+',1)" style="background:rgba(0,0,0,.6);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">→</button>' : '') +
         '<button onclick="event.stopPropagation();removeImg('+idx+')" style="background:rgba(239,68,68,.85);color:#fff;border:none;width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:10px">✕</button>' +
       '</div>' +
-      '<div style="font-size:8px;color:var(--text3);padding:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + url.split('/').pop().substring(0,20) + '</div>';
+      '<div style="padding:4px 3px 2px;background:var(--surface2)">' +
+        '<div style="font-size:8px;color:var(--text3);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + url.split('/').pop().substring(0,20) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:3px;margin-bottom:2px">' +
+          '<span style="font-size:8px;color:var(--text3);width:10px">↔</span>' +
+          '<input type="range" min="0" max="100" step="1" value="'+imgPos.x+'" data-pidx="'+idx+'" data-axis="x" class="pi-pos-slider" style="flex:1;height:12px" onclick="event.stopPropagation()" oninput="event.stopPropagation();updateProdImgPos(this)">' +
+          '<span class="pi-xval" data-pidx="'+idx+'" style="font-size:8px;color:var(--text3);width:22px;text-align:right">'+imgPos.x+'%</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:3px">' +
+          '<span style="font-size:8px;color:var(--text3);width:10px">↕</span>' +
+          '<input type="range" min="0" max="100" step="1" value="'+imgPos.y+'" data-pidx="'+idx+'" data-axis="y" class="pi-pos-slider" style="flex:1;height:12px" onclick="event.stopPropagation()" oninput="event.stopPropagation();updateProdImgPos(this)">' +
+          '<span class="pi-yval" data-pidx="'+idx+'" style="font-size:8px;color:var(--text3);width:22px;text-align:right">'+imgPos.y+'%</span>' +
+        '</div>' +
+      '</div>';
     grid.appendChild(card);
   });
   // Sync hidden fields
@@ -6683,7 +6713,7 @@ function buildHeroCardsEditor(html) {
     // ── Card title ──────────────────────────────────────────
     var ttl = document.createElement('div');
     ttl.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px';
-    ttl.textContent = 'Card '+(i+1)+' of 4';
+    ttl.textContent = (i===0?'📐 Tall Card (Left) ':'🔳 Card ')+(i+1)+' of 5'+(i===0?' — Vertical Rectangular':'');
     wrap.appendChild(ttl);
 
     // ── Top row: preview + URL + per-card upload button ─────
@@ -6774,6 +6804,43 @@ function buildHeroCardsEditor(html) {
     botRow.appendChild(catDiv);
     wrap.appendChild(botRow);
 
+    // ── Image position sliders (X / Y) ───────────────
+    var posRow = document.createElement('div');
+    posRow.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border)';
+    var posHdr = document.createElement('div');
+    posHdr.style.cssText = 'font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px';
+    posHdr.textContent = '🖼️ Image Position';
+    posRow.appendChild(posHdr);
+    var posGrid = document.createElement('div');
+    posGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px';
+    // X slider
+    var xDiv = document.createElement('div');
+    var xLbl = document.createElement('div'); xLbl.style.cssText='font-size:10px;color:var(--text3);margin-bottom:3px'; xLbl.textContent='↔ Horizontal';
+    var xRow = document.createElement('div'); xRow.style.cssText='display:flex;align-items:center;gap:6px';
+    var xSlider = document.createElement('input'); xSlider.type='range'; xSlider.min='0'; xSlider.max='100'; xSlider.step='1';
+    xSlider.value = (card.posX !== undefined ? card.posX : 50);
+    xSlider.className = 'hc-posx'; xSlider.dataset.idx = i; xSlider.style.flex='1';
+    var xVal = document.createElement('span'); xVal.style.cssText='font-size:10px;color:var(--text3);width:30px;text-align:right'; xVal.textContent=xSlider.value+'%';
+    xSlider.oninput = (function(xv){ return function(){ xv.textContent=this.value+'%'; }; })(xVal);
+    xRow.appendChild(xSlider); xRow.appendChild(xVal);
+    xDiv.appendChild(xLbl); xDiv.appendChild(xRow);
+    posGrid.appendChild(xDiv);
+    // Y slider
+    var yDiv = document.createElement('div');
+    var yLbl = document.createElement('div'); yLbl.style.cssText='font-size:10px;color:var(--text3);margin-bottom:3px'; yLbl.textContent='↕ Vertical';
+    var yRow = document.createElement('div'); yRow.style.cssText='display:flex;align-items:center;gap:6px';
+    var ySlider = document.createElement('input'); ySlider.type='range'; ySlider.min='0'; ySlider.max='100'; ySlider.step='1';
+    ySlider.value = (card.posY !== undefined ? card.posY : 50);
+    ySlider.className = 'hc-posy'; ySlider.dataset.idx = i; ySlider.style.flex='1';
+    var yVal = document.createElement('span'); yVal.style.cssText='font-size:10px;color:var(--text3);width:30px;text-align:right'; yVal.textContent=ySlider.value+'%';
+    ySlider.oninput = (function(yv, pv){ return function(){ yv.textContent=this.value+'%'; if(pv) pv.style.objectPosition=xSlider.value+'% '+this.value+'%'; }; })(yVal, prev);
+    xSlider.oninput = (function(xv, pv, ys){ return function(){ xv.textContent=this.value+'%'; if(pv) pv.style.objectPosition=this.value+'% '+ys.value+'%'; }; })(xVal, prev, ySlider);
+    yRow.appendChild(ySlider); yRow.appendChild(yVal);
+    yDiv.appendChild(yLbl); yDiv.appendChild(yRow);
+    posGrid.appendChild(yDiv);
+    posRow.appendChild(posGrid);
+    wrap.appendChild(posRow);
+
     editor.appendChild(wrap);
   });
 
@@ -6828,6 +6895,8 @@ async function saveHeroCards() {
     editor.querySelectorAll('.hc-img').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].img=el.value.trim(); });
     editor.querySelectorAll('.hc-label').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].label=el.value.trim(); });
     editor.querySelectorAll('.hc-cat').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].cat=el.value; });
+    editor.querySelectorAll('.hc-posx').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].posX=parseInt(el.value); });
+    editor.querySelectorAll('.hc-posy').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].posY=parseInt(el.value); });
   }
   var newVar = 'var HERO_CARDS = ' + JSON.stringify(_heroCards) + ';';
   var newHTML = html.replace(/var HERO_CARDS\s*=\s*\[[\s\S]*?\];/, newVar);
