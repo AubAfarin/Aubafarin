@@ -543,7 +543,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 
 
 <!-- HERO -->
-<section class="hero hero-new">
+<div style="display:none" data-aub-hidden="hero"><section class="hero hero-new">
 <main class="hero-container">
         <section class="content-side" id="heroContentSide">
             <!-- Rendered by renderHeroContent() from HERO_TEXT variable -->
@@ -553,26 +553,13 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
             <!-- Rendered by renderHeroCards() from HERO_CARDS variable -->
         </section>
     </main>
-</section>
-<hr style="border:none;border-top:2px solid var(--slate-100);margin:0">
-<nav class="top-cat-nav" id="topCatNav_wrap">
-
-
-  <div id="topCatNav" class="top-cat-inner"></div>
-
-  </div>
-  <div id="ageFilters" class="top-cat-filters" style="padding:4px 16px 10px"></div>
-</nav>
-
-<hr style="border:none;border-top:2px solid var(--slate-100);margin:0">
-
-
-
-
-
-<!-- CATEGORIES MOVED TO TOP NAV -->
-
-<!-- PRODUCTS -->
+</section></div><!--/aub-hidden:hero-->
+<section class="content-side" id="heroContentSide">
+            <!-- Rendered by renderHeroContent() from HERO_TEXT variable -->
+        </section>
+<section class="image-side" id="heroImageSide">
+            <!-- Rendered by renderHeroCards() from HERO_CARDS variable -->
+        </section>
 <section class="products-section">
   <div class="container">
     <div class="products-header">
@@ -589,8 +576,6 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     <div class="pagination" id="pagination"></div>
   </div>
 </section>
-
-<!-- TRUST -->
 <section class="trust-section">
   <div class="container">
     <div class="trust-grid">
@@ -609,8 +594,6 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     </div>
   </div>
 </section>
-
-<!-- PAYMENT -->
 <section class="payment-section">
   <div class="container">
     <div class="payment-box">
