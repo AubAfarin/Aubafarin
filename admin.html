@@ -763,6 +763,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               </div>
             </div>
           </div>
+          <button class="btn btn-primary" style="margin-top:12px" onclick="saveWAPosition()">💾 Save WhatsApp Position</button>
         </div>
 
         <div class="card">
@@ -3268,26 +3269,39 @@ function buildColorEditorFromHTML(html) {
   });
 }
 
+async function saveWAPosition() {
+  var html = await fetchCurrentHTML();
+  if(!html) return;
+  var waPos = (document.getElementById('waPosition')||{value:'right'}).value;
+  var waBot = (document.getElementById('waBottom')||{value:'45'}).value;
+  var waSide = (document.getElementById('waSide')||{value:'38'}).value;
+  var newHTML = html;
+  if(waPos === 'left') {
+    newHTML = html.replace(/\.whatsapp-float\{[^}]*\}/, '.whatsapp-float{position:fixed;bottom:' + waBot + 'px;left:' + waSide + 'px;z-index:50}');
+  } else {
+    newHTML = html.replace(/\.whatsapp-float\{[^}]*\}/, '.whatsapp-float{position:fixed;bottom:' + waBot + 'px;right:' + waSide + 'px;z-index:50}');
+  }
+  if(newHTML === html) { toast('WhatsApp style not found in page', 'warn'); return; }
+  await pushHTMLToGitHub(newHTML, 'Admin: update WhatsApp position');
+}
+
 async function saveDesign() {
   var html = await fetchCurrentHTML();
   if(!html) return;
 
-  // Build new :root block
-  var newRoot = ':root{\n';
+  // Build new :root block — preserve existing values, only override what user changed
+  var newHTML = html;
   CSS_VARS.forEach(function(v) {
     var cv = document.getElementById('cv_' + CSS_VARS.indexOf(v));
-    if(cv) v.val = cv.value;
-    newRoot += '  ' + v.name + ':' + v.val + ';';
+    if(!cv) return;
+    var newVal = cv.value.trim();
+    if(!newVal) return;
+    // Replace only this specific CSS variable inside :root{}
+    var varRE = new RegExp('(' + v.name.replace(/[-]/g,'\\-') + '\\s*:)[^;]+');
+    newHTML = newHTML.replace(varRE, '$1' + newVal);
   });
-
-  // WhatsApp position
-  var waPos = document.getElementById('waPosition').value;
-  var waBot = document.getElementById('waBottom').value;
-  var waSide = document.getElementById('waSide').value;
-
-  newRoot += '\n}';
-  // Use anchored replacement to avoid matching wrong :root block
-  var newHTML = html.replace(/:root\{[^}]+\}/, newRoot);
+  // WhatsApp position handled by saveWAPosition()
+  var waPos = 'right'; var waBot = '45'; var waSide = '38'; // unused, kept for compat
   // Font family
   var ff = document.getElementById('fontFamily') ? document.getElementById('fontFamily').value : '';
   if(ff && ff !== 'custom') {
@@ -3308,12 +3322,7 @@ async function saveDesign() {
     if(inner.includes('letter-spacing')) return m.replace(/letter-spacing:[^;]+/, 'letter-spacing:'+ls);
     return m.replace('font-family', 'letter-spacing:'+ls+';font-family');
   });
-  // WhatsApp float update
-  if(waPos === 'left') {
-    newHTML = newHTML.replace(/\.whatsapp-float\{[^}]*\}/, '.whatsapp-float{position:fixed;bottom:' + waBot + 'px;left:' + waSide + 'px;z-index:50}');
-  } else {
-    newHTML = newHTML.replace(/\.whatsapp-float\{[^}]*\}/, '.whatsapp-float{position:fixed;bottom:' + waBot + 'px;right:' + waSide + 'px;z-index:50}');
-  }
+  // WhatsApp position is handled by saveWAPosition() — skip here
 
   // Custom font-face — inject into <style id="dynamic-fonts"> or append before </head>
   var fontFace = document.getElementById('fontFaceCSS').value.trim();
@@ -3393,25 +3402,25 @@ var SECTIONS = [];
 var SECTIONS_RAW_HTML = {}; // stores original outerHTML of each section
 
 function parseSectionsFromHTML(html) {
-  // Match all <section ...> blocks with their class names for identification
-  var re = /<section([^>]*)>/gi;
-  var m, found = [];
-  while((m = re.exec(html)) !== null) {
-    var attrs = m[1];
-    var clsM = attrs.match(/class=["']([^"']+)["']/);
-    var idM  = attrs.match(/id=["']([^"']+)["']/);
-    var cls  = clsM ? clsM[1].split(' ')[0] : '';
-    var id   = idM  ? idM[1] : cls;
-    var label = id
-      .replace('products-section','📦 Products Grid')
-      .replace('trust-section','🤝 Trust Badges')
-      .replace('payment-section','💳 Payment Methods')
-      .replace('hero','🦸 Hero Banner').replace('footer-section','🦶 Footer').replace(/-/g,' ');
-
-
-    if(id && !found.find(function(f){return f.id===id;})) {
-      found.push({id:id, cls:cls, label:label||id, visible:true, attrs:attrs});
-    }
+  // Only detect known TOP-LEVEL sections — never nested ones like content-side/image-side
+  var KNOWN = [
+    {id:'hero',       cls:'hero',            label:'🦸 Hero Banner'},
+    {id:'products-section', cls:'products-section', label:'📦 Products Grid'},
+    {id:'trust-section',    cls:'trust-section',    label:'🤝 Trust Badges'},
+    {id:'payment-section',  cls:'payment-section',  label:'💳 Payment Methods'},
+  ];
+  var found = [];
+  KNOWN.forEach(function(k) {
+    var re = new RegExp('<section[^>]*class="[^"]*' + k.cls + '[^"]*"');
+    if(re.test(html)) found.push({id:k.id, cls:k.cls, label:k.label, visible:true, attrs:''});
+  });
+  // Also detect if currently hidden via data-aub-hidden
+  var hiddenRe = /data-aub-hidden="([^"]+)"/g;
+  var hm;
+  while((hm = hiddenRe.exec(html)) !== null) {
+    var hid = hm[1];
+    var existing = found.find(function(f){return f.id===hid;});
+    if(existing) existing.visible = false;
   }
   // Also detect footer
   if(html.includes('<footer') && !found.find(function(f){return f.id==='footer';}))
@@ -3488,7 +3497,9 @@ function extractSectionBlock(html, cls) {
     }
     if(validOpen) {
       depth++;
-      pos = nextOpenIdx + openStr.length;
+      // Advance past this open tag's > to avoid re-matching it
+      var tagClose = html.indexOf('>', nextOpenIdx + openStr.length);
+      pos = (tagClose !== -1) ? tagClose + 1 : nextOpenIdx + openStr.length + 1;
     } else {
       depth--;
       pos = nextCloseIdx + closeStr.length;
@@ -6773,7 +6784,7 @@ function buildHeroCardsEditor(html) {
     var prev = document.createElement('img');
     prev.className = 'hc-prev'; prev.dataset.idx = i;
     prev.src = card.img || ''; prev.alt = 'Card '+(i+1);
-    prev.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0;cursor:pointer;transition:opacity .2s';
+    prev.style.cssText = 'width:100px;height:110px;border-radius:10px;object-fit:cover;object-position:' + (card.posX||50) + '% ' + (card.posY||50) + '%;border:2px solid var(--border);flex-shrink:0;cursor:pointer;transition:object-position .15s';
     prev.title = 'Click to upload new image';
     prev.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
     prev.onerror = function(){ this.style.opacity='0.2'; };
@@ -6889,6 +6900,21 @@ function buildHeroCardsEditor(html) {
     posGrid.appendChild(yDiv);
     posRow.appendChild(posGrid);
     wrap.appendChild(posRow);
+    // Position preview box
+    var prevBox = document.createElement('div');
+    prevBox.style.cssText = 'margin-top:8px;width:100%;height:120px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface3)';
+    var prevBoxImg = document.createElement('img');
+    prevBoxImg.src = card.img || '';
+    prevBoxImg.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:' + (card.posX||50) + '% ' + (card.posY||50) + '%;transition:object-position .15s';
+    prevBox.appendChild(prevBoxImg);
+    wrap.appendChild(prevBox);
+    // Wire sliders to also update prevBoxImg
+    (function(pbi, xs, ys) {
+      var origX = xs.oninput;
+      xs.oninput = function(){ if(origX) origX.call(this); pbi.style.objectPosition = this.value + '% ' + ys.value + '%'; };
+      var origY = ys.oninput;
+      ys.oninput = function(){ if(origY) origY.call(this); pbi.style.objectPosition = xs.value + '% ' + this.value + '%'; };
+    })(prevBoxImg, xSlider, ySlider);
 
     editor.appendChild(wrap);
   });
