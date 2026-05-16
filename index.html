@@ -7,10 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet"><style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --primary:#3B82F6;--primary-dark:#2563EB;--primary-light:#EFF6FF;
-  --slate-900:#0F172A;--slate-800:#1E293B;--slate-500:#64748B;--slate-400:#94A3B8;--slate-100:#F1F5F9;--slate-50:#F8FAFC;
+  --primary:#3b82f6;  --primary-dark:#2563eb;  --primary-light:#eff6ff;  --slate-900:#0f172a;  --slate-800:#1e293b;  --slate-500:#64748b;  --slate-400:#94a3b8;  --slate-100:#f1f5f9;  --slate-50:#f8fafc;
 }
-body{font-family:'Vazirmatn',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+body{font-size:16px;line-height:1.7;font-family:'Vazirmatn', sans-serif;min-height:100vh;display:flex;flex-direction:column}
 html[dir=rtl] body,.footer-grid{text-align:inherit}
 html[dir=ltr] .footer-logo{justify-content:flex-start}
 html[dir=rtl] .footer-logo{justify-content:flex-start}
@@ -184,7 +183,7 @@ footer{background:var(--slate-900);color:#fff;padding:80px 0 40px;border-top:1px
 .footer-contact-icon{width:40px;height:40px;border:1px solid rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
 .footer-copyright{border-top:1px solid rgba(255,255,255,.05);padding-top:32px;text-align:center;font-size:10px;font-weight:900;color:#374151;text-transform:uppercase;letter-spacing:2px}
 /* FLOATING */
-.whatsapp-float{position:fixed;bottom:24px;right:24px;z-index:50}
+.whatsapp-float{position:fixed;bottom:24px;left:24px;z-index:50}
 .wa-btn{width:56px;height:56px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,.4);transition:transform .2s;position:relative}
 .wa-btn:hover{transform:scale(1.1)}
 .wa-ping{position:absolute;inset:0;background:rgba(37,211,102,.2);border-radius:50%;animation:ping 1.5s infinite}
@@ -502,7 +501,9 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
         }
     
 /* ──────────────── */
-/* admin-hero-card-size */.hero-card,.hero-img{width:268px!important;height:396px!important}.hero-cards,.hero-images,.hero-grid{gap:0px!important}@media(max-width:768px){.hero-card,.hero-img{width:110px!important;height:140px!important}.hero-cards,.hero-images,.hero-grid{gap:0px!important}}/* end-admin-hero-card-size */
+/* admin-hero-card-size */.hero-card,.hero-img{width:268px!important;height:396px!important}.hero-cards,.hero-images,.hero-grid{gap:16px;height:140px!important}.hero-cards,.hero-images,.hero-grid{gap:0px!important}}/* end-admin-hero-card-size */
+/* admin-mobile-typo */@media(max-width:768px){body{font-size:14px!important;line-height:1.6!important}.hero-title{font-size:1.8rem!important}.hero-desc{font-size:13px!important}}/* end-admin-mobile-typo */
+/* admin-hero-gap */.hero-cards,.hero-images,.hero-grid{gap:16px}@media(max-width:768px){.hero-cards,.hero-images,.hero-grid{gap:10px}}/* end-admin-hero-gap */
 </style>
 </head>
 <body>
