@@ -2698,7 +2698,28 @@ async function fetchCurrentHTML() {
   }
 }
 
+// Safety: ensure nav HTML is always present before any push
+function ensureNavPresent(html) {
+  if(html.indexOf('id="topCatNav_wrap"') !== -1) return html; // already there
+  // Nav is missing — inject it between <!-- TOP CATEGORY NAV --> and <!-- HERO -->
+  var marker = '<!-- TOP CATEGORY NAV -->';
+  var heroMarker = '<!-- HERO -->';
+  var navHTML = '\n<nav class="top-cat-nav" id="topCatNav_wrap">\n  <div id="topCatNav" class="top-cat-inner"></div>\n  <div id="ageFilters" class="top-cat-filters" style="display:none"></div>\n</nav>\n';
+  var idx = html.indexOf(marker);
+  if(idx !== -1) {
+    var after = html.indexOf(heroMarker, idx);
+    if(after !== -1) {
+      html = html.substring(0, idx + marker.length) + navHTML + '\n' + html.substring(after);
+      console.warn('[AUB Admin] Nav HTML was missing — auto-repaired before push');
+      toast('⚠️ Nav was missing — auto-repaired!', 'warn');
+    }
+  }
+  return html;
+}
+
 async function pushHTMLToGitHub(newHTML, commitMsg) {
+  newHTML = ensureNavPresent(newHTML);
+
   if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return false; }try {setPushStatus('pushing', 'Fetching SHA...');
 
 
@@ -3513,53 +3534,22 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // 1. Restore any previously hidden sections
+  // Step 1: Strip any existing display:none wrappers (restore all sections)
   modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
   modified = modified.replace(/<\/div><!--\/aub-hidden:[^>]*-->/g, '');
 
-  // 2. REORDER: extract all section blocks in the order defined by SECTIONS array
-  // Build a map of cls → extracted block
-  var blocks = {};
-  var anchorCls = null;
-  SECTIONS.forEach(function(s) {
-    if(!s.cls) return;
-    var extracted = extractSectionBlock(modified, s.cls);
-    if(extracted) {
-      blocks[s.cls] = extracted.block;
-      if(!anchorCls) anchorCls = s.cls; // first known section anchors insertion point
+  // Step 2: Hide sections that are toggled off
+  // Process in reverse order so each replacement doesn't affect the next positions
+  var toHide = SECTIONS.filter(function(s){ return !s.visible && s.cls; });
+  toHide.forEach(function(s) {
+    var ext = extractSectionBlock(modified, s.cls);
+    if(ext) {
+      var wrapped = '<div style="display:none" data-aub-hidden="' + s.id + '">' + ext.block + '</div><!--/aub-hidden:' + s.id + '-->';
+      modified = modified.substring(0, ext.start) + wrapped + modified.substring(ext.end);
     }
   });
 
-  if(Object.keys(blocks).length > 1 && anchorCls) {
-    // Find the region occupied by all sections
-    var firstExt = extractSectionBlock(modified, anchorCls);
-    var lastCls = null;
-    SECTIONS.slice().reverse().forEach(function(s){ if(!lastCls && blocks[s.cls]) lastCls = s.cls; });
-    var lastExt = lastCls ? extractSectionBlock(modified, lastCls) : firstExt;
-    if(firstExt && lastExt) {
-      var regionStart = firstExt.start;
-      var regionEnd = lastExt.end;
-      // Rebuild the region in SECTIONS order
-      var reordered = SECTIONS
-        .filter(function(s){ return blocks[s.cls]; }).map(function(s){ return blocks[s.cls]; }).join('\n');
-
-
-      modified = modified.substring(0, regionStart) + reordered + modified.substring(regionEnd);
-    }
-  }
-
-  // 3. Apply visibility — hide sections by wrapping in display:none div
-  SECTIONS.forEach(function(s) {
-    if(!s.visible && s.cls) {
-      var ext = extractSectionBlock(modified, s.cls);
-      if(ext) {
-        var wrapped = '<div style="display:none" data-aub-hidden="' + s.id + '">' + ext.block + '</div><!--/aub-hidden:' + s.id + '-->';
-        modified = modified.substring(0, ext.start) + wrapped + modified.substring(ext.end);
-      }
-    }
-  });
-
-  await pushHTMLToGitHub(modified, 'Admin: Reorder and set section visibility');
+  await pushHTMLToGitHub(modified, 'Admin: update section visibility');
 }
 
 // ══════════════════════════════════════════════════════════════
