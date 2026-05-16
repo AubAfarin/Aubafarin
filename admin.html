@@ -3466,26 +3466,32 @@ function toggleSectionVis(i) {
 function extractSectionBlock(html, cls) {
   if(!cls) return null;
   var escapedCls = cls.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  // Match opening tag
-  var openRE = new RegExp('<(section|div)([^>]*class="[^"]*' + escapedCls + '[^"]*"[^>]*)>', 'i');
-  var openM = html.match(openRE);
+  var openRE = new RegExp('<(section|div)(\\s[^>]*class="[^"]*' + escapedCls + '[^"]*"[^>]*)>', 'i');
+  var openM = openRE.exec(html);
   if(!openM) return null;
-  var startIdx = html.indexOf(openM[0]);
-  if(startIdx === -1) return null;
-  var tag = openM[1]; // section or div
-  // Walk forward counting open/close tags to find matching close
-  var depth = 1, pos = startIdx + openM[0].length;
-  var openTag = new RegExp('<' + tag + '[\\s>]', 'gi');
-  var closeTag = new RegExp('<\\/' + tag + '>', 'gi');
+  var startIdx = openM.index;
+  var tag = openM[1].toLowerCase();
+  var openStr = '<' + tag;
+  var closeStr = '</' + tag + '>';
+  var pos = startIdx + openM[0].length;
+  var depth = 1;
   while(depth > 0 && pos < html.length) {
-    openTag.lastIndex = pos; closeTag.lastIndex = pos;
-    var nextOpen = openTag.exec(html);
-    var nextClose = closeTag.exec(html);
-    if(!nextClose) break;
-    if(nextOpen && nextOpen.index < nextClose.index) {
-      depth++; pos = nextOpen.index + nextOpen[0].length;
+    var lo = html.toLowerCase();
+    var nextOpenIdx = lo.indexOf(openStr, pos);
+    var nextCloseIdx = lo.indexOf(closeStr, pos);
+    if(nextCloseIdx === -1) break;
+    // Validate nextOpen is a real tag (next char must be space/tab/newline/'>') 
+    var validOpen = false;
+    if(nextOpenIdx !== -1 && nextOpenIdx < nextCloseIdx) {
+      var ch = html[nextOpenIdx + openStr.length];
+      validOpen = (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '>');
+    }
+    if(validOpen) {
+      depth++;
+      pos = nextOpenIdx + openStr.length;
     } else {
-      depth--; pos = nextClose.index + nextClose[0].length;
+      depth--;
+      pos = nextCloseIdx + closeStr.length;
     }
   }
   return {block: html.substring(startIdx, pos), start: startIdx, end: pos};
@@ -5710,14 +5716,14 @@ async function saveHero() {
     });
   }
   // Overlay opacity — inject as CSS variable
-  // Image position
+  // Image position — target only .hero{} CSS rule
   if(posX && posY) {
     var posVal = posX + '% ' + posY + '%';
-    // Update object-position on .hero img or background-position on .hero
-    if(newHTML.includes('background-position')) {
-      newHTML = newHTML.replace(/background-position:[^;"'}]+/g, 'background-position:' + posVal);
-    } else {
-      newHTML = newHTML.replace(/(\.hero\{[^}]*)/, '$1background-position:' + posVal + ';');
+    // Replace existing background-position inside .hero{} rule
+    newHTML = newHTML.replace(/(\.hero\{[^}]*)background-position:[^;]+/, '$1background-position:' + posVal);
+    // If not present, inject into .hero{ rule
+    if(newHTML.indexOf('background-position:' + posVal) === -1) {
+      newHTML = newHTML.replace(/(\.hero\{)/, '$1background-position:' + posVal + ';');
     }
   }
   if(overlay) {
