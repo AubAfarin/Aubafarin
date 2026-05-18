@@ -3577,7 +3577,7 @@ async function saveLayout() {
     }
 
     // For section/div with matching class
-    var escapedCls = s.cls.replace(/[.*+?^${}()|[\]\]/g,'\$&');
+    var escapedCls = s.cls.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     var re = new RegExp('(<(?:section|div)\b[^>]*class="[^"]*' + escapedCls + '[^"]*")([^>]*>)', 'i');
     modified = modified.replace(re, '$1 data-aub-section="' + s.id + '" style="display:none !important"$2');
   });
