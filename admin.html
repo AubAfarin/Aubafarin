@@ -3443,10 +3443,16 @@ function parseSectionsFromHTML(html) {
     var re = new RegExp('<section[^>]*class="[^"]*' + k.cls + '[^"]*"');
     if(re.test(html)) found.push({id:k.id, cls:k.cls, label:k.label, visible:true, attrs:''});
   });
-  // Also detect if currently hidden via data-aub-hidden
-  var hiddenRe = /data-aub-hidden="([^"]+)"/g;
+  // Detect hidden sections — both new (data-aub-section) and old (data-aub-hidden) approach
+  var hiddenRe = /data-aub-section="([^"]+)"/g;
   var hm;
   while((hm = hiddenRe.exec(html)) !== null) {
+    var hid = hm[1];
+    var existing = found.find(function(f){return f.id===hid;});
+    if(existing) existing.visible = false;
+  }
+  var hiddenReOld = /data-aub-hidden="([^"]+)"/g;
+  while((hm = hiddenReOld.exec(html)) !== null) {
     var hid = hm[1];
     var existing = found.find(function(f){return f.id===hid;});
     if(existing) existing.visible = false;
@@ -3551,19 +3557,29 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // Step 1: Strip any existing display:none wrappers (restore all sections)
+  // Step 1: Remove any previous layout-hide attributes from ALL known section tags
+  // Clear display:none on <section>, <div>, <footer> that were set by us
+  modified = modified.replace(/(<(?:section|div|footer|nav)[^>]*) data-aub-section="[^"]*"/g, '$1');
+  modified = modified.replace(/(<(?:section|div|footer|nav)[^>]*) style="display:none !important;?"/g, '$1');
+  // Also clear old wrapper-div approach leftovers
   modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
   modified = modified.replace(/<\/div><!--\/aub-hidden:[\s\S]*?-->/g, '');
 
-  // Step 2: Hide sections that are toggled off
-  // Process in reverse order so each replacement doesn't affect the next positions
-  var toHide = SECTIONS.filter(function(s){ return !s.visible && s.cls; });
-  toHide.forEach(function(s) {
-    var ext = extractSectionBlock(modified, s.cls);
-    if(ext) {
-      var wrapped = '<div style="display:none" data-aub-hidden="' + s.id + '">' + ext.block + '</div><!--/aub-hidden:' + s.id + '-->';
-      modified = modified.substring(0, ext.start) + wrapped + modified.substring(ext.end);
+  // Step 2: For each section toggled OFF, inject style="display:none" directly on its opening tag
+  SECTIONS.forEach(function(s) {
+    if(s.visible) return; // visible — leave it alone
+    if(!s.cls) return;
+
+    // Special case: footer
+    if(s.cls === 'footer-tag') {
+      modified = modified.replace(/(<footer)/, '$1 data-aub-section="footer" style="display:none !important"');
+      return;
     }
+
+    // For section/div with matching class
+    var escapedCls = s.cls.replace(/[.*+?^${}()|[\]\]/g,'\$&');
+    var re = new RegExp('(<(?:section|div)\b[^>]*class="[^"]*' + escapedCls + '[^"]*")([^>]*>)', 'i');
+    modified = modified.replace(re, '$1 data-aub-section="' + s.id + '" style="display:none !important"$2');
   });
 
   await pushHTMLToGitHub(modified, 'Admin: update section visibility');
