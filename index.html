@@ -503,6 +503,33 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     
 /* ──────────────── */
 /* admin-hero-card-size */.hero-card,.hero-img{width:268px!important;height:396px!important}.hero-cards,.hero-images,.hero-grid{gap:0px!important}@media(max-width:768px){.hero-card,.hero-img{width:110px!important;height:140px!important}.hero-cards,.hero-images,.hero-grid{gap:0px!important}}/* end-admin-hero-card-size */
+
+/* ── Add-to-cart toast ── */
+#cart-toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #22c55e;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity .25s, transform .25s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+#cart-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 </style>
 </head>
 <body>
@@ -764,7 +791,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
       <span class="cart-total-label">کۆی گشتی</span>
       <span class="cart-total-val"><span id="cartTotal">0</span> <span style="font-size:12px;color:var(--primary)">د.ع</span></span>
     </div>
-    <button class="btn-primary">بەرەو پارەدان</button>
+    <button class="btn-primary" onclick="checkoutWhatsApp()">بەرەو پارەدان</button>
   </div>
 </div>
 
@@ -975,6 +1002,16 @@ function setAge(age) {
 }
 
 // CART
+function showCartToast(name) {
+  var el = document.getElementById('cart-toast');
+  var msg = document.getElementById('cart-toast-msg');
+  if (!el || !msg) return;
+  msg.textContent = name + ' — زیادکرا ✔';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.classList.remove('show'); }, 2000);
+}
+
 function addToCart(id) {
   var p = null;
   for (var i = 0; i < PRODUCTS.length; i++) { if (PRODUCTS[i].id === id) { p = PRODUCTS[i]; break; } }
@@ -984,6 +1021,8 @@ function addToCart(id) {
   if (!found) { var item = {}; for (var k in p) item[k] = p[k]; item.qty = 1; cart.push(item); }
   updateCartBadge();
   renderCart();
+  var name = typeof p.name === 'object' ? (p.name.ku || p.name.ar || p.name.en || '') : (p.name || '');
+  showCartToast(name);
 }
 
 function removeFromCart(id) {
@@ -1004,6 +1043,23 @@ function updateCartBadge() {
   for (var i = 0; i < cart.length; i++) total += cart[i].qty;
   badge.textContent = total;
   badge.style.display = total > 0 ? 'flex' : 'none';
+}
+
+function checkoutWhatsApp() {
+  if (!cart.length) return;
+  var total = 0;
+  var lines = ['🛒 *ئافەرین AUB — سفاریش*', ''];
+  for (var i = 0; i < cart.length; i++) {
+    var it = cart[i];
+    var name = typeof it.name === 'object' ? (it.name.ku || it.name.ar || it.name.en || '') : (it.name || '');
+    var subtotal = it.price * it.qty;
+    total += subtotal;
+    lines.push((i+1) + '. ' + name + ' × ' + it.qty + ' = ' + subtotal.toLocaleString() + ' د.ع');
+  }
+  lines.push('');
+  lines.push('💰 *کۆی گشتی: ' + total.toLocaleString() + ' د.ع*');
+  var msg = encodeURIComponent(lines.join('\n'));
+  window.open('https://wa.me/9647771004040?text=' + msg, '_blank');
 }
 
 function renderCart() {
@@ -1482,5 +1538,7 @@ doSearch();
 
 
 <script id="aub-stock">(function(){document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent="❌ Sold Out";}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent="SOLD OUT";el.style.position="relative";el.appendChild(badge);});})();</script>
+
+<div id="cart-toast">✅ <span id="cart-toast-msg"></span></div>
 </body>
 </html>
