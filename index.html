@@ -1428,7 +1428,7 @@ function renderHeroCards() {
     var extraClass = (idx === 0) ? ' tall-card' : '';
     var pos = (card.posX !== undefined ? card.posX : 50) + '% ' + (card.posY !== undefined ? card.posY : 50) + '%';
     return '<a href="' + href + '" class="nav-card' + extraClass + '"' + (onclick ? ' onclick="' + onclick + '"' : '') + '>' +
-      '<img src="' + card.img + '" alt="' + card.label + '" loading="lazy" style="object-position:' + pos + '">' +
+      '<img src="' + card.img + '" alt="' + card.label + '" loading="lazy" style="object-position:' + pos + ';transform:scale(' + ((card.posZoom||100)/100) + ');transform-origin:' + pos + '">' +
       '<div class="card-overlay">' + card.label + '</div>' +
     '</a>';
   }).join('');

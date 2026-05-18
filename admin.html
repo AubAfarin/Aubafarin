@@ -1555,6 +1555,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
         </div>
       </div>
 
+
 <div class="tab-content" id="tab-sitecontrols">
         <div class="page-header" style="padding-top:0;border:none;margin-bottom:20px">
           <div>
@@ -1726,6 +1727,8 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                 <!-- ── HERO TEXT & FONTS ───────────────────────────── -->
         
 
+
+
         <!-- ── HERO SECTION ───────────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">🦸 Hero Section</div>
@@ -1747,7 +1750,12 @@ input[type=range]{flex:1;accent-color:var(--brand)}
                   <input type="range" min="0" max="100" step="1" value="50" id="heroPosY" oninput="document.getElementById('heroPosYVal').textContent=this.value+'%';updateHeroPosPreview()">
                   <span class="range-val" id="heroPosYVal">50%</span>
                 </div>
-                <div id="heroPosPreview" style="margin-top:10px;width:100%;height:120px;background-size:cover;background-position:50% 50%;background-color:var(--surface3);border-radius:10px;border:1px solid var(--border);transition:background-position .2s;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px">Preview</div>
+                <label class="field-label" style="margin-top:8px">🔍 Image Zoom (100% = normal)</label>
+                <div class="range-row">
+                  <input type="range" min="100" max="300" step="5" value="100" id="heroPosZoom" oninput="document.getElementById('heroPosZoomVal').textContent=this.value+'%';updateHeroPosPreview()">
+                  <span class="range-val" id="heroPosZoomVal">100%</span>
+                </div>
+                <div id="heroPosPreview" style="margin-top:10px;width:100%;height:120px;background-size:100%;background-position:50% 50%;background-color:var(--surface3);border-radius:10px;border:1px solid var(--border);transition:all .2s;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px">Preview</div>
               </div>
               <div class="field-group">
                 <label class="field-label">Hero Background Overlay Opacity (0–1)</label>
@@ -1779,7 +1787,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <button class="btn btn-primary btn-sm" onclick="saveHero()">💾 Save & Push Hero</button>
         </div>
 
-        <!-- ── SOCIAL MEDIA LINKS ─────────────────────── -->
+                <!-- ── SOCIAL MEDIA LINKS ─────────────────────── -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">📱 Social Media Links</div>
           <div class="card-grid cols-2">
@@ -3536,7 +3544,7 @@ async function saveLayout() {
 
   // Step 1: Strip any existing display:none wrappers (restore all sections)
   modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
-  modified = modified.replace(/<\/div><!--\/aub-hidden:[^>]*-->/g, '');
+  modified = modified.replace(/<\/div><!--\/aub-hidden:[\s\S]*?-->/g, '');
 
   // Step 2: Hide sections that are toggled off
   // Process in reverse order so each replacement doesn't affect the next positions
@@ -4478,6 +4486,7 @@ async function initAdmin() {
       rebuildModalCatDropdown();
       buildAgesEditor();
       if(typeof buildHeroCardsEditor === 'function') buildHeroCardsEditor(html);
+      loadHeroBgFromHTML(html);
     }
   } else {
     renderCatalogTable();
@@ -5675,6 +5684,8 @@ function updateHeroPosPreview() {
   var url = document.getElementById('heroImgURL').value.trim();
   var x = document.getElementById('heroPosX').value;
   var y = document.getElementById('heroPosY').value;
+  var zoomEl = document.getElementById('heroPosZoom');
+  var zoom = zoomEl ? zoomEl.value : 100;
   var prev = document.getElementById('heroPosPreview');
   if(!prev) return;
   if(url) {
@@ -5685,6 +5696,34 @@ function updateHeroPosPreview() {
     prev.textContent = 'Enter image URL above to preview';
   }
   prev.style.backgroundPosition = x + '% ' + y + '%';
+  prev.style.backgroundSize = zoom + '%';
+}
+
+function loadHeroBgFromHTML(html) {
+  if(!html) return;
+  // Read background-position from .hero-new{} or .hero{}
+  var posMatch = html.match(/\.hero(?:-new)?\s*\{[^}]*background-position:\s*([\d.]+)%\s*([\d.]+)%/);
+  if(posMatch) {
+    var x = posMatch[1], y = posMatch[2];
+    var elX = document.getElementById('heroPosX');
+    var elY = document.getElementById('heroPosY');
+    if(elX) { elX.value = x; document.getElementById('heroPosXVal').textContent = x + '%'; }
+    if(elY) { elY.value = y; document.getElementById('heroPosYVal').textContent = y + '%'; }
+  }
+  // Read background-size from .hero-new{} or .hero{}
+  var sizeMatch = html.match(/\.hero(?:-new)?\s*\{[^}]*background-size:\s*([\d.]+)%/);
+  if(sizeMatch) {
+    var zoom = sizeMatch[1];
+    var elZ = document.getElementById('heroPosZoom');
+    if(elZ) { elZ.value = zoom; document.getElementById('heroPosZoomVal').textContent = zoom + '%'; }
+  }
+  // Read background-image URL
+  var imgMatch = html.match(/\.hero(?:-new)?\s*\{[^}]*background-image:\s*url\(["']?([^"')]+)["']?\)/);
+  if(imgMatch) {
+    var el = document.getElementById('heroImgURL');
+    if(el) el.value = imgMatch[1];
+  }
+  updateHeroPosPreview();
 }
 
 async function saveHero() {
@@ -5698,49 +5737,41 @@ async function saveHero() {
   var cta1link = document.getElementById('heroCTA1Link').value.trim();
   var cta2ku = document.getElementById('heroCTA2KU').value.trim();
   var cta2link = document.getElementById('heroCTA2Link').value.trim();
+  var zoomEl = document.getElementById('heroPosZoom');
+  var zoom = zoomEl ? zoomEl.value : '100';
   var newHTML = html;
-  // Hero background image — set on .hero, .hero-section, hero background-image CSS
-  if(imgURL) {
-    // Replace existing background-image in style attribute or CSS
-    newHTML = newHTML.replace(/\.hero\{([^}]*)\}/, function(m, inner) {
-      if(inner.includes('background-image')) return m.replace(/background-image:[^;]+/, 'background-image:url("' + imgURL + '")');
-      return '.hero{' + inner + 'background-image:url("' + imgURL + '");' + '}';
-    });
-    newHTML = newHTML.replace(/\.hero-section\{([^}]*)\}/, function(m, inner) {
-      if(inner.includes('background-image')) return m.replace(/background-image:[^;]+/, 'background-image:url("' + imgURL + '")');
-      return m;
-    });
-    // Also set on inline style on hero section
-    newHTML = newHTML.replace(/(class="[^"]*hero[^"]*"[^>]*style=")([^"]*)(")/g, function(m, pre, style, post) {
-      if(style.includes('background-image')) return pre + style.replace(/background-image:[^;]+/, 'background-image:url("' + imgURL + '")') + post;
-      return pre + style + 'background-image:url("' + imgURL + '");' + post;
-    });
-  }
-  // Overlay opacity — inject as CSS variable
-  // Image position — target only .hero{} CSS rule
-  if(posX && posY) {
-    var posVal = posX + '% ' + posY + '%';
-    // Replace existing background-position inside .hero{} rule
-    newHTML = newHTML.replace(/(\.hero\{[^}]*)background-position:[^;]+/, '$1background-position:' + posVal);
-    // If not present, inject into .hero{ rule
-    if(newHTML.indexOf('background-position:' + posVal) === -1) {
-      newHTML = newHTML.replace(/(\.hero\{)/, '$1background-position:' + posVal + ';');
+
+  // Use safe marker block — never touches existing CSS rules
+  var bgCSS = '';
+  if(imgURL) bgCSS += '.hero-new,.hero{background-image:url("' + imgURL + '")!important;}';
+  if(posX && posY) bgCSS += '.hero-new,.hero{background-position:' + posX + '% ' + posY + '%!important;}';
+  if(zoom && zoom !== '100') bgCSS += '.hero-new,.hero{background-size:' + zoom + '%!important;}';
+
+  if(bgCSS) {
+    var marked = '/* admin-hero-bg */' + bgCSS + '/* end-admin-hero-bg */';
+    if(newHTML.includes('/* admin-hero-bg */')) {
+      newHTML = newHTML.replace(/\/\* admin-hero-bg \*\/[\s\S]*?\/\* end-admin-hero-bg \*\//, marked);
+    } else {
+      newHTML = newHTML.replace('</style>', marked + '\n</style>');
     }
   }
+
+  // Overlay opacity
   if(overlay) {
     newHTML = newHTML.replace(/--hero-overlay:\s*[\d.]+/, '--hero-overlay:' + overlay);
-    // If not found, inject into :root
     if(!newHTML.includes('--hero-overlay')) {
       newHTML = newHTML.replace(/:root\s*\{/, ':root{--hero-overlay:' + overlay + ';');
     }
   }
-  // CTA buttons — find by known class patterns .hero-cta, .cta-btn, .btn-cta
+
+  // CTA buttons
   if(cta1ku) {
     newHTML = newHTML.replace(/(<(?:a|button)[^>]*class="[^"]*(?:hero-cta|cta-primary|cta-btn|btn-hero)[^"]*"[^>]*>)([^<]*)(<\/(?:a|button)>)/, '$1' + cta1ku + '$3');
   }
   if(cta1link) {
     newHTML = newHTML.replace(/(class="[^"]*(?:hero-cta|cta-primary|cta-btn|btn-hero)[^"]*"[^>]*href=")([^"]*)(")/g, '$1' + cta1link + '$3');
   }
+
   await pushHTMLToGitHub(newHTML, 'Admin: Update hero section');
 }
 
@@ -6105,14 +6136,23 @@ function updateProdImgPos(slider) {
   var idx = parseInt(slider.dataset.pidx);
   var axis = slider.dataset.axis;
   if(isNaN(idx)) return;
-  if(!_prodImgPos[idx]) _prodImgPos[idx] = {x:50, y:50};
+  if(!_prodImgPos[idx]) _prodImgPos[idx] = {x:50, y:50, zoom:100};
   _prodImgPos[idx][axis] = parseInt(slider.value);
   // Update label
-  var lbl = document.querySelector('.' + (axis==='x'?'pi-xval':'pi-yval') + '[data-pidx="'+idx+'"]');
+  var lbl = document.querySelector('.' + (axis==='x'?'pi-xval':axis==='y'?'pi-yval':'pi-zval') + '[data-pidx="'+idx+'"]');
   if(lbl) lbl.textContent = slider.value + '%';
   // Live preview on the thumbnail
   var prev = document.getElementById('prodimg_prev_' + idx);
-  if(prev) prev.style.objectPosition = (_prodImgPos[idx].x||50) + '% ' + (_prodImgPos[idx].y||50) + '%';
+  var pos = _prodImgPos[idx];
+  if(prev) {
+    var z = (pos.zoom||100) / 100;
+    var px = (pos.x||50), py = (pos.y||50);
+    prev.style.objectPosition = px + '% ' + py + '%';
+    prev.style.width  = (z * 100) + '%';
+    prev.style.height = (z * 100) + '%';
+    prev.style.marginLeft = '-' + ((z-1)*px) + '%';
+    prev.style.marginTop  = '-' + ((z-1)*py) + '%';
+  }
 }
 
 function renderProdImgGallery() {
@@ -6155,6 +6195,11 @@ function renderProdImgGallery() {
           '<span style="font-size:8px;color:var(--text3);width:10px">↕</span>' +
           '<input type="range" min="0" max="100" step="1" value="'+imgPos.y+'" data-pidx="'+idx+'" data-axis="y" class="pi-pos-slider" style="flex:1;height:12px" onclick="event.stopPropagation()" oninput="event.stopPropagation();updateProdImgPos(this)">' +
           '<span class="pi-yval" data-pidx="'+idx+'" style="font-size:8px;color:var(--text3);width:22px;text-align:right">'+imgPos.y+'%</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:3px;margin-top:2px">' +
+          '<span style="font-size:8px;color:var(--text3);width:10px">🔍</span>' +
+          '<input type="range" min="100" max="200" step="5" value="'+(imgPos.zoom||100)+'" data-pidx="'+idx+'" data-axis="zoom" class="pi-pos-slider" style="flex:1;height:12px" onclick="event.stopPropagation()" oninput="event.stopPropagation();updateProdImgPos(this)">' +
+          '<span class="pi-zval" data-pidx="'+idx+'" style="font-size:8px;color:var(--text3);width:22px;text-align:right">'+(imgPos.zoom||100)+'%</span>' +
         '</div>' +
       '</div>';
     grid.appendChild(card);
@@ -6770,15 +6815,18 @@ function buildHeroCardsEditor(html) {
     var topRow = document.createElement('div');
     topRow.style.cssText = 'display:flex;gap:10px;align-items:flex-start;margin-bottom:10px';
 
-    // Preview image (clickable = triggers file picker)
+    // Preview image (clickable = triggers file picker) — wrapped for zoom clipping
+    var prevWrap = document.createElement('div');
+    prevWrap.style.cssText = 'width:100px;height:110px;border-radius:10px;overflow:hidden;border:2px solid var(--border);flex-shrink:0;cursor:pointer;background:var(--surface3)';
     var prev = document.createElement('img');
     prev.className = 'hc-prev'; prev.dataset.idx = i;
     prev.src = card.img || ''; prev.alt = 'Card '+(i+1);
-    prev.style.cssText = 'width:100px;height:110px;border-radius:10px;object-fit:cover;object-position:' + (card.posX||50) + '% ' + (card.posY||50) + '%;border:2px solid var(--border);flex-shrink:0;cursor:pointer;transition:object-position .15s';
+    prev.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:' + (card.posX||50) + '% ' + (card.posY||50) + '%;display:block;transition:object-position .15s';
     prev.title = 'Click to upload new image';
-    prev.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
+    prevWrap.onclick = (function(idx){ return function(){ document.getElementById('hcf_'+idx).click(); }; })(i);
     prev.onerror = function(){ this.style.opacity='0.2'; };
-    topRow.appendChild(prev);
+    prevWrap.appendChild(prev);
+    topRow.appendChild(prevWrap);
 
     var urlCol = document.createElement('div');
     urlCol.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:6px';
@@ -6889,22 +6937,33 @@ function buildHeroCardsEditor(html) {
     yDiv.appendChild(yLbl); yDiv.appendChild(yRow);
     posGrid.appendChild(yDiv);
     posRow.appendChild(posGrid);
+    // Zoom slider
+    var zoomDiv = document.createElement('div');
+    zoomDiv.style.cssText = 'margin-top:6px';
+    var zoomLbl = document.createElement('div'); zoomLbl.style.cssText='font-size:10px;color:var(--text3);margin-bottom:3px'; zoomLbl.textContent='🔍 Zoom (100–200%)';
+    var zoomRow = document.createElement('div'); zoomRow.style.cssText='display:flex;align-items:center;gap:6px';
+    var zoomSlider = document.createElement('input'); zoomSlider.type='range'; zoomSlider.min='100'; zoomSlider.max='200'; zoomSlider.step='5';
+    zoomSlider.value = (card.posZoom !== undefined ? card.posZoom : 100);
+    zoomSlider.className = 'hc-poszoom'; zoomSlider.dataset.idx = i; zoomSlider.style.flex='1';
+    var zoomVal = document.createElement('span'); zoomVal.style.cssText='font-size:10px;color:var(--text3);width:36px;text-align:right'; zoomVal.textContent=zoomSlider.value+'%';
+    zoomSlider.oninput = (function(zv){ return function(){ zv.textContent=this.value+'%'; }; })(zoomVal);
+    zoomRow.appendChild(zoomSlider); zoomRow.appendChild(zoomVal);
+    zoomDiv.appendChild(zoomLbl); zoomDiv.appendChild(zoomRow);
+    posRow.appendChild(zoomDiv);
     wrap.appendChild(posRow);
-    // Position preview box
-    var prevBox = document.createElement('div');
-    prevBox.style.cssText = 'margin-top:8px;width:100%;height:120px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface3)';
-    var prevBoxImg = document.createElement('img');
-    prevBoxImg.src = card.img || '';
-    prevBoxImg.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:' + (card.posX||50) + '% ' + (card.posY||50) + '%;transition:object-position .15s';
-    prevBox.appendChild(prevBoxImg);
-    wrap.appendChild(prevBox);
-    // Wire sliders to also update prevBoxImg
-    (function(pbi, xs, ys) {
-      var origX = xs.oninput;
-      xs.oninput = function(){ if(origX) origX.call(this); pbi.style.objectPosition = this.value + '% ' + ys.value + '%'; };
-      var origY = ys.oninput;
-      ys.oninput = function(){ if(origY) origY.call(this); pbi.style.objectPosition = xs.value + '% ' + this.value + '%'; };
-    })(prevBoxImg, xSlider, ySlider);
+    // Wire sliders directly to the thumbnail (prev) — no separate preview box
+    (function(thumb, xs, ys, zs) {
+      function applyPos(){
+        var px = xs.value + '% ' + ys.value + '%';
+        var sc = parseInt(zs.value) / 100;
+        thumb.style.objectPosition = px;
+        thumb.style.transform = 'scale(' + sc + ')';
+        thumb.style.transformOrigin = xs.value + '% ' + ys.value + '%';
+      }
+      var origX = xs.oninput; xs.oninput = function(){ if(origX) origX.call(this); applyPos(); };
+      var origY = ys.oninput; ys.oninput = function(){ if(origY) origY.call(this); applyPos(); };
+      var origZ = zs.oninput; zs.oninput = function(){ if(origZ) origZ.call(this); applyPos(); };
+    })(prev, xSlider, ySlider, zoomSlider);
 
     editor.appendChild(wrap);
   });
@@ -6962,6 +7021,7 @@ async function saveHeroCards() {
     editor.querySelectorAll('.hc-cat').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].cat=el.value; });
     editor.querySelectorAll('.hc-posx').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].posX=parseInt(el.value); });
     editor.querySelectorAll('.hc-posy').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].posY=parseInt(el.value); });
+    editor.querySelectorAll('.hc-poszoom').forEach(function(el){ var i=parseInt(el.dataset.idx); if(!isNaN(i)) _heroCards[i].posZoom=parseInt(el.value); });
   }
   var newVar = 'var HERO_CARDS = ' + JSON.stringify(_heroCards) + ';';
   var newHTML = html.replace(/var HERO_CARDS\s*=\s*\[[\s\S]*?\];/, newVar);
