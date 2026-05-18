@@ -588,7 +588,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 
 
 <!-- HERO -->
-<div style="display:none" data-aub-hidden="hero"><section class="hero hero-new">
+<section class="hero hero-new">
 <main class="hero-container">
         <section class="content-side" id="heroContentSide">
             <!-- Rendered by renderHeroContent() from HERO_TEXT variable -->
@@ -598,7 +598,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
             <!-- Rendered by renderHeroCards() from HERO_CARDS variable -->
         </section>
     </main>
-</section></div><!--/aub-hidden:hero-->
+</section>
 <hr style="border:none;border-top:2px solid var(--slate-100);margin:0">
 <nav class="top-cat-nav" id="topCatNav_wrap">
 
@@ -1048,7 +1048,7 @@ function updateCartBadge() {
 function checkoutWhatsApp() {
   if (!cart.length) return;
   var total = 0;
-  var lines = ['🛒 *ئافەرین AUB — سفاریش*', ''];
+  var lines = ['🛒 *ئافەرین AUB — ئۆردەر*', ''];
   for (var i = 0; i < cart.length; i++) {
     var it = cart[i];
     var name = typeof it.name === 'object' ? (it.name.ku || it.name.ar || it.name.en || '') : (it.name || '');

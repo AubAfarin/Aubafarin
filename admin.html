@@ -3453,14 +3453,14 @@ function parseSectionsFromHTML(html) {
   }
   // Also detect footer
   if(html.includes('<footer') && !found.find(function(f){return f.id==='footer';}))
-    found.push({id:'footer',cls:'',label:'🦶 Footer',visible:true,attrs:''});
+    found.push({id:'footer',cls:'footer-tag',label:'🦶 Footer',visible:true,attrs:''});
   SECTIONS = found.length ? found : [
     {id:'top-bar',cls:'top-bar',label:'📢 Announcement Bar',visible:true,attrs:''},
     {id:'hero',cls:'hero',label:'🦸 Hero',visible:true,attrs:''},
     {id:'trust-section',cls:'trust-section',label:'🤝 Trust Badges',visible:true,attrs:''},
     {id:'products-section',cls:'products-section',label:'📦 Products',visible:true,attrs:''},
     {id:'payment-section',cls:'payment-section',label:'💳 Payment',visible:true,attrs:''},
-    {id:'footer',cls:'',label:'🦶 Footer',visible:true,attrs:''},
+    {id:'footer',cls:'footer-tag',label:'🦶 Footer',visible:true,attrs:''},
   ];
 }
 
@@ -3503,6 +3503,15 @@ function toggleSectionVis(i) {
 // Extract a section's full HTML block by its class name
 function extractSectionBlock(html, cls) {
   if(!cls) return null;
+  // Special case: footer uses <footer> tag directly
+  if(cls === 'footer-tag') {
+    var fStart = html.indexOf('<footer');
+    if(fStart === -1) return null;
+    var fEnd = html.indexOf('</footer>', fStart);
+    if(fEnd === -1) return null;
+    fEnd += '</footer>'.length;
+    return {block: html.substring(fStart, fEnd), start: fStart, end: fEnd};
+  }
   var escapedCls = cls.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   var openRE = new RegExp('<(section|div)(\\s[^>]*class="[^"]*' + escapedCls + '[^"]*"[^>]*)>', 'i');
   var openM = openRE.exec(html);
