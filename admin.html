@@ -3557,10 +3557,8 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // Step 1: Remove any previous layout-hide attributes from ALL known section tags
-  // Clear display:none on <section>, <div>, <footer> that were set by us
-  modified = modified.replace(/(<(?:section|div|footer|nav)[^>]*) data-aub-section="[^"]*"/g, '$1');
-  modified = modified.replace(/(<(?:section|div|footer|nav)[^>]*) style="display:none !important;?"/g, '$1');
+  // Step 1: Remove previous layout-hide attributes — strip BOTH together in one pass
+  modified = modified.replace(/( data-aub-section="[^"]*")?( style="display:none !important")?( data-aub-section="[^"]*")?/g, '');
   // Also clear old wrapper-div approach leftovers
   modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
   modified = modified.replace(/<\/div><!--\/aub-hidden:[\s\S]*?-->/g, '');
