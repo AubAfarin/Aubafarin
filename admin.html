@@ -3444,15 +3444,27 @@ function parseSectionsFromHTML(html) {
     var re = new RegExp('<(?:section|div)[^>]*class="[^"]*' + k.cls + '[^"]*"');
     if(re.test(html)) found.push({id:k.id, cls:k.cls, label:k.label, visible:true, attrs:''});
   });
-  // Detect hidden sections — both new (data-aub-section) and old (data-aub-hidden) approach
-  var hiddenRe = /data-aub-section="([^"]+)"/g;
-  var hm;
-  while((hm = hiddenRe.exec(html)) !== null) {
-    var hid = hm[1];
-    var existing = found.find(function(f){return f.id===hid;});
-    if(existing) existing.visible = false;
+  // Detect hidden sections from admin-layout-vis marker block
+  var SELECTORS_REV = {
+    '.hero-new,.hero':'hero', '.products-section':'products-section',
+    '.trust-section':'trust-section', '.payment-section':'payment-section',
+    '.top-bar':'top-bar', 'footer':'footer'
+  };
+  var markerIdx = html.indexOf('/* admin-layout-vis */');
+  var markerEnd = html.indexOf('/* end-admin-layout-vis */');
+  if(markerIdx !== -1 && markerEnd !== -1) {
+    var block = html.substring(markerIdx + '/* admin-layout-vis */'.length, markerEnd);
+    Object.keys(SELECTORS_REV).forEach(function(sel) {
+      if(block.indexOf(sel + '{display:none!important}') !== -1) {
+        var sid = SELECTORS_REV[sel];
+        var existing = found.find(function(f){return f.id===sid;});
+        if(existing) existing.visible = false;
+      }
+    });
   }
+  // Also support legacy attribute-based detection
   var hiddenReOld = /data-aub-hidden="([^"]+)"/g;
+  var hm;
   while((hm = hiddenReOld.exec(html)) !== null) {
     var hid = hm[1];
     var existing = found.find(function(f){return f.id===hid;});
@@ -3558,40 +3570,37 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // Step 1: Remove previous layout-hide attributes — strip BOTH together in one pass
-  modified = modified.replace(/( data-aub-section="[^"]*")?( style="display:none !important")?( data-aub-section="[^"]*")?/g, '');
-  // Restore top-bar CSS rule
-  modified = modified.replace(/\.top-bar\{display:none!important;/, '.top-bar{');
-  // Also clear old wrapper-div approach leftovers
-  modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
-  modified = modified.replace(/<\/div><!--\/aub-hidden:[\s\S]*?-->/g, '');
-
-  // Step 2: For each section toggled OFF, inject style="display:none" directly on its opening tag
+  // Build CSS rules for hidden sections — safe marker block (same as admin-hero-bg)
+  var cssRules = '';
+  var SELECTORS = {
+    'hero':             '.hero-new,.hero',
+    'products-section': '.products-section',
+    'trust-section':    '.trust-section',
+    'payment-section':  '.payment-section',
+    'top-bar':          '.top-bar',
+    'footer':           'footer'
+  };
   SECTIONS.forEach(function(s) {
-    if(s.visible) return; // visible — leave it alone
-    if(!s.cls) return;
-
-    // Special case: top-bar — uses CSS rule injection
-    if(s.cls === 'top-bar') {
-      modified = modified.replace(/\.top-bar\{display:none!important;/g, '.top-bar{');
-      modified = modified.replace(/\.top-bar\{/, '.top-bar{display:none!important;');
-      return;
+    if(!s.visible && SELECTORS[s.id]) {
+      cssRules += SELECTORS[s.id] + '{display:none!important}';
     }
-
-    // Special case: footer
-    if(s.cls === 'footer-tag') {
-      modified = modified.replace(/(<footer)/, '$1 data-aub-section="footer" style="display:none !important"');
-      return;
-    }
-
-    // For section/div with matching class
-    var escapedCls = s.cls.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    var re = new RegExp('(<(?:section|div)\b[^>]*class="[^"]*' + escapedCls + '[^"]*")([^>]*>)', 'i');
-    modified = modified.replace(re, '$1 data-aub-section="' + s.id + '" style="display:none !important"$2');
   });
+
+  var marker    = '/* admin-layout-vis */';
+  var markerEnd = '/* end-admin-layout-vis */';
+  var block     = marker + cssRules + markerEnd;
+
+  if(modified.includes(marker)) {
+    var mi = modified.indexOf(marker);
+    var mei = modified.indexOf(markerEnd);
+    modified = modified.substring(0, mi) + block + modified.substring(mei + markerEnd.length);
+  } else {
+    modified = modified.replace('</style>', block + '\n</style>');
+  }
 
   await pushHTMLToGitHub(modified, 'Admin: update section visibility');
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // MARKETING
