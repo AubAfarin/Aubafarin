@@ -2761,7 +2761,7 @@ async function pushHTMLToGitHub(newHTML, commitMsg) {
       var errData = await pushRes.json();
       throw new Error(errData.message || pushRes.statusText);
     }setPushStatus('success', 'Pushed! ✓');
-
+    cachedHTML = newHTML; // keep cache in sync so next save uses updated content
     setTimeout(function() { setPushStatus('idle', 'Ready'); }, 3000);
     toast('Successfully pushed to GitHub!', 'success');
     return true;
@@ -3556,7 +3556,8 @@ function extractSectionBlock(html, cls) {
 }
 
 async function saveLayout() {
-  var html = await fetchCurrentHTML();
+  // Use cachedHTML if available — avoids re-fetch resetting SECTIONS state
+  var html = cachedHTML || await fetchCurrentHTML();
   if(!html) return;
   var modified = html;
 
