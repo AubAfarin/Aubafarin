@@ -530,9 +530,16 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+/* AUB layout visibility — controlled via data-aub on <body data-aub=""> */
+[data-aub~="hide-topbar"] .top-bar{display:none!important}
+[data-aub~="hide-hero"] .hero-new,[data-aub~="hide-hero"] .hero{display:none!important}
+[data-aub~="hide-products"] .products-section{display:none!important}
+[data-aub~="hide-trust"] .trust-section{display:none!important}
+[data-aub~="hide-payment"] .payment-section{display:none!important}
+[data-aub~="hide-footer"] footer{display:none!important}
 </style>
 </head>
-<body>
+<body data-aub="">
 
 <!-- TOP BAR -->
 <div class="top-bar"><span id="topBarText">ئافەرین — بەرهەمی باوەڕپێکراو بۆ منداڵەکەت</span></div>

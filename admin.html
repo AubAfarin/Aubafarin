@@ -3444,31 +3444,21 @@ function parseSectionsFromHTML(html) {
     var re = new RegExp('<(?:section|div)[^>]*class="[^"]*' + k.cls + '[^"]*"');
     if(re.test(html)) found.push({id:k.id, cls:k.cls, label:k.label, visible:true, attrs:''});
   });
-  // Detect hidden sections from admin-layout-vis marker block
-  var SELECTORS_REV = {
-    '.hero-new,.hero':'hero', '.products-section':'products-section',
-    '.trust-section':'trust-section', '.payment-section':'payment-section',
-    '.top-bar':'top-bar', 'footer':'footer'
+  // Detect hidden sections from data-aub on <body>
+  var FLAG_MAP_REV = {
+    'hide-topbar':'top-bar', 'hide-hero':'hero',
+    'hide-products':'products-section', 'hide-trust':'trust-section',
+    'hide-payment':'payment-section', 'hide-footer':'footer'
   };
-  var markerIdx = html.indexOf('/* admin-layout-vis */');
-  var markerEnd = html.indexOf('/* end-admin-layout-vis */');
-  if(markerIdx !== -1 && markerEnd !== -1) {
-    var block = html.substring(markerIdx + '/* admin-layout-vis */'.length, markerEnd);
-    Object.keys(SELECTORS_REV).forEach(function(sel) {
-      if(block.indexOf(sel + '{display:none!important}') !== -1) {
-        var sid = SELECTORS_REV[sel];
-        var existing = found.find(function(f){return f.id===sid;});
-        if(existing) existing.visible = false;
-      }
+  var bodyMatch = html.match(/<body[^>]*data-aub="([^"]*)"/);
+  if(bodyMatch) {
+    var activeFlags = bodyMatch[1].split(' ');
+    activeFlags.forEach(function(flag) {
+      var sid = FLAG_MAP_REV[flag];
+      if(!sid) return;
+      var existing = found.find(function(f){return f.id===sid;});
+      if(existing) existing.visible = false;
     });
-  }
-  // Also support legacy attribute-based detection
-  var hiddenReOld = /data-aub-hidden="([^"]+)"/g;
-  var hm;
-  while((hm = hiddenReOld.exec(html)) !== null) {
-    var hid = hm[1];
-    var existing = found.find(function(f){return f.id===hid;});
-    if(existing) existing.visible = false;
   }
   // Also detect footer
   if(html.includes('<footer') && !found.find(function(f){return f.id==='footer';}))
@@ -3570,36 +3560,35 @@ async function saveLayout() {
   if(!html) return;
   var modified = html;
 
-  // Build CSS rules for hidden sections — safe marker block (same as admin-hero-bg)
-  var cssRules = '';
-  var SELECTORS = {
-    'hero':             '.hero-new,.hero',
-    'products-section': '.products-section',
-    'trust-section':    '.trust-section',
-    'payment-section':  '.payment-section',
-    'top-bar':          '.top-bar',
-    'footer':           'footer'
+  // Build data-aub flag string — one token per hidden section
+  var FLAG_MAP = {
+    'top-bar':          'hide-topbar',
+    'hero':             'hide-hero',
+    'products-section': 'hide-products',
+    'trust-section':    'hide-trust',
+    'payment-section':  'hide-payment',
+    'footer':           'hide-footer'
   };
+  var flags = [];
   SECTIONS.forEach(function(s) {
-    if(!s.visible && SELECTORS[s.id]) {
-      cssRules += SELECTORS[s.id] + '{display:none!important}';
-    }
+    if(!s.visible && FLAG_MAP[s.id]) flags.push(FLAG_MAP[s.id]);
   });
+  var flagStr = flags.join(' ');
 
-  var marker    = '/* admin-layout-vis */';
-  var markerEnd = '/* end-admin-layout-vis */';
-  var block     = marker + cssRules + markerEnd;
+  // Single predictable replace: update data-aub="..." on <body>
+  modified = modified.replace(/(<body[^>]*?)\s*data-aub="[^"]*"/, '$1');
+  modified = modified.replace('<body', '<body data-aub="' + flagStr + '"');
 
-  if(modified.includes(marker)) {
-    var mi = modified.indexOf(marker);
-    var mei = modified.indexOf(markerEnd);
-    modified = modified.substring(0, mi) + block + modified.substring(mei + markerEnd.length);
-  } else {
-    modified = modified.replace('</style>', block + '\n</style>');
+  // Clean up any legacy marker blocks from previous approach
+  var mi = modified.indexOf('/* admin-layout-vis */');
+  var me = modified.indexOf('/* end-admin-layout-vis */');
+  if(mi !== -1 && me !== -1) {
+    modified = modified.substring(0, mi) + modified.substring(me + '/* end-admin-layout-vis */'.length);
   }
 
   await pushHTMLToGitHub(modified, 'Admin: update section visibility');
 }
+
 
 
 // ══════════════════════════════════════════════════════════════
