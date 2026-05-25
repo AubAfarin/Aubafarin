@@ -3441,7 +3441,7 @@ function parseSectionsFromHTML(html) {
   ];
   var found = [];
   KNOWN.forEach(function(k) {
-    var re = new RegExp('<section[^>]*class="[^"]*' + k.cls + '[^"]*"');
+    var re = new RegExp('<(?:section|div)[^>]*class="[^"]*' + k.cls + '[^"]*"');
     if(re.test(html)) found.push({id:k.id, cls:k.cls, label:k.label, visible:true, attrs:''});
   });
   // Detect hidden sections — both new (data-aub-section) and old (data-aub-hidden) approach
