@@ -3633,11 +3633,8 @@ async function saveMarketing() {
   // Update top-bar CSS color — match any existing background value
   newHTML = newHTML.replace(/\.top-bar\{background:[^;]+;/, '.top-bar{background:' + annBG + ';');
   newHTML = newHTML.replace(/\.top-bar\{[^}]*color:#fff[^}]*\}/, function(m){ return m.replace(/color:#fff/, 'color:' + annFG); });
-  // Show/hide
-  newHTML = newHTML.replace(/\.top-bar\{display:none!important;/g, '.top-bar{');
-  if(!annEnabled) {
-    newHTML = newHTML.replace(/\.top-bar\{/, '.top-bar{display:none!important;');
-  }
+  // Note: top-bar visibility is controlled by saveLayout via data-aub on <body>
+  // saveMarketing does NOT touch display — only color/background
   // Pop-up injection
   var popEnabled = document.getElementById('popupToggle') ? document.getElementById('popupToggle').classList.contains('on') : false;
   var popDelay = parseInt(document.getElementById('popupDelay') ? document.getElementById('popupDelay').value : '5') || 5;
