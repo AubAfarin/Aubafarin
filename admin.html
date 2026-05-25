@@ -3576,8 +3576,8 @@ async function saveLayout() {
   var flagStr = flags.join(' ');
 
   // Single predictable replace: update data-aub="..." on <body>
-  modified = modified.replace(/(<body[^>]*?)\s*data-aub="[^"]*"/, '$1');
-  modified = modified.replace('<body', '<body data-aub="' + flagStr + '"');
+  // Use <body data-aub= as anchor — never matches comments or other tags
+  modified = modified.replace(/<body(\s[^>]*)?data-aub="[^"]*"/, '<body data-aub="' + flagStr + '"');
 
   // Clean up any legacy marker blocks from previous approach
   var mi = modified.indexOf('/* admin-layout-vis */');
