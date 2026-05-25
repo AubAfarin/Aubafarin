@@ -3588,6 +3588,25 @@ async function saveLayout() {
   }
 
   await pushHTMLToGitHub(modified, 'Admin: update section visibility');
+  // Push _headers file to force Cloudflare Pages to never cache index.html
+  await pushFileToGitHub('_headers', '/index.html\n  Cache-Control: no-store, no-cache, must-revalidate\n/*\n  Cache-Control: no-store\n', 'Admin: force no-cache headers');
+}
+
+async function pushFileToGitHub(path, content, commitMsg) {
+  try {
+    var encoded = btoa(unescape(encodeURIComponent(content)));
+    // Get existing SHA if file exists
+    var shaRes = await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + path + '?ref=' + GH.branch, {
+      headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json'}
+    });
+    var body = {message: commitMsg, content: encoded, branch: GH.branch};
+    if(shaRes.ok) { var shaData = await shaRes.json(); body.sha = shaData.sha; }
+    await fetch('https://api.github.com/repos/' + GH.repo + '/contents/' + path, {
+      method: 'PUT',
+      headers: {'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn('pushFileToGitHub failed:', e); }
 }
 
 
