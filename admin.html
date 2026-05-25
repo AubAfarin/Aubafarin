@@ -3560,6 +3560,8 @@ async function saveLayout() {
 
   // Step 1: Remove previous layout-hide attributes — strip BOTH together in one pass
   modified = modified.replace(/( data-aub-section="[^"]*")?( style="display:none !important")?( data-aub-section="[^"]*")?/g, '');
+  // Restore top-bar CSS rule
+  modified = modified.replace(/\.top-bar\{display:none!important;/, '.top-bar{');
   // Also clear old wrapper-div approach leftovers
   modified = modified.replace(/<div style="display:none" data-aub-hidden="[^"]*">/g, '');
   modified = modified.replace(/<\/div><!--\/aub-hidden:[\s\S]*?-->/g, '');
@@ -3568,6 +3570,13 @@ async function saveLayout() {
   SECTIONS.forEach(function(s) {
     if(s.visible) return; // visible — leave it alone
     if(!s.cls) return;
+
+    // Special case: top-bar — uses CSS rule injection
+    if(s.cls === 'top-bar') {
+      modified = modified.replace(/\.top-bar\{display:none!important;/g, '.top-bar{');
+      modified = modified.replace(/\.top-bar\{/, '.top-bar{display:none!important;');
+      return;
+    }
 
     // Special case: footer
     if(s.cls === 'footer-tag') {
