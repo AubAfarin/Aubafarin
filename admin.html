@@ -2726,17 +2726,6 @@ function ensureNavPresent(html) {
 }
 
 async function pushHTMLToGitHub(newHTML, commitMsg) {
-  // Always re-apply current SECTIONS visibility state before any push
-  // This prevents stale GitHub fetches from overwriting toggle state
-  if(typeof SECTIONS !== 'undefined' && SECTIONS.length) {
-    var FLAG_MAP_PUSH = {
-      'top-bar':'hide-topbar','hero':'hide-hero','products-section':'hide-products',
-      'trust-section':'hide-trust','payment-section':'hide-payment','footer':'hide-footer'
-    };
-    var pushFlags = [];
-    SECTIONS.forEach(function(s){ if(!s.visible && FLAG_MAP_PUSH[s.id]) pushFlags.push(FLAG_MAP_PUSH[s.id]); });
-    newHTML = newHTML.replace(/<body[^>]*data-aub="[^"]*"/, '<body data-aub="' + pushFlags.join(' ') + '"');
-  }
   newHTML = ensureNavPresent(newHTML);
 
   if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return false; }try {setPushStatus('pushing', 'Fetching SHA...');
