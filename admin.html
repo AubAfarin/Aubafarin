@@ -214,16 +214,6 @@ html[dir=rtl] #toastWrap{right:auto;left:24px}
 .mob-nav-btn.active{color:var(--brand)}
 .mob-nav-btn .mob-icon{font-size:20px}
 
-/* RESPONSIVE */
-@media(max-width:768px){
-  .sidebar{display:none}
-  .mobile-bottom-nav{display:block}
-  .main-content{padding-bottom:70px}
-  .tab-content{padding:16px}
-  .cols-2,.cols-3,.cols-4{grid-template-columns:1fr}
-  .prod-form{grid-template-columns:1fr}
-  .page-header{padding:16px}
-}
 
 /* RTL specific */
 html[dir=rtl] .nav-item{text-align:right}
@@ -271,14 +261,99 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 /* ANNOUNCEMENT BAR PREVIEW */
 .ann-preview{background:var(--brand);color:#fff;text-align:center;padding:10px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px}
 
-/* MOBILE CATALOG CARDS */
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — full mobile overhaul
+═══════════════════════════════════════════════════ */
 @media(max-width:768px){
+  /* Layout */
+  .sidebar{display:none}
+  .mobile-bottom-nav{display:block}
+  .admin-shell{height:calc(100vh - 44px)}
+  .main-content{padding-bottom:80px}
+
+  /* Clock bar compact */
+  .clock-bar{gap:10px;padding:0 12px}
+  .clock-text{font-size:11px}
+  .clock-badge{font-size:9px;padding:3px 8px}
+
+  /* Page header stacks vertically */
+  .page-header{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:10px}
+  .page-actions{width:100%;flex-wrap:wrap;gap:8px}
+  .page-actions .btn,.page-actions input,.page-actions select{width:100%}
+
+  /* Tab content */
+  .tab-content{padding:14px 12px}
+
+  /* Grids collapse to single column */
+  .cols-2,.cols-3,.cols-4{grid-template-columns:1fr}
+  .card-grid.cols-2[style*="margin-bottom"]{gap:12px}
+
+  /* Product form */
+  .prod-form{grid-template-columns:1fr}
+
+  /* Catalog search/filter row */
+  #catalogSearch{width:100%!important}
+  #catalogCatFilter{width:100%!important}
+
+  /* Catalog table → cards */
   .admin-table thead{display:none}
   .admin-table,.admin-table tbody,.admin-table tr,.admin-table td{display:block;width:100%}
   .admin-table tr{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;padding:12px;position:relative}
-  .admin-table td{padding:4px 0;border:none;font-size:12px;display:flex;align-items:center;gap:8px}
-  .admin-table td::before{content:attr(data-label);font-size:9px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;min-width:70px;flex-shrink:0}
-  .prod-thumb{width:64px;height:80px}
+  .admin-table td{padding:4px 0;border:none;font-size:12px;display:flex;align-items:center;gap:8px;min-height:28px}
+  .admin-table td::before{content:attr(data-label);font-size:9px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;min-width:64px;flex-shrink:0}
+  .admin-table td:first-child::before{display:none}
+  .prod-thumb{width:56px;height:72px}
+
+  /* Product modal */
+  .modal-box{padding:20px 16px;border-radius:16px;width:100%!important;max-width:100%!important;margin:0;max-height:100vh;border-radius:0}
+  .modal-backdrop.open{align-items:flex-end}
+  .modal-backdrop .modal-box{border-bottom-left-radius:0;border-bottom-right-radius:0;max-height:96vh}
+
+  /* Dashboard stat cards */
+  .stat-value{font-size:22px}
+
+  /* Cards */
+  .card{padding:16px}
+  .card-title{font-size:10px}
+
+  /* Buttons full-width in action rows */
+  .modal-box > div:last-child{flex-direction:column}
+  .modal-box > div:last-child .btn{width:100%}
+
+  /* Section drag items */
+  .section-drag-item{padding:10px 12px}
+
+  /* Rollback items stack */
+  .rollback-item{flex-wrap:wrap;gap:6px}
+  .rollback-sha{font-size:10px}
+  .rollback-msg{font-size:11px;width:100%}
+
+  /* Commit log */
+  .commit-row{flex-wrap:wrap;gap:4px}
+  .commit-msg{width:100%;order:2}
+
+  /* Color rows */
+  .color-row{flex-wrap:wrap;gap:8px}
+
+  /* Inputs full width */
+  .field-input[style*="width:200px"]{width:100%!important}
+  .field-input[style*="width:180px"]{width:100%!important}
+
+  /* Image gallery in modal */
+  #prodImgGallery{grid-template-columns:repeat(3,1fr)!important}
+
+  /* Toast — left on mobile */
+  #toastWrap{right:12px;left:12px;bottom:90px}
+  .toast{max-width:100%}
+
+  /* Push status in header */
+  .push-status{font-size:10px}
+
+  /* Media grid */
+  .media-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* Inner 2-col grids in modal */
+  .modal-box .cols-2{grid-template-columns:1fr}
 }
 </style>
 </head>
