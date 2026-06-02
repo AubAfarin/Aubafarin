@@ -1059,7 +1059,7 @@ function checkoutWhatsApp() {
     var name = typeof it.name === 'object' ? (it.name.ku || it.name.ar || it.name.en || '') : (it.name || '');
     var subtotal = it.price * it.qty;
     total += subtotal;
-    lines.push((i+1) + '. ' + name + ' × ' + it.qty + ' = ' + subtotal.toLocaleString() + ' د.ع');
+    lines.push((i+1) + '. [' + it.id + '] ' + name + ' × ' + it.qty + ' = ' + subtotal.toLocaleString() + ' د.ع');
   }
   lines.push('');
   lines.push('💰 *کۆی گشتی: ' + total.toLocaleString() + ' د.ع*');
@@ -1464,9 +1464,17 @@ openProduct = function(id) {
   // Update add btn text
   var mab = document.getElementById('modalAddBtn');
   if(mab) { var svg = mab.querySelector('svg'); mab.textContent = ' ' + t.modalAddBtn; if(svg) mab.prepend(svg); }
-  // Update contact btn text
+  // Update contact btn text and WhatsApp message with product id
   var cb = document.querySelector('.modal-actions .btn-outline');
-  if(cb) { var svg2 = cb.querySelector('svg'); cb.textContent = ' ' + t.contactBtn; if(svg2) cb.prepend(svg2); }
+  if(cb) {
+    var svg2 = cb.querySelector('svg'); cb.textContent = ' ' + t.contactBtn; if(svg2) cb.prepend(svg2);
+    var prod = selectedProd;
+    if(prod) {
+      var prodName = typeof prod.name === 'object' ? (prod.name[activeLang] || prod.name.ku || '') : (prod.name || '');
+      var waMsg = encodeURIComponent('🛍️ ' + prodName + '\n🔖 ' + prod.id);
+      cb.href = 'https://wa.me/9647771004040?text=' + waMsg;
+    }
+  }
 };
 
 
