@@ -347,39 +347,71 @@ input[type=range]{flex:1;accent-color:var(--brand)}
   /* ── Catalog table → cards ── */
   .admin-table thead{display:none!important}
   .admin-table,
-  .admin-table tbody,
-  .admin-table tr,
-  .admin-table td{display:block!important;width:100%!important}
-  .admin-table tr{
+  .admin-table tbody{display:block!important;width:100%!important}
+
+  /* Each row = a card */
+  .admin-table tr.catalog-row{
+    display:grid!important;
+    grid-template-columns:72px 1fr!important;
+    grid-template-rows:auto!important;
     background:var(--surface2);
     border:1px solid var(--border);
-    border-radius:12px;
-    margin-bottom:10px;
-    padding:10px;
+    border-radius:14px;
+    margin-bottom:12px;
+    padding:12px;
+    gap:0 12px;
+    cursor:grab;
     position:relative
   }
-  .admin-table td{
-    padding:4px 0!important;
+  .admin-table tr.catalog-row:active{opacity:.85}
+
+  /* Image cell — spans full height on left */
+  .admin-table td.td-img{
+    display:block!important;
+    grid-column:1;
+    grid-row:1 / span 8;
+    padding:0!important;
+    border:none!important;
+    width:72px!important
+  }
+  .admin-table td.td-img::before{display:none}
+  .prod-thumb{width:72px!important;height:90px!important;border-radius:10px;object-fit:cover}
+
+  /* All other cells — right column */
+  .admin-table td:not(.td-img):not(.td-actions){
+    display:flex!important;
+    align-items:baseline;
+    grid-column:2;
+    padding:3px 0!important;
     border:none!important;
     font-size:12px;
-    display:flex!important;
-    align-items:center;
     gap:8px;
-    min-height:26px;
-    word-break:break-word
+    word-break:break-word;
+    min-height:0
   }
-  .admin-table td::before{
+  .admin-table td:not(.td-img):not(.td-actions)::before{
     content:attr(data-label);
     font-size:9px;
     font-weight:900;
     color:var(--text3);
     text-transform:uppercase;
     letter-spacing:1px;
-    min-width:58px;
+    min-width:44px;
     flex-shrink:0
   }
-  .admin-table td:first-child::before{display:none}
-  .prod-thumb{width:52px;height:66px}
+
+  /* Actions cell — full width below */
+  .admin-table td.td-actions{
+    display:flex!important;
+    grid-column:1 / span 2;
+    gap:8px;
+    padding:8px 0 0!important;
+    border:none!important;
+    border-top:1px solid var(--border)!important;
+    margin-top:6px
+  }
+  .admin-table td.td-actions::before{display:none}
+  .admin-table td.td-actions .btn{flex:1;justify-content:center}
 
   /* ── All modals → bottom sheet ── */
   .modal-backdrop.open{align-items:flex-end!important;padding:0!important}
@@ -3089,31 +3121,32 @@ function renderCatalogTable(filter) {
   }
   tbody.innerHTML = pageProds.map(function(p, idx) {
     var realIdx = PRODUCTS.indexOf(p);
-    return '<tr data-pid="' + p.id + '" draggable="true" ' +
+    var nameKU = (p.name && p.name.ku) ? p.name.ku : '—';
+    var nameAR = (p.name && p.name.ar) ? p.name.ar : '—';
+    var catLabel = CATS_DATA[p.cat] || CAT_LABELS[p.cat] || p.cat || '—';
+    var ageLabel = AGES_DATA[p.age] || AGE_LABELS[p.age] || p.age || '—';
+    var flags =
+      (p.isNew    ? '<span class="badge badge-green" style="margin:2px">NEW</span>' : '') +
+      (p.isFeat   ? '<span class="badge badge-amber" style="margin:2px">FEAT</span>' : '') +
+      (p.stock === 'soldout' ? '<span class="badge badge-red" style="margin:2px">SOLD OUT</span>' : '') +
+      (p.stock === 'low'     ? '<span class="badge badge-amber" style="margin:2px;background:rgba(245,158,11,.15);color:var(--amber)">LOW</span>' : '');
+    return '<tr class="catalog-row" data-pid="' + p.id + '" draggable="true" ' +
       'ondragstart="catRowDragStart(event,' + realIdx + ')" ' +
-      'ondragover="event.preventDefault();this.style.background=\'rgba(59,130,246,.08)\'" ' +
-      'ondragleave="this.style.background=\'\''  +
-      'ondrop="catRowDrop(event,' + realIdx + ');this.style.background=\'\''  +
-      'style="cursor:grab">' +
-      '<td><img class="prod-thumb" src="' + driveThumb(p.image||'') + '" loading="lazy" onerror="this.src=\'\'"></td>' +
-      '<td data-label="ID" style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--brand)">' + p.id + '</td>' +
-      '<td style="font-size:10px;color:var(--text3);white-space:nowrap">' + (p.addedAt ? p.addedAt.slice(0,10) : '—') + '</td>' +
-      '<td data-label="KU" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.name && p.name.ku ? p.name.ku : '—') + '</td>' +
-      '<td data-label="AR" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl">' + (p.name && p.name.ar ? p.name.ar : '—') + '</td>' +
-      '<td data-label="Cat"><span class="badge badge-blue">' + (CATS_DATA[p.cat] || CAT_LABELS[p.cat] || p.cat) + '</span></td>' +
-      '<td data-label="Age"><span class="badge badge-purple">' + (AGES_DATA[p.age] || AGE_LABELS[p.age] || p.age) + '</span></td>' +
-      '<td data-label="Price" style="font-weight:900;white-space:nowrap">' + (p.price ? Number(p.price).toLocaleString() + ' IQD' : '—') + '</td>' +
-      '<td data-label="Sale" style="color:var(--red);font-weight:700">' + (p.salePrice ? Number(p.salePrice).toLocaleString() + ' IQD' : '—') + '</td>' +
-      '<td>' +
-        (p.isNew ? '<span class="badge badge-green" style="margin:2px">NEW</span>' : '') +
-        (p.isFeat ? '<span class="badge badge-amber" style="margin:2px">FEAT</span>' : '') +
-        (p.stock === 'soldout' ? '<span class="badge badge-red" style="margin:2px">SOLD OUT</span>' : '') +
-        (p.stock === 'low' ? '<span class="badge badge-amber" style="margin:2px;background:rgba(245,158,11,.15);color:var(--amber)">LOW</span>' : '') +
-      '</td>' +
-      '<td style="display:flex;gap:4px">' +
-        '<button class="btn btn-secondary btn-sm" onclick="editProduct(' + realIdx + ')">✏️ Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="deleteProduct(' + realIdx + ')" title="Delete product">🗑</button>' +
-      '</td>' +
+      'ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ' +
+      'ondragleave="this.classList.remove(\'drag-over\')" ' +
+      'ondrop="catRowDrop(event,' + realIdx + ');this.classList.remove(\'drag-over\')">' +
+      '<td class="td-img"><img class="prod-thumb" src="' + driveThumb(p.image||'') + '" loading="lazy" onerror="this.src=\'\'"></td>' +
+      '<td data-label="ID"><span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--brand)">' + p.id + '</span></td>' +
+      '<td data-label="Date"><span style="font-size:10px;color:var(--text3)">' + (p.addedAt ? p.addedAt.slice(0,10) : '—') + '</span></td>' +
+      '<td data-label="KU">' + nameKU + '</td>' +
+      '<td data-label="AR" style="direction:rtl">' + nameAR + '</td>' +
+      '<td data-label="Cat"><span class="badge badge-blue">' + catLabel + '</span></td>' +
+      '<td data-label="Age"><span class="badge badge-purple">' + ageLabel + '</span></td>' +
+      '<td data-label="Price"><span style="font-weight:900">' + (p.price ? Number(p.price).toLocaleString() + ' IQD' : '—') + '</span></td>' +
+      '<td data-label="Sale"><span style="color:var(--red);font-weight:700">' + (p.salePrice ? Number(p.salePrice).toLocaleString() + ' IQD' : '—') + '</span></td>' +
+      '<td data-label="Flags"><span class="td-flags">' + (flags || '—') + '</span></td>' +
+      '<td class="td-actions"><button class="btn btn-secondary btn-sm" onclick="editProduct(' + realIdx + ')">✏️ Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteProduct(' + realIdx + ')" title="Delete">🗑</button></td>' +
     '</tr>';
   }).join('');
 }
