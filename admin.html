@@ -28,15 +28,15 @@ img{display:block;max-width:100%}
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
 
 /* LOGIN */
-#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:32px}
-.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:48px;width:100%;max-width:420px;position:relative;overflow:hidden}
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:16px;overflow-y:auto}
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 28px;width:100%;max-width:420px;position:relative;overflow:hidden}
 .login-card::before{content:"";position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:var(--brand-glow);border-radius:50%;filter:blur(60px)}
-.login-logo{text-align:center;margin-bottom:32px}
-.login-logo-ku{font-size:28px;font-weight:900;color:var(--brand)}
-.login-logo-en{font-size:12px;font-weight:700;color:var(--text3);letter-spacing:4px;text-transform:uppercase}
-.login-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:24px;text-align:center}
-.login-field{position:relative;margin-bottom:16px}
-.login-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo-ku{font-size:26px;font-weight:900;color:var(--brand)}
+.login-logo-en{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:3px;text-transform:uppercase}
+.login-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px;text-align:center}
+.login-field{position:relative;margin-bottom:14px}
+.login-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:13px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
 .login-input:focus{border-color:var(--brand)}
 .login-btn{width:100%;background:var(--brand);color:#fff;border-radius:12px;padding:14px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:2px;margin-top:8px;transition:all .2s}
 .login-btn:hover{background:var(--brand-dark)}
@@ -269,153 +269,172 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 .modal-action-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE — tablet & mobile
+   TABLET  ≤ 1024px
 ═══════════════════════════════════════════════════ */
-
-/* Tablet 1024px */
 @media(max-width:1024px){
   .cols-4{grid-template-columns:repeat(2,1fr)}
   .cols-3{grid-template-columns:repeat(2,1fr)}
-  .tab-content{padding:20px 18px}
+  .tab-content{padding:20px 16px}
+  .page-header{padding:20px 20px 16px}
+  .prod-modal-box{width:98vw}
 }
 
-/* Mobile 768px */
+/* ═══════════════════════════════════════════════════
+   MOBILE  ≤ 768px
+═══════════════════════════════════════════════════ */
 @media(max-width:768px){
 
-  /* ── Layout shell ── */
+  /* ── Login screen ── */
+  #loginScreen{padding:12px;gap:16px;align-items:flex-start;padding-top:40px}
+  .login-card{padding:24px 18px;border-radius:16px}
+  .login-logo{margin-bottom:16px}
+  .login-logo-ku{font-size:22px}
+  .login-logo-en{font-size:10px;letter-spacing:2px}
+  .login-title{margin-bottom:16px}
+  .login-input{padding:12px 14px;font-size:13px}
+
+  /* ── App shell ── */
   .sidebar{display:none}
   .mobile-bottom-nav{display:block}
-  .admin-shell{height:calc(100vh - 44px)}
-  .main-content{padding-bottom:80px}
+  .admin-shell{height:calc(100vh - 44px);overflow-x:hidden}
+  .main-content{padding-bottom:80px;min-width:0;overflow-x:hidden}
 
   /* ── Clock bar ── */
   .clock-bar{gap:8px;padding:0 10px;height:auto;min-height:44px;flex-wrap:wrap;justify-content:center}
   .clock-text{font-size:10px;letter-spacing:1px}
   .clock-badge{font-size:8px;padding:2px 8px}
 
-  /* ── All tab content ── */
-  .tab-content{padding:12px 10px}
+  /* ── Tab content ── */
+  .tab-content{padding:10px 8px!important}
 
-  /* ── Page headers — all of them ── */
+  /* ── Page header ── */
   .page-header{
-    padding:12px 14px!important;
+    padding:12px 10px!important;
     flex-direction:column!important;
     align-items:flex-start!important;
-    gap:10px!important;
-    flex-wrap:wrap
+    gap:8px!important;
+    border-bottom:1px solid var(--border)
   }
-  .page-title{font-size:16px}
-  .page-sub{font-size:11px}
+  .page-title{font-size:15px}
+  .page-sub{font-size:10px}
   .page-actions{
     width:100%!important;
-    flex-wrap:wrap!important;
-    gap:8px!important;
-    flex-direction:column
+    flex-direction:column!important;
+    gap:8px!important
   }
-  .page-actions .btn,
-  .page-actions input,
-  .page-actions select,
-  .page-actions a{width:100%!important;box-sizing:border-box}
+  .page-actions > *{width:100%!important;box-sizing:border-box}
+  .page-actions .btn,.page-actions a.btn{width:100%!important;justify-content:center}
 
-  /* ── All card grids collapse ── */
+  /* ── Grid system ── */
   .cols-2,.cols-3,.cols-4{grid-template-columns:1fr!important}
-  .card-grid{gap:12px!important}
+  .card-grid{gap:10px!important}
 
   /* ── Cards ── */
-  .card{padding:14px}
+  .card{padding:12px}
+  .card-title{font-size:10px}
+
+  /* ── Product form ── */
+  .prod-form{grid-template-columns:1fr!important}
 
   /* ── Catalog search/filter ── */
   #catalogSearch,#catalogCatFilter{width:100%!important}
 
-  /* ── Catalog footer row ── */
+  /* ── Catalog footer ── */
   .catalog-footer-row{flex-direction:column;align-items:stretch}
-  .catalog-footer-row .btn{width:100%}
+  .catalog-footer-row .btn{width:100%;justify-content:center}
 
-  /* ── Catalog table → card layout ── */
+  /* ── Catalog table → cards ── */
   .admin-table thead{display:none!important}
   .admin-table,
   .admin-table tbody,
   .admin-table tr,
   .admin-table td{display:block!important;width:100%!important}
   .admin-table tr{
-    background:var(--surface);
+    background:var(--surface2);
     border:1px solid var(--border);
     border-radius:12px;
     margin-bottom:10px;
-    padding:12px;
+    padding:10px;
     position:relative
   }
   .admin-table td{
-    padding:5px 0!important;
+    padding:4px 0!important;
     border:none!important;
     font-size:12px;
     display:flex!important;
     align-items:center;
     gap:8px;
-    min-height:28px
+    min-height:26px;
+    word-break:break-word
   }
   .admin-table td::before{
     content:attr(data-label);
-    font-size:9px;font-weight:900;
+    font-size:9px;
+    font-weight:900;
     color:var(--text3);
     text-transform:uppercase;
     letter-spacing:1px;
-    min-width:64px;
+    min-width:58px;
     flex-shrink:0
   }
   .admin-table td:first-child::before{display:none}
-  .prod-thumb{width:56px;height:72px}
+  .prod-thumb{width:52px;height:66px}
 
-  /* ── Product modal ── */
+  /* ── All modals → bottom sheet ── */
   .modal-backdrop.open{align-items:flex-end!important;padding:0!important}
-  .prod-modal-box,
-  .modal-box{
+  .modal-box,
+  .prod-modal-box{
     width:100%!important;
     max-width:100%!important;
     border-radius:20px 20px 0 0!important;
-    padding:20px 14px 28px!important;
-    max-height:94vh!important;
+    padding:20px 14px 30px!important;
+    max-height:92vh!important;
     margin:0!important
   }
-  /* Product modal inner 2-col grids → 1 col */
-  .prod-modal-box .card-grid{grid-template-columns:1fr!important}
+  .prod-modal-box .card-grid,
+  .prod-modal-box .cols-2{grid-template-columns:1fr!important}
 
-  /* ── Modal action buttons ── */
-  .modal-action-row{flex-direction:column}
-  .modal-action-row .btn{width:100%!important;margin-inline-start:0!important}
+  /* ── Modal action row ── */
+  .modal-action-row{flex-direction:column;gap:8px}
+  .modal-action-row .btn{width:100%!important;justify-content:center;margin-inline-start:0!important}
 
   /* ── Stat cards ── */
-  .stat-value{font-size:22px}
-  .stat-card{padding:14px}
+  .stat-value{font-size:20px}
+  .stat-card{padding:12px}
 
-  /* ── Rollback & commit ── */
+  /* ── Rollback / commit ── */
   .rollback-item{flex-wrap:wrap;gap:6px}
-  .rollback-sha{font-size:10px}
-  .rollback-msg{font-size:11px;width:100%}
+  .rollback-sha,.commit-sha{font-size:9px}
+  .rollback-msg,.commit-msg{font-size:11px;width:100%;flex-basis:100%}
   .commit-row{flex-wrap:wrap;gap:4px}
-  .commit-msg{width:100%}
+  .rollback-date,.commit-time{font-size:9px}
 
-  /* ── Color rows ── */
+  /* ── Color editor rows ── */
   .color-row{flex-wrap:wrap;gap:6px}
+  .color-var,.color-val{font-size:10px}
 
   /* ── Section drag items ── */
-  .section-drag-item{padding:10px 12px}
+  .section-drag-item{padding:8px 10px}
+  .section-name{font-size:11px}
 
-  /* ── Image gallery in modal ── */
+  /* ── Image gallery ── */
   #prodImgGallery{grid-template-columns:repeat(3,1fr)!important}
 
-  /* ── Media grid ── */
+  /* ── Media vault grid ── */
   .media-grid{grid-template-columns:repeat(2,1fr)!important}
 
-  /* ── Toast above bottom nav ── */
-  #toastWrap{right:10px;left:10px;bottom:86px}
-  .toast{max-width:100%}
-
-  /* ── Login card ── */
-  .login-card{padding:28px 20px;margin:16px}
+  /* ── Toast ── */
+  #toastWrap{right:8px;left:8px;bottom:84px}
+  .toast{max-width:100%;font-size:11px}
 
   /* ── Push status ── */
   .push-status{font-size:10px}
+
+  /* ── KV rows ── */
+  .kv-row{flex-direction:column;align-items:flex-start;gap:2px}
+
+  /* ── Buttons in general ── */
+  .btn-sm{font-size:9px;padding:6px 10px}
 }
 </style>
 </head>
