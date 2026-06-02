@@ -767,7 +767,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     <div class="modal-price"><span id="modalPrice"></span> <span>د.ع</span></div>
     <p class="modal-desc" id="modalDesc"></p>
     <div class="modal-stock">
-      <div class="modal-stock-item"><div class="modal-stock-dot"></div><span>بەردەستە</span></div>
+      <div class="modal-stock-item"><div class="modal-stock-dot"></div><span id="modalInStockLabel">بەردەستە</span></div>
     </div>
     <div class="modal-actions">
       <button class="btn-primary" id="modalAddBtn">
@@ -960,15 +960,16 @@ function renderProducts() {
   var html = '';
   for (var i = 0; i < slice.length; i++) {
     var p = slice[i];
-    var badge = p.isNew ? '<span class="prod-badge">نوێ</span>' : '';
+    var isNew30 = p.addedAt && (Math.floor((new Date() - new Date(p.addedAt)) / (1000*60*60*24)) <= 30);
+    var badge = isNew30 ? '<span class="prod-badge">' + (T[activeLang].newBadge || 'نوێ') + '</span>' : '';
     var dateStr = '';
     if(p.addedAt) {
       var d = new Date(p.addedAt);
       var now = new Date();
       var daysDiff = Math.floor((now - d) / (1000*60*60*24));
-      if(daysDiff === 0) dateStr = T[activeLang].today || 'Today';
-      else if(daysDiff === 1) dateStr = T[activeLang].yesterday || 'Yesterday';
-      else if(daysDiff < 7) dateStr = daysDiff + (T[activeLang].daysAgo || ' days ago');
+      if(daysDiff === 0) dateStr = T[activeLang].today;
+      else if(daysDiff === 1) dateStr = T[activeLang].yesterday;
+      else if(daysDiff < 7) dateStr = daysDiff + T[activeLang].daysAgo;
       else {
         var dd = d.getDate();
         var mm = d.getMonth() + 1;
@@ -992,7 +993,7 @@ function renderProducts() {
       '<div class="prod-cat-label" style="display:flex;justify-content:space-between;align-items:center">' + (CATS[Array.isArray(p.cat)?p.cat[0]:p.cat] || '') + (dateStr ? '<span style="font-size:9px;color:var(--slate-400)">' + dateStr + '</span>' : '') + '</div>' +
       '<h3 class="prod-name">' + (typeof p.name === 'object' ? (p.name[activeLang] || p.name.ku) : p.name) + '</h3>' +
       '<div class="prod-footer">' +
-      '<div class="prod-price">' + p.price.toLocaleString() + ' <span>د.ع</span></div>' +
+      '<div class="prod-price">' + p.price.toLocaleString() + ' <span>' + (T[activeLang].currency||'د.ع') + '</span></div>' +
       '<button class="add-btn" data-addid="' + p.id + '">+</button>' +
       '</div></div></div>';
   }
@@ -1094,7 +1095,7 @@ function renderCart() {
       '<div class="cart-item-img"><img src="' + it.image + '" alt="' + it.name + '" loading="lazy"></div>' +
       '<div class="cart-item-info">' +
       '<div class="cart-item-name">' + (typeof it.name === 'object' ? (it.name[activeLang] || it.name.ku) : it.name) + '</div>' +
-      '<div class="cart-item-price">' + it.price.toLocaleString() + ' د.ع</div>' +
+      '<div class="cart-item-price">' + it.price.toLocaleString() + ' ' + (T[activeLang].currency||'د.ع') + '</div>' +
       '<div class="cart-item-qty">' +
       '<button class="qty-btn" data-qtyid="' + it.id + '" data-qtyd="-1">-</button>' +
       '<span class="qty-val">' + it.qty + '</span>' +
@@ -1271,7 +1272,14 @@ var T = {
     menuTitle: 'ئافەرین AUB',
     social: ['واتسئەپ','تیکتۆک','سناپچات','ئینستاگرام'], phoneLabel: 'پەیوەندی',
     modalAddBtn: 'بخەرە سەبەتە',
-    newBadge: 'نوێ'
+    newBadge: 'نوێ',
+    today: 'ئەمڕۆ',
+    yesterday: 'دوێنێ',
+    daysAgo: ' ڕۆژ لەمەوبەر',
+    soldOut: 'نەماوە',
+    soldOutBtn: '❌ نەماوە',
+    lowStock: 'کەم ماوە',
+    inStockLabel: 'بەردەستە'
   },
   ar: {
     dir: 'rtl',
@@ -1308,7 +1316,14 @@ var T = {
     menuTitle: 'آفرين AUB',
     social: ['واتساب','تيك توك','سناب شات','إنستغرام'], phoneLabel: 'تواصل',
     modalAddBtn: 'أضف إلى السلة',
-    newBadge: 'جديد'
+    newBadge: 'جديد',
+    today: 'اليوم',
+    yesterday: 'أمس',
+    daysAgo: ' أيام مضت',
+    soldOut: 'نفذت الكمية',
+    soldOutBtn: '❌ نفذت الكمية',
+    lowStock: 'كمية محدودة',
+    inStockLabel: 'متاح'
   },
   en: {
     dir: 'ltr',
@@ -1345,7 +1360,14 @@ var T = {
     menuTitle: 'Afarin AUB',
     social: ['WhatsApp','TikTok','Snapchat','Instagram'], phoneLabel: 'Contact',
     modalAddBtn: 'Add to Cart',
-    newBadge: 'New'
+    newBadge: 'New',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    daysAgo: ' days ago',
+    soldOut: 'Sold Out',
+    soldOutBtn: '❌ Sold Out',
+    lowStock: 'Low Stock',
+    inStockLabel: 'In Stock'
   }
 };
 
@@ -1448,6 +1470,9 @@ function setLang(lang) {
 
   var mab = document.getElementById('modalAddBtn');
   if(mab) { var svg = mab.querySelector('svg'); mab.textContent = ' ' + t.modalAddBtn; if(svg) mab.prepend(svg); }
+
+  // Update modal in-stock label
+  setText('modalInStockLabel', t.inStockLabel);
 
   // Lang buttons active state
   document.querySelectorAll('.lang-btn').forEach(function(b) {
@@ -1566,6 +1591,6 @@ doSearch();
 
 <div id="cart-toast">✅ <span id="cart-toast-msg"></span></div>
 
-<script id="aub-stock">(function(){document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent="❌ Sold Out";}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent="SOLD OUT";el.style.position="relative";el.appendChild(badge);});})();</script>
+<script id="aub-stock">(function(){var t=window.T&&window.activeLang?window.T[window.activeLang]:{};var soldOutBtn=t.soldOutBtn||'❌ نەماوە';var soldOutBadge=t.soldOut||'نەماوە';document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent=soldOutBtn;}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent=soldOutBadge;el.style.position="relative";el.appendChild(badge);});})();</script>
 </body>
 </html>
