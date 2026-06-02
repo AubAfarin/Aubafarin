@@ -208,11 +208,12 @@ html[dir=rtl] #toastWrap{right:auto;left:24px}
 .gh-config-alert{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:16px 20px;display:flex;align-items:start;gap:12px;margin-bottom:20px;font-size:12px;color:var(--amber)}
 
 /* MOBILE BOTTOM NAV */
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:50;padding:8px 0}
-.mob-nav-inner{display:flex;justify-content:space-around}
-.mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:10px;font-size:9px;font-weight:700;color:var(--text3);cursor:pointer;transition:all .2s;letter-spacing:.5px}
-.mob-nav-btn.active{color:var(--brand)}
-.mob-nav-btn .mob-icon{font-size:20px}
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:50}
+.mob-nav-inner{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:4px 6px 8px}
+.mob-nav-inner::-webkit-scrollbar{display:none}
+.mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:10px;font-size:8px;font-weight:700;color:var(--text3);cursor:pointer;transition:all .2s;letter-spacing:.3px;flex-shrink:0;min-width:56px;white-space:nowrap}
+.mob-nav-btn.active{color:var(--brand);background:var(--brand-glow)}
+.mob-nav-btn .mob-icon{font-size:18px;line-height:1}
 
 
 /* RTL specific */
@@ -297,7 +298,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
   .sidebar{display:none}
   .mobile-bottom-nav{display:block}
   .admin-shell{height:calc(100vh - 44px);overflow-x:hidden}
-  .main-content{padding-bottom:80px;min-width:0;overflow-x:hidden}
+  .main-content{padding-bottom:72px;min-width:0;overflow-x:hidden}
 
   /* ── Clock bar ── */
   .clock-bar{gap:8px;padding:0 10px;height:auto;min-height:44px;flex-wrap:wrap;justify-content:center}
@@ -2172,13 +2173,49 @@ input[type=range]{flex:1;accent-color:var(--brand)}
       <div class="mob-icon">📦</div>
       <div>Catalog</div>
     </div>
+    <div class="mob-nav-btn" onclick="switchTab('hero')">
+      <div class="mob-icon">🖼️</div>
+      <div>Hero</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('texts')">
+      <div class="mob-icon">🌐</div>
+      <div>Texts</div>
+    </div>
     <div class="mob-nav-btn" onclick="switchTab('design')">
       <div class="mob-icon">🎨</div>
       <div>Design</div>
     </div>
+    <div class="mob-nav-btn" onclick="switchTab('layout')">
+      <div class="mob-icon">🧱</div>
+      <div>Layout</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('marketing')">
+      <div class="mob-icon">📣</div>
+      <div>Marketing</div>
+    </div>
     <div class="mob-nav-btn" onclick="switchTab('analytics')">
       <div class="mob-icon">🔥</div>
       <div>Stats</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('media')">
+      <div class="mob-icon">🖼️</div>
+      <div>Media</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('store')">
+      <div class="mob-icon">⚙️</div>
+      <div>Store</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('storage'); loadStorageSettingsTab();">
+      <div class="mob-icon">📦</div>
+      <div>Storage</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('seo')">
+      <div class="mob-icon">🔍</div>
+      <div>SEO</div>
+    </div>
+    <div class="mob-nav-btn" onclick="switchTab('rollback')">
+      <div class="mob-icon">⏪</div>
+      <div>Snapshots</div>
     </div>
     <div class="mob-nav-btn" onclick="switchTab('github')">
       <div class="mob-icon">⚙️</div>
@@ -2771,7 +2808,11 @@ function switchTab(tab) {
   if(ni) ni.classList.add('active');
   document.querySelectorAll('.mob-nav-btn').forEach(function(btn) {
     var oc = btn.getAttribute('onclick') || '';
-    if(oc.indexOf("'" + tab + "'") !== -1) btn.classList.add('active');
+    if(oc.indexOf("'" + tab + "'") !== -1) {
+      btn.classList.add('active');
+      // scroll into view on mobile
+      btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    }
   });
 }
 
@@ -6809,6 +6850,43 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(loadStorageUrls, 300);
+
+  // ── Auto-restore session on refresh ──────────────────────────
+  var stored = localStorage.getItem('aubGH');
+  if(stored) {
+    try {
+      var saved = JSON.parse(stored);
+      if(saved && saved.token && saved.repo) {
+        // Restore GH object
+        GH.token    = saved.token;
+        GH.repo     = saved.repo;
+        GH.branch   = saved.branch || 'main';
+        GH.filePath = saved.filePath || 'index.html';
+
+        // Pre-fill config tab fields
+        var ghT = document.getElementById('ghToken');
+        var ghR = document.getElementById('ghRepo');
+        var ghB = document.getElementById('ghBranch');
+        var ghF = document.getElementById('ghFilePath');
+        if(ghT) ghT.value = GH.token;
+        if(ghR) ghR.value = GH.repo;
+        if(ghB) ghB.value = GH.branch;
+        if(ghF) ghF.value = GH.filePath;
+
+        // Show sidebar identity
+        var su = document.getElementById('sidebarUser');
+        var sr = document.getElementById('sidebarRepo');
+        if(su) su.textContent = GH.repo.split('/')[0];
+        if(sr) sr.textContent = GH.repo;
+
+        // Skip login screen, enter admin directly
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminApp').style.display = 'flex';
+
+        try { initAdmin(); } catch(e) { console.error('initAdmin error:', e); }
+      }
+    } catch(e) { console.warn('Could not restore session:', e); }
+  }
 });
 
 
