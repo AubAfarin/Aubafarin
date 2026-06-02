@@ -264,96 +264,123 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 /* ═══════════════════════════════════════════════════
    RESPONSIVE — full mobile overhaul
 ═══════════════════════════════════════════════════ */
+
+/* Tablet: collapse 4-col → 2-col */
+@media(max-width:1024px){
+  .cols-4{grid-template-columns:repeat(2,1fr)}
+  .cols-3{grid-template-columns:repeat(2,1fr)}
+}
+
 @media(max-width:768px){
-  /* Layout */
+  /* ── Layout ── */
   .sidebar{display:none}
   .mobile-bottom-nav{display:block}
   .admin-shell{height:calc(100vh - 44px)}
   .main-content{padding-bottom:80px}
 
-  /* Clock bar compact */
-  .clock-bar{gap:10px;padding:0 12px}
-  .clock-text{font-size:11px}
-  .clock-badge{font-size:9px;padding:3px 8px}
+  /* ── Clock bar ── */
+  .clock-bar{gap:8px;padding:0 10px;flex-wrap:wrap;height:auto;min-height:44px}
+  .clock-text{font-size:10px;letter-spacing:1px}
+  .clock-badge{font-size:8px;padding:2px 6px}
 
-  /* Page header stacks vertically */
-  .page-header{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:10px}
-  .page-actions{width:100%;flex-wrap:wrap;gap:8px}
-  .page-actions .btn,.page-actions input,.page-actions select{width:100%}
+  /* ── Page headers ── */
+  .page-header{padding:12px 14px!important;flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+  .page-title{font-size:16px}
+  .page-actions{width:100%!important;flex-wrap:wrap!important;gap:8px!important}
+  .page-actions > *{flex:1 1 auto;min-width:0}
+  .page-actions .btn{width:100%!important}
 
-  /* Tab content */
-  .tab-content{padding:14px 12px}
+  /* ── Tab content ── */
+  .tab-content{padding:12px 10px!important}
 
-  /* Grids collapse to single column */
-  .cols-2,.cols-3,.cols-4{grid-template-columns:1fr}
-  .card-grid.cols-2[style*="margin-bottom"]{gap:12px}
+  /* ── All grids collapse to 1 col ── */
+  .cols-2,.cols-3,.cols-4{grid-template-columns:1fr!important}
+  .card-grid{gap:12px!important}
 
-  /* Product form */
-  .prod-form{grid-template-columns:1fr}
+  /* ── Prod form sidebar ── */
+  .prod-form{grid-template-columns:1fr!important}
 
-  /* Catalog search/filter row */
-  #catalogSearch{width:100%!important}
+  /* ── Catalog search/filter bar ── */
+  #catalogSearch{width:100%!important;margin-bottom:6px}
   #catalogCatFilter{width:100%!important}
 
-  /* Catalog table → cards */
+  /* ── Catalog table → card layout ── */
   .admin-table thead{display:none}
-  .admin-table,.admin-table tbody,.admin-table tr,.admin-table td{display:block;width:100%}
+  .admin-table,.admin-table tbody,.admin-table tr,.admin-table td{display:block!important;width:100%!important}
   .admin-table tr{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;padding:12px;position:relative}
-  .admin-table td{padding:4px 0;border:none;font-size:12px;display:flex;align-items:center;gap:8px;min-height:28px}
+  .admin-table td{padding:4px 0;border:none!important;font-size:12px;display:flex!important;align-items:center;gap:8px;min-height:28px}
   .admin-table td::before{content:attr(data-label);font-size:9px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;min-width:64px;flex-shrink:0}
   .admin-table td:first-child::before{display:none}
   .prod-thumb{width:56px;height:72px}
 
-  /* Product modal */
-  .modal-box{padding:20px 16px;border-radius:16px;width:100%!important;max-width:100%!important;margin:0;max-height:100vh;border-radius:0}
-  .modal-backdrop.open{align-items:flex-end}
-  .modal-backdrop .modal-box{border-bottom-left-radius:0;border-bottom-right-radius:0;max-height:96vh}
+  /* ── Product modal full-screen sheet ── */
+  .modal-backdrop.open{align-items:flex-end!important;padding:0!important}
+  .modal-box{
+    width:100%!important;max-width:100%!important;
+    border-radius:20px 20px 0 0!important;
+    padding:20px 14px 24px!important;
+    max-height:94vh!important;
+    margin:0!important
+  }
+  /* Override inline max-width on product modal */
+  #prodModal .modal-box{max-width:100%!important}
 
-  /* Dashboard stat cards */
+  /* ── Modal action buttons row ── */
+  .modal-box [style*="display:flex"][style*="gap:12px"]{flex-direction:column!important}
+  .modal-box [style*="display:flex"][style*="gap:12px"] .btn{width:100%!important;margin-inline-start:0!important}
+
+  /* ── Inner 2/3-col grids in modal (inline style grids) ── */
+  .modal-box .cols-2,.modal-box .card-grid{grid-template-columns:1fr!important}
+  /* Inline grids inside modal that use repeat(2...) */
+  .modal-box [style*="grid-template-columns:repeat(2"]{grid-template-columns:1fr!important}
+  .modal-box [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+
+  /* ── Catalog search row inline styles ── */
+  [style*="width:200px"]{width:100%!important}
+  [style*="width:160px"]{width:100%!important}
+  [style*="width:180px"]{width:100%!important}
+  [style*="width:240px"]{width:100%!important}
+  [style*="max-width:600px"]{max-width:100%!important}
+  [style*="max-width:640px"]{max-width:100%!important}
+
+  /* ── Dashboard stat cards ── */
   .stat-value{font-size:22px}
+  .stat-card{padding:14px}
 
-  /* Cards */
-  .card{padding:16px}
-  .card-title{font-size:10px}
+  /* ── Cards ── */
+  .card{padding:14px}
 
-  /* Buttons full-width in action rows */
-  .modal-box > div:last-child{flex-direction:column}
-  .modal-box > div:last-child .btn{width:100%}
-
-  /* Section drag items */
-  .section-drag-item{padding:10px 12px}
-
-  /* Rollback items stack */
+  /* ── Rollback & commit items ── */
   .rollback-item{flex-wrap:wrap;gap:6px}
   .rollback-sha{font-size:10px}
   .rollback-msg{font-size:11px;width:100%}
-
-  /* Commit log */
   .commit-row{flex-wrap:wrap;gap:4px}
-  .commit-msg{width:100%;order:2}
+  .commit-msg{width:100%}
 
-  /* Color rows */
-  .color-row{flex-wrap:wrap;gap:8px}
+  /* ── Color rows ── */
+  .color-row{flex-wrap:wrap;gap:6px}
 
-  /* Inputs full width */
-  .field-input[style*="width:200px"]{width:100%!important}
-  .field-input[style*="width:180px"]{width:100%!important}
-
-  /* Image gallery in modal */
+  /* ── Image gallery in product modal ── */
   #prodImgGallery{grid-template-columns:repeat(3,1fr)!important}
 
-  /* Toast — left on mobile */
-  #toastWrap{right:12px;left:12px;bottom:90px}
+  /* ── Media grid ── */
+  .media-grid{grid-template-columns:repeat(2,1fr)!important}
+
+  /* ── Toast above bottom nav ── */
+  #toastWrap{right:10px;left:10px;bottom:86px}
   .toast{max-width:100%}
 
-  /* Push status in header */
-  .push-status{font-size:10px}
+  /* ── Login card ── */
+  .login-card{padding:28px 20px;margin:16px}
 
-  /* Media grid */
-  .media-grid{grid-template-columns:repeat(2,1fr)}
+  /* ── Section drag items ── */
+  .section-drag-item{padding:10px 12px}
 
-  /* Inner 2-col grids in modal */
-  .modal-box .cols-2{grid-template-columns:1fr}
+  /* ── Sidebar footer lang pills ── */
+  .sidebar-lang-toggle{display:none}
+
+  /* ── Page actions inline flex rows ── */
+  [style*="display:flex;align-items:center;justify-content:space-between;margin-top:16px"]{flex-wrap:wrap;gap:8px}
 }
 </style>
 </head>
@@ -5109,11 +5136,12 @@ function saveProdModalPatched() {
   };
   var sp = parseInt(document.getElementById('pSalePrice').value);
   if(sp) prod.salePrice = sp;
-  if(editingProdIdx === -1) { PRODUCTS.unshift(prod); toast('Product added!', 'success'); } // unshift = insert at top
-  else { PRODUCTS[editingProdIdx] = prod; toast('Product updated!', 'success'); }
+  if(editingProdIdx === -1) { PRODUCTS.unshift(prod); toast('Product added — pushing to index.html…', 'success'); } // unshift = insert at top
+  else { PRODUCTS[editingProdIdx] = prod; toast('Product updated — pushing to index.html…', 'success'); }
   closeProdModal();
   renderCatalogTable();
   updateDashboardStats();
+  saveCatalog();
 };
 
 // ═══════════════════════════════ PATCH T PARSER ═══════════════════════════════
