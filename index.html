@@ -969,7 +969,19 @@ function renderProducts() {
       if(daysDiff === 0) dateStr = T[activeLang].today || 'Today';
       else if(daysDiff === 1) dateStr = T[activeLang].yesterday || 'Yesterday';
       else if(daysDiff < 7) dateStr = daysDiff + (T[activeLang].daysAgo || ' days ago');
-      else dateStr = d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      else {
+        var dd = d.getDate();
+        var mm = d.getMonth() + 1;
+        var yyyy = d.getFullYear();
+        if(activeLang === 'ku' || activeLang === 'ar') {
+          // Eastern Arabic-Indic numerals
+          function toEA(n){ return String(n).replace(/[0-9]/g, function(c){ return '٠١٢٣٤٥٦٧٨٩'[+c]; }); }
+          var rtlSlash = '\u200F/\u200F';
+          dateStr = '<bdi dir="rtl">' + toEA(dd) + rtlSlash + toEA(mm) + rtlSlash + toEA(yyyy) + '</bdi>';
+        } else {
+          dateStr = String(dd).padStart(2,'0') + '/' + String(mm).padStart(2,'0') + '/' + yyyy;
+        }
+      }
     }
     html += '<div class="prod-card" data-prodid="' + p.id + '">' +
       '<div class="prod-img-wrap">' +
