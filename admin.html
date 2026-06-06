@@ -2883,14 +2883,25 @@ async function geminiTranslate() {
 
   var GROQ_KEY = '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';
 
-  var textPrompt = 'You are an expert translator for AUB ئافەرین, a children\'s clothing and toys store in Sulaymaniyah, Iraq.\n' +
-    'Look at the product image carefully to understand exactly what the item is.\n' +
-    'Then translate the Kurdish Sorani product name and description into Arabic and English.\n' +
-    'Use the image as your main reference for context and accuracy.\n' +
-    'Return ONLY a raw JSON object, no explanation, no markdown:\n' +
-    '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
-    'Kurdish Name: ' + nameKU + '\n' +
-    'Kurdish Description: ' + (descKU || '');
+  var textPrompt = 'You are an expert Kurdish Sorani translator.\n\n' +
+    'YOUR TASK: Translate the Kurdish Sorani text below into Arabic and English.\n' +
+    'The image is provided ONLY to help you understand the product type — do NOT describe the image.\n' +
+    'You MUST translate the Kurdish words literally and accurately.\n\n' +
+    'Kurdish Sorani glossary:\n' +
+    '- قاتی = suit / matching set (top + bottom together)\n' +
+    '- کچان = girls\n' +
+    '- کوران / کوڕان = boys\n' +
+    '- منداڵ = child\n' +
+    '- جلوبەرگ = clothing\n' +
+    '- پیرانی = dress\n' +
+    '- شڵوار = pants\n' +
+    '- کراس = shirt\n' +
+    '- نوێ = new\n' +
+    '- جوان = beautiful\n\n' +
+    'Kurdish Name to translate: ' + nameKU + '\n' +
+    'Kurdish Description to translate: ' + (descKU || '') + '\n\n' +
+    'Return ONLY this JSON, nothing else:\n' +
+    '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}';
 
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
