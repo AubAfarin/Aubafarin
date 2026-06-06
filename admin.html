@@ -2881,10 +2881,22 @@ async function geminiTranslate() {
 
   var GROQ_KEY = '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';
 
-  var prompt = 'You are a professional translator specializing in Kurdish Sorani, Arabic, and English for a children\'s clothing and toys store.\n' +
-    'Translate the following Kurdish Sorani text into Arabic and English.\n' +
-    'Keep the translation natural, simple, and suitable for a children\'s store.\n' +
-    'Return ONLY valid JSON in this exact format with no explanation or markdown:\n' +
+  var prompt = 'You are an expert translator of Kurdish Sorani (Central Kurdish, written in Arabic script, spoken in Sulaymaniyah, Iraq). ' +
+    'You are translating product names and descriptions for AUB ئافەرین, a children\'s clothing and toys store in Sulaymaniyah.\n\n' +
+    'Important Kurdish Sorani vocabulary for this store:\n' +
+    '- قاتی = section/category/department (NOT jumpsuit or floor)\n' +
+    '- کچان = girls\n' +
+    '- کوڕان = boys\n' +
+    '- منداڵ / منداڵان = child/children\n' +
+    '- جلوبەرگ = clothing/clothes\n' +
+    '- یاری / یارییەکان = toy/toys\n' +
+    '- نوێ = new\n' +
+    '- جوان = beautiful/nice\n' +
+    '- بچووک = small/little\n' +
+    '- گەورە = big/large\n\n' +
+    'Translate the Kurdish Sorani product text below into Arabic and English.\n' +
+    'Be accurate, natural, and suitable for a children\'s store.\n' +
+    'Return ONLY a raw JSON object, no explanation, no markdown, no code fences:\n' +
     '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
     'Kurdish Name: ' + nameKU + '\n' +
     'Kurdish Description: ' + (descKU || '');
@@ -2899,7 +2911,7 @@ async function geminiTranslate() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 512
       })
     });
@@ -2908,9 +2920,7 @@ async function geminiTranslate() {
     if(!res.ok) throw new Error(data.error && data.error.message ? data.error.message : 'Groq error ' + res.status);
 
     var raw = data.choices[0].message.content || '';
-    var clean = raw.replace(/```json|```/g, '').trim();
-    // Extract JSON if wrapped in extra text
-    var jsonMatch = clean.match(/\{[\s\S]*\}/);
+    var jsonMatch = raw.match(/\{[\s\S]*\}/);
     if(!jsonMatch) throw new Error('Invalid response format');
     var parsed = JSON.parse(jsonMatch[0]);
 
