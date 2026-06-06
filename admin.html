@@ -1350,6 +1350,11 @@ input[type=range]{flex:1;accent-color:var(--brand)}
             <label class="field-label">index.html Path in Repo</label>
             <input class="field-input" id="ghFilePath" value="index.html" placeholder="index.html">
           </div>
+          <div class="field-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <label class="field-label">🤖 Gemini API Key <span style="font-size:9px;color:var(--brand);font-weight:700;margin-inline-start:6px">AI Translation</span></label>
+            <input class="field-input" type="password" id="geminiKey" placeholder="AQ.Ab8RN6Lv..." autocomplete="off">
+            <div style="font-size:10px;color:var(--text3);margin-top:6px">Used to auto-translate Kurdish → Arabic & English. Get free key at <strong>aistudio.google.com</strong></div>
+          </div>
           <div style="display:flex;gap:12px;margin-top:8px">
             <button class="btn btn-primary" onclick="saveGHConfig()">💾 Save Configuration</button>
             <button class="btn btn-secondary" onclick="testGHConnection()">🔌 Test Connection</button>
@@ -2330,16 +2335,22 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <input class="field-input" id="pNameKU" placeholder="ناوی کاڵا" style="direction:rtl" oninput="autoGenID()">
         </div>
         <div class="field-group">
+          <label class="field-label">Description — Kurdish 🇮🇶</label>
+          <textarea class="field-textarea" id="pDescKU" rows="2" style="direction:rtl"></textarea>
+        </div>
+        <div style="margin-bottom:12px">
+          <button class="btn btn-secondary" id="geminiTranslateBtn" onclick="geminiTranslate()" style="width:100%;font-size:11px;gap:6px">
+            🤖 Translate Kurdish → Arabic &amp; English
+          </button>
+          <div id="geminiStatus" style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center;display:none"></div>
+        </div>
+        <div class="field-group">
           <label class="field-label">Name — Arabic 🇸🇦</label>
           <input class="field-input" id="pNameAR" placeholder="اسم المنتج" style="direction:rtl">
         </div>
         <div class="field-group">
           <label class="field-label">Name — English 🇬🇧</label>
           <input class="field-input" id="pNameEN" placeholder="Product Name" oninput="autoGenID()">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Description — Kurdish 🇮🇶</label>
-          <textarea class="field-textarea" id="pDescKU" rows="2" style="direction:rtl"></textarea>
         </div>
         <div class="field-group">
           <label class="field-label">Description — Arabic 🇸🇦</label>
@@ -2853,13 +2864,80 @@ function switchTab(tab) {
 // ══════════════════════════════════════════════════════════════
 var GH = {token:'', repo:'', branch:'main', filePath:'index.html'};
 
+// ── Gemini AI Translation ─────────────────────────────────────
+async function geminiTranslate() {
+  var nameKU = (document.getElementById('pNameKU').value || '').trim();
+  var descKU = (document.getElementById('pDescKU').value || '').trim();
+
+  if(!nameKU) { toast('Please enter the Kurdish name first', 'error'); return; }
+
+  var apiKey = localStorage.getItem('aubGemini') || '';
+  if(!apiKey) {
+    toast('No Gemini API key — add it in Config tab', 'error');
+    return;
+  }
+
+  var btn = document.getElementById('geminiTranslateBtn');
+  var status = document.getElementById('geminiStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Translating…';
+  status.style.display = 'block';
+  status.textContent = 'Calling Gemini AI…';
+
+  var prompt = 'Translate the following Kurdish Sorani text into Arabic and English.\n' +
+    'Return ONLY valid JSON in this exact format, no explanation:\n' +
+    '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
+    'Kurdish Name: ' + nameKU + '\n' +
+    'Kurdish Description: ' + (descKU || '(none)');
+
+  try {
+    var res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
+        })
+      }
+    );
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error && data.error.message ? data.error.message : 'API error ' + res.status);
+
+    var raw = data.candidates[0].content.parts[0].text || '';
+    // Strip markdown code fences if present
+    var clean = raw.replace(/```json|```/g, '').trim();
+    var parsed = JSON.parse(clean);
+
+    if(parsed.nameAR) document.getElementById('pNameAR').value = parsed.nameAR;
+    if(parsed.nameEN) { document.getElementById('pNameEN').value = parsed.nameEN; autoGenID(); }
+    if(parsed.descAR && parsed.descAR !== '(none)') document.getElementById('pDescAR').value = parsed.descAR;
+    if(parsed.descEN && parsed.descEN !== '(none)') document.getElementById('pDescEN').value = parsed.descEN;
+
+    status.style.color = 'var(--green)';
+    status.textContent = '✅ Translated — review and edit before saving';
+    toast('Translation done — review fields', 'success');
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ ' + e.message;
+    toast('Translation failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 Translate Kurdish → Arabic & English';
+  }
+}
+
 function saveGHConfig() {
   GH.token = document.getElementById('ghToken').value.trim();
   GH.repo = document.getElementById('ghRepo').value.trim();
   GH.branch = document.getElementById('ghBranch').value.trim() || 'main';
   GH.filePath = document.getElementById('ghFilePath').value.trim() || 'index.html';
   localStorage.setItem('aubGH', JSON.stringify(GH));
-  toast('GitHub config saved!', 'success');
+  // Save Gemini key separately
+  var gk = document.getElementById('geminiKey').value.trim();
+  if(gk) localStorage.setItem('aubGemini', gk);
+  toast('Configuration saved!', 'success');
   updateGHStatus();
 }
 
@@ -2873,6 +2951,9 @@ function loadGHConfig() {
     if(GH.filePath) document.getElementById('ghFilePath').value = GH.filePath;
     updateGHStatus();
   }
+  // Load Gemini key
+  var gk = localStorage.getItem('aubGemini');
+  if(gk) { var gkEl = document.getElementById('geminiKey'); if(gkEl) gkEl.value = gk; }
 }
 
 function updateGHStatus() {
@@ -6882,6 +6963,10 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
+  // Pre-seed Gemini key if not yet stored
+  if(!localStorage.getItem('aubGemini')) {
+    localStorage.setItem('aubGemini', 'AQ.Ab8RN6LvntojmUDEpelncwcDool41PIXna2yA_KakgCaoESpmA');
+  }
   setTimeout(loadStorageUrls, 300);
 
   // ── Auto-restore session on refresh ──────────────────────────
