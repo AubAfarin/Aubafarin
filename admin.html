@@ -2879,31 +2879,45 @@ async function geminiTranslate() {
   status.style.color = 'var(--text3)';
   status.textContent = 'دەیگێڕێتەوە…';
 
-  // MyMemory free translation API — no key, no account needed
-  async function mymemory(text, toLang) {
-    var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=ckb|' + toLang;
-    var res = await fetch(url);
-    if(!res.ok) throw new Error('Translation error ' + res.status);
-    var data = await res.json();
-    if(!data.responseData || !data.responseData.translatedText) throw new Error('No translation returned');
-    return data.responseData.translatedText;
-  }
+  var GROQ_KEY = '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';
+
+  var prompt = 'You are a professional translator specializing in Kurdish Sorani, Arabic, and English for a children\'s clothing and toys store.\n' +
+    'Translate the following Kurdish Sorani text into Arabic and English.\n' +
+    'Keep the translation natural, simple, and suitable for a children\'s store.\n' +
+    'Return ONLY valid JSON in this exact format with no explanation or markdown:\n' +
+    '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
+    'Kurdish Name: ' + nameKU + '\n' +
+    'Kurdish Description: ' + (descKU || '');
 
   try {
-    // Translate name to AR and EN
-    var nameAR = await mymemory(nameKU, 'ar');
-    var nameEN = await mymemory(nameKU, 'en');
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + GROQ_KEY
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 512
+      })
+    });
 
-    var descAR = '', descEN = '';
-    if(descKU) {
-      descAR = await mymemory(descKU, 'ar');
-      descEN = await mymemory(descKU, 'en');
-    }
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error && data.error.message ? data.error.message : 'Groq error ' + res.status);
 
-    if(nameAR) document.getElementById('pNameAR').value = nameAR;
-    if(nameEN) { document.getElementById('pNameEN').value = nameEN; autoGenID(); }
-    if(descAR) document.getElementById('pDescAR').value = descAR;
-    if(descEN) document.getElementById('pDescEN').value = descEN;
+    var raw = data.choices[0].message.content || '';
+    var clean = raw.replace(/```json|```/g, '').trim();
+    // Extract JSON if wrapped in extra text
+    var jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('Invalid response format');
+    var parsed = JSON.parse(jsonMatch[0]);
+
+    if(parsed.nameAR) document.getElementById('pNameAR').value = parsed.nameAR;
+    if(parsed.nameEN) { document.getElementById('pNameEN').value = parsed.nameEN; autoGenID(); }
+    if(parsed.descAR) document.getElementById('pDescAR').value = parsed.descAR;
+    if(parsed.descEN) document.getElementById('pDescEN').value = parsed.descEN;
 
     status.style.color = 'var(--green)';
     status.textContent = '✅ وەرگێڕاوە — پێش پاشەکەوتکردن بیپشکنە';
@@ -2914,7 +2928,7 @@ async function geminiTranslate() {
     toast('وەرگێڕان سەرنەکەوت: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🌐 Translate Kurdish → Arabic & English';
+    btn.innerHTML = '🤖 Translate Kurdish → Arabic & English';
   }
 }
 
