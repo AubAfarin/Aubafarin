@@ -6964,9 +6964,8 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
   // Pre-seed Gemini key if not yet stored
-  if(!localStorage.getItem('aubGemini')) {
-    localStorage.setItem('aubGemini', 'AQ.Ab8RN6LvntojmUDEpelncwcDool41PIXna2yA_KakgCaoESpmA');
-  }
+  // Always set the built-in Gemini key (overwrite any stale cached version)
+  localStorage.setItem('aubGemini', 'AQ.Ab8RN6ItLP2QONLVIOxWcvFAG3SMd3k8aEpaFzvuKXOBOiTTag');
   setTimeout(loadStorageUrls, 300);
 
   // ── Auto-restore session on refresh ──────────────────────────
