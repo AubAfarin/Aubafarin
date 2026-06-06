@@ -1350,6 +1350,11 @@ input[type=range]{flex:1;accent-color:var(--brand)}
             <label class="field-label">index.html Path in Repo</label>
             <input class="field-input" id="ghFilePath" value="index.html" placeholder="index.html">
           </div>
+          <div class="field-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <label class="field-label">🤖 Gemini API Key <span style="font-size:9px;color:var(--brand);font-weight:700;margin-inline-start:6px">AI Translation</span></label>
+            <input class="field-input" type="password" id="geminiKey" placeholder="AQ.Ab8RN6Lv..." autocomplete="off">
+            <div style="font-size:10px;color:var(--text3);margin-top:6px">Used to auto-translate Kurdish → Arabic & English. Get free key at <strong>aistudio.google.com</strong></div>
+          </div>
           <div style="display:flex;gap:12px;margin-top:8px">
             <button class="btn btn-primary" onclick="saveGHConfig()">💾 Save Configuration</button>
             <button class="btn btn-secondary" onclick="testGHConnection()">🔌 Test Connection</button>
@@ -2869,38 +2874,30 @@ async function geminiTranslate() {
   var btn = document.getElementById('geminiTranslateBtn');
   var status = document.getElementById('geminiStatus');
   btn.disabled = true;
-  btn.innerHTML = '⏳ وەرگێڕان…';
+  btn.innerHTML = '⏳ دەیگێڕێتەوە…';
   status.style.display = 'block';
   status.style.color = 'var(--text3)';
   status.textContent = 'دەیگێڕێتەوە…';
 
-  // Free Google Translate endpoint (same engine as translate.google.com)
-  async function gtrans(text, targetLang) {
-    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ckb&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
+  // MyMemory free translation API — no key, no account needed
+  async function mymemory(text, toLang) {
+    var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=ckb|' + toLang;
     var res = await fetch(url);
-    if(!res.ok) throw new Error('Translate error ' + res.status);
+    if(!res.ok) throw new Error('Translation error ' + res.status);
     var data = await res.json();
-    // Response is nested arrays: [[["translated","original",...],...],...]
-    return data[0].map(function(s){ return s[0]; }).join('');
+    if(!data.responseData || !data.responseData.translatedText) throw new Error('No translation returned');
+    return data.responseData.translatedText;
   }
 
   try {
-    // Translate name to AR and EN in parallel
-    var nameTexts = await Promise.all([
-      gtrans(nameKU, 'ar'),
-      gtrans(nameKU, 'en')
-    ]);
-    var nameAR = nameTexts[0];
-    var nameEN = nameTexts[1];
+    // Translate name to AR and EN
+    var nameAR = await mymemory(nameKU, 'ar');
+    var nameEN = await mymemory(nameKU, 'en');
 
     var descAR = '', descEN = '';
     if(descKU) {
-      var descTexts = await Promise.all([
-        gtrans(descKU, 'ar'),
-        gtrans(descKU, 'en')
-      ]);
-      descAR = descTexts[0];
-      descEN = descTexts[1];
+      descAR = await mymemory(descKU, 'ar');
+      descEN = await mymemory(descKU, 'en');
     }
 
     if(nameAR) document.getElementById('pNameAR').value = nameAR;
@@ -2927,6 +2924,9 @@ function saveGHConfig() {
   GH.branch = document.getElementById('ghBranch').value.trim() || 'main';
   GH.filePath = document.getElementById('ghFilePath').value.trim() || 'index.html';
   localStorage.setItem('aubGH', JSON.stringify(GH));
+  // Save Gemini key separately
+  var gk = document.getElementById('geminiKey').value.trim();
+  if(gk) localStorage.setItem('aubGemini', gk);
   toast('Configuration saved!', 'success');
   updateGHStatus();
 }
@@ -2941,6 +2941,9 @@ function loadGHConfig() {
     if(GH.filePath) document.getElementById('ghFilePath').value = GH.filePath;
     updateGHStatus();
   }
+  // Load Gemini key
+  var gk = localStorage.getItem('aubGemini');
+  if(gk) { var gkEl = document.getElementById('geminiKey'); if(gkEl) gkEl.value = gk; }
 }
 
 function updateGHStatus() {
@@ -6951,7 +6954,9 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
   // Pre-seed Gemini key if not yet stored
-
+  if(!localStorage.getItem('aubGemini')) {
+    localStorage.setItem('aubGemini', 'AQ.Ab8RN6LvntojmUDEpelncwcDool41PIXna2yA_KakgCaoESpmA');
+  }
   setTimeout(loadStorageUrls, 300);
 
   // ── Auto-restore session on refresh ──────────────────────────
