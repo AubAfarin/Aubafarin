@@ -2339,10 +2339,10 @@ input[type=range]{flex:1;accent-color:var(--brand)}
           <textarea class="field-textarea" id="pDescKU" rows="2" style="direction:rtl"></textarea>
         </div>
         <div style="margin-bottom:12px">
-          <button class="btn btn-secondary" id="geminiTranslateBtn" onclick="geminiTranslate()" style="width:100%;font-size:11px;gap:6px">
+          <button class="btn btn-secondary" id="geminiTranslateBtn" onclick="geminiTranslate()" style="width:100%;font-size:11px;gap:6px;opacity:0.45;cursor:not-allowed" disabled>
             🤖 Translate Kurdish → Arabic &amp; English
           </button>
-          <div id="geminiStatus" style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center;display:none"></div>
+          <div id="geminiStatus" style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center">📸 پێشی وێنەکە بارکە، دواتر وەرگێڕان دەکات</div>
         </div>
         <div class="field-group">
           <label class="field-label">Name — Arabic 🇸🇦</label>
@@ -2868,35 +2868,26 @@ var GH = {token:'', repo:'', branch:'main', filePath:'index.html'};
 async function geminiTranslate() {
   var nameKU = (document.getElementById('pNameKU').value || '').trim();
   var descKU = (document.getElementById('pDescKU').value || '').trim();
+  var imageUrl = _prodImages[0] || '';
 
   if(!nameKU) { toast('ناوی کوردی بنووسە پێش وەرگێڕان', 'error'); return; }
+  if(!imageUrl) { toast('پێشی وێنەکە بارکە', 'error'); return; }
 
   var btn = document.getElementById('geminiTranslateBtn');
   var status = document.getElementById('geminiStatus');
   btn.disabled = true;
+  btn.style.opacity = '0.45';
   btn.innerHTML = '⏳ دەیگێڕێتەوە…';
-  status.style.display = 'block';
   status.style.color = 'var(--text3)';
-  status.textContent = 'دەیگێڕێتەوە…';
+  status.textContent = 'وێنەکە دەخوێنێتەوە و دەیگێڕێتەوە…';
 
   var GROQ_KEY = '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';
 
-  var prompt = 'You are an expert translator of Kurdish Sorani (Central Kurdish, written in Arabic script, spoken in Sulaymaniyah, Iraq). ' +
-    'You are translating product names and descriptions for AUB ئافەرین, a children\'s clothing and toys store in Sulaymaniyah.\n\n' +
-    'Important Kurdish Sorani vocabulary for this store:\n' +
-    '- قاتی = section/category/department (NOT jumpsuit or floor)\n' +
-    '- کچان = girls\n' +
-    '- کوڕان = boys\n' +
-    '- منداڵ / منداڵان = child/children\n' +
-    '- جلوبەرگ = clothing/clothes\n' +
-    '- یاری / یارییەکان = toy/toys\n' +
-    '- نوێ = new\n' +
-    '- جوان = beautiful/nice\n' +
-    '- بچووک = small/little\n' +
-    '- گەورە = big/large\n\n' +
-    'Translate the Kurdish Sorani product text below into Arabic and English.\n' +
-    'Be accurate, natural, and suitable for a children\'s store.\n' +
-    'Return ONLY a raw JSON object, no explanation, no markdown, no code fences:\n' +
+  var textPrompt = 'You are an expert translator for AUB ئافەرین, a children\'s clothing and toys store in Sulaymaniyah, Iraq.\n' +
+    'Look at the product image carefully to understand exactly what the item is.\n' +
+    'Then translate the Kurdish Sorani product name and description into Arabic and English.\n' +
+    'Use the image as your main reference for context and accuracy.\n' +
+    'Return ONLY a raw JSON object, no explanation, no markdown:\n' +
     '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
     'Kurdish Name: ' + nameKU + '\n' +
     'Kurdish Description: ' + (descKU || '');
@@ -2909,8 +2900,14 @@ async function geminiTranslate() {
         'Authorization': 'Bearer ' + GROQ_KEY
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: imageUrl } },
+            { type: 'text', text: textPrompt }
+          ]
+        }],
         temperature: 0.1,
         max_tokens: 512
       })
@@ -2938,6 +2935,7 @@ async function geminiTranslate() {
     toast('وەرگێڕان سەرنەکەوت: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
+    btn.style.opacity = '1';
     btn.innerHTML = '🤖 Translate Kurdish → Arabic & English';
   }
 }
@@ -6534,6 +6532,26 @@ function renderProdImgGallery() {
   var empty = document.getElementById('imgGalleryEmpty');
   var counter = document.getElementById('imgCount');
   if(counter) counter.textContent = _prodImages.length;
+
+  // Enable/disable translate button based on image presence
+  var tBtn = document.getElementById('geminiTranslateBtn');
+  var tStatus = document.getElementById('geminiStatus');
+  if(tBtn) {
+    if(_prodImages.length > 0) {
+      tBtn.disabled = false;
+      tBtn.style.opacity = '1';
+      tBtn.style.cursor = 'pointer';
+      if(tStatus && tStatus.textContent.indexOf('📸') !== -1) {
+        tStatus.textContent = '';
+      }
+    } else {
+      tBtn.disabled = true;
+      tBtn.style.opacity = '0.45';
+      tBtn.style.cursor = 'not-allowed';
+      if(tStatus) tStatus.textContent = '📸 پێشی وێنەکە بارکە، دواتر وەرگێڕان دەکات';
+    }
+  }
+
   if(!_prodImages.length) {
     if(empty) empty.style.display = 'block';
     // Remove all image cards
