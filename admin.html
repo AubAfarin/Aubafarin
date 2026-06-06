@@ -1350,11 +1350,6 @@ input[type=range]{flex:1;accent-color:var(--brand)}
             <label class="field-label">index.html Path in Repo</label>
             <input class="field-input" id="ghFilePath" value="index.html" placeholder="index.html">
           </div>
-          <div class="field-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-            <label class="field-label">🤖 Gemini API Key <span style="font-size:9px;color:var(--brand);font-weight:700;margin-inline-start:6px">AI Translation</span></label>
-            <input class="field-input" type="password" id="geminiKey" placeholder="AQ.Ab8RN6Lv..." autocomplete="off">
-            <div style="font-size:10px;color:var(--text3);margin-top:6px">Used to auto-translate Kurdish → Arabic & English. Get free key at <strong>aistudio.google.com</strong></div>
-          </div>
           <div style="display:flex;gap:12px;margin-top:8px">
             <button class="btn btn-primary" onclick="saveGHConfig()">💾 Save Configuration</button>
             <button class="btn btn-secondary" onclick="testGHConnection()">🔌 Test Connection</button>
@@ -2869,62 +2864,60 @@ async function geminiTranslate() {
   var nameKU = (document.getElementById('pNameKU').value || '').trim();
   var descKU = (document.getElementById('pDescKU').value || '').trim();
 
-  if(!nameKU) { toast('Please enter the Kurdish name first', 'error'); return; }
-
-  var apiKey = localStorage.getItem('aubGemini') || '';
-  if(!apiKey) {
-    toast('No Gemini API key — add it in Config tab', 'error');
-    return;
-  }
+  if(!nameKU) { toast('ناوی کوردی بنووسە پێش وەرگێڕان', 'error'); return; }
 
   var btn = document.getElementById('geminiTranslateBtn');
   var status = document.getElementById('geminiStatus');
   btn.disabled = true;
-  btn.textContent = '⏳ Translating…';
+  btn.innerHTML = '⏳ وەرگێڕان…';
   status.style.display = 'block';
-  status.textContent = 'Calling Gemini AI…';
+  status.style.color = 'var(--text3)';
+  status.textContent = 'دەیگێڕێتەوە…';
 
-  var prompt = 'Translate the following Kurdish Sorani text into Arabic and English.\n' +
-    'Return ONLY valid JSON in this exact format, no explanation:\n' +
-    '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}\n\n' +
-    'Kurdish Name: ' + nameKU + '\n' +
-    'Kurdish Description: ' + (descKU || '(none)');
+  // Free Google Translate endpoint (same engine as translate.google.com)
+  async function gtrans(text, targetLang) {
+    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ckb&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
+    var res = await fetch(url);
+    if(!res.ok) throw new Error('Translate error ' + res.status);
+    var data = await res.json();
+    // Response is nested arrays: [[["translated","original",...],...],...]
+    return data[0].map(function(s){ return s[0]; }).join('');
+  }
 
   try {
-    var res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
-        })
-      }
-    );
-    var data = await res.json();
-    if(!res.ok) throw new Error(data.error && data.error.message ? data.error.message : 'API error ' + res.status);
+    // Translate name to AR and EN in parallel
+    var nameTexts = await Promise.all([
+      gtrans(nameKU, 'ar'),
+      gtrans(nameKU, 'en')
+    ]);
+    var nameAR = nameTexts[0];
+    var nameEN = nameTexts[1];
 
-    var raw = data.candidates[0].content.parts[0].text || '';
-    // Strip markdown code fences if present
-    var clean = raw.replace(/```json|```/g, '').trim();
-    var parsed = JSON.parse(clean);
+    var descAR = '', descEN = '';
+    if(descKU) {
+      var descTexts = await Promise.all([
+        gtrans(descKU, 'ar'),
+        gtrans(descKU, 'en')
+      ]);
+      descAR = descTexts[0];
+      descEN = descTexts[1];
+    }
 
-    if(parsed.nameAR) document.getElementById('pNameAR').value = parsed.nameAR;
-    if(parsed.nameEN) { document.getElementById('pNameEN').value = parsed.nameEN; autoGenID(); }
-    if(parsed.descAR && parsed.descAR !== '(none)') document.getElementById('pDescAR').value = parsed.descAR;
-    if(parsed.descEN && parsed.descEN !== '(none)') document.getElementById('pDescEN').value = parsed.descEN;
+    if(nameAR) document.getElementById('pNameAR').value = nameAR;
+    if(nameEN) { document.getElementById('pNameEN').value = nameEN; autoGenID(); }
+    if(descAR) document.getElementById('pDescAR').value = descAR;
+    if(descEN) document.getElementById('pDescEN').value = descEN;
 
     status.style.color = 'var(--green)';
-    status.textContent = '✅ Translated — review and edit before saving';
-    toast('Translation done — review fields', 'success');
+    status.textContent = '✅ وەرگێڕاوە — پێش پاشەکەوتکردن بیپشکنە';
+    toast('وەرگێڕان تەواو بوو', 'success');
   } catch(e) {
     status.style.color = 'var(--red)';
     status.textContent = '❌ ' + e.message;
-    toast('Translation failed: ' + e.message, 'error');
+    toast('وەرگێڕان سەرنەکەوت: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🤖 Translate Kurdish → Arabic & English';
+    btn.innerHTML = '🌐 Translate Kurdish → Arabic & English';
   }
 }
 
@@ -2934,9 +2927,6 @@ function saveGHConfig() {
   GH.branch = document.getElementById('ghBranch').value.trim() || 'main';
   GH.filePath = document.getElementById('ghFilePath').value.trim() || 'index.html';
   localStorage.setItem('aubGH', JSON.stringify(GH));
-  // Save Gemini key separately
-  var gk = document.getElementById('geminiKey').value.trim();
-  if(gk) localStorage.setItem('aubGemini', gk);
   toast('Configuration saved!', 'success');
   updateGHStatus();
 }
@@ -2951,9 +2941,6 @@ function loadGHConfig() {
     if(GH.filePath) document.getElementById('ghFilePath').value = GH.filePath;
     updateGHStatus();
   }
-  // Load Gemini key
-  var gk = localStorage.getItem('aubGemini');
-  if(gk) { var gkEl = document.getElementById('geminiKey'); if(gkEl) gkEl.value = gk; }
 }
 
 function updateGHStatus() {
@@ -6964,8 +6951,7 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
   // Pre-seed Gemini key if not yet stored
-  // Always set the built-in Gemini key (overwrite any stale cached version)
-  localStorage.setItem('aubGemini', 'AQ.Ab8RN6ItLP2QONLVIOxWcvFAG3SMd3k8aEpaFzvuKXOBOiTTag');
+
   setTimeout(loadStorageUrls, 300);
 
   // ── Auto-restore session on refresh ──────────────────────────
