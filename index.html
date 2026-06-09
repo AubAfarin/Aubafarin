@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="/Logo.png">
 <link rel="shortcut icon" href="/Logo.png">
-<link rel="apple-touch-icon" href="/Logo.png">
-<link rel="apple-touch-icon-precomposed" href="/Logo.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -548,9 +548,29 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 [data-aub~="hide-trust"] .trust-section{display:none!important}
 [data-aub~="hide-payment"] .payment-section{display:none!important}
 [data-aub~="hide-footer"] footer{display:none!important}
+/* PWA INSTALL BANNER */
+#pwa-install-banner{position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#2D1B2E;color:#fff;padding:14px 20px;display:none;align-items:center;gap:14px;box-shadow:0 -4px 24px rgba(0,0,0,.35);font-family:'Vazirmatn',sans-serif}
+#pwa-install-banner.show{display:flex}
+.pwa-banner-logo{width:48px;height:48px;border-radius:12px;background:#fff;padding:4px;flex-shrink:0;object-fit:contain}
+.pwa-banner-text{flex:1}
+.pwa-banner-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.pwa-banner-sub{font-size:11px;color:rgba(255,255,255,.6)}
+.pwa-banner-install{background:#E8637A;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Vazirmatn',sans-serif;white-space:nowrap;flex-shrink:0}
+.pwa-banner-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0;line-height:1}
 </style>
 </head>
 <body data-aub="hide-topbar">
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-install-banner" role="dialog">
+  <img class="pwa-banner-logo" src="/Logo.png" alt="ئافەرین">
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title" id="pwa-banner-title">ئافەرین AUB دابەزێنە</div>
+    <div class="pwa-banner-sub" id="pwa-banner-sub">ئەپەکە بخەرە سەر شاشەی ئامێرەکەت</div>
+  </div>
+  <button class="pwa-banner-install" id="pwa-install-btn">ئەپەکە دابەزێنە</button>
+  <button class="pwa-banner-close" id="pwa-banner-close">✕</button>
+</div>
 
 <!-- TOP BAR -->
 <div class="top-bar"><span id="topBarText">ئافەرین — بەرهەمی باوەڕپێکراو بۆ منداڵەکەت</span></div>
@@ -1294,7 +1314,12 @@ var T = {
     soldOut: 'نەماوە',
     soldOutBtn: '❌ نەماوە',
     lowStock: 'کەم ماوە',
-    inStockLabel: 'بەردەستە'
+    inStockLabel: 'بەردەستە',
+    pwaTitle: 'ئافەرین AUB دابەزێنە',
+    pwaSub: 'ئەپەکە بخەرە سەر شاشەی ئامێرەکەت',
+    pwaInstall: 'ئەپەکە دابەزێنە',
+    pwaIOSBtn: 'چۆنیەتی دامەزراندن',
+    pwaIOSAlert: 'بۆ دامەزراندن:\n\n١. دووگمەی Share دابگرە\n٢. Add to Home Screen هەڵبژێرە\n٣. Add دابگرە'
   },
   ar: {
     dir: 'rtl',
@@ -1338,7 +1363,12 @@ var T = {
     soldOut: 'نفذت الكمية',
     soldOutBtn: '❌ نفذت الكمية',
     lowStock: 'كمية محدودة',
-    inStockLabel: 'متاح'
+    inStockLabel: 'متاح',
+    pwaTitle: 'حمّل تطبيق آفرين',
+    pwaSub: 'أضفه إلى شاشتك الرئيسية',
+    pwaInstall: 'تنزيل التطبيق',
+    pwaIOSBtn: 'كيفية التثبيت',
+    pwaIOSAlert: 'للتثبيت:\n\n١. اضغط زر المشاركة Share\n٢. اختر إضافة للشاشة الرئيسية\n٣. اضغط إضافة'
   },
   en: {
     dir: 'ltr',
@@ -1382,7 +1412,12 @@ var T = {
     soldOut: 'Sold Out',
     soldOutBtn: '❌ Sold Out',
     lowStock: 'Low Stock',
-    inStockLabel: 'In Stock'
+    inStockLabel: 'In Stock',
+    pwaTitle: 'Install Afarin App',
+    pwaSub: 'Add to your home screen',
+    pwaInstall: 'Install App',
+    pwaIOSBtn: 'How to Install',
+    pwaIOSAlert: 'To install:\n\n1. Tap the Share button\n2. Select Add to Home Screen\n3. Tap Add'
   }
 };
 
@@ -1488,6 +1523,12 @@ function setLang(lang) {
 
   // Update modal in-stock label
   setText('modalInStockLabel', t.inStockLabel);
+
+  // PWA banner translation
+  if(t.pwaTitle) setText('pwa-banner-title', t.pwaTitle);
+  if(t.pwaSub) setText('pwa-banner-sub', t.pwaSub);
+  var pwab = document.getElementById('pwa-install-btn');
+  if(pwab && t.pwaInstall) pwab.textContent = t.pwaInstall;
 
   // Lang buttons active state
   document.querySelectorAll('.lang-btn').forEach(function(b) {
@@ -1742,12 +1783,81 @@ doSearch();
 })();
 </script>
 <script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load",function(){
-    navigator.serviceWorker.register("/sw.js").then(function(r){
-      console.log("SW registered");
-    }).catch(function(e){
-      console.log("SW failed",e);
+// PWA: Service Worker + Install Banner
+var deferredPrompt = null;
+
+// Capture install prompt (Android Chrome)
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner after 2 seconds
+  setTimeout(function() {
+    var banner = document.getElementById('pwa-install-banner');
+    if(banner) banner.classList.add('show');
+  }, 2000);
+});
+
+// Install button clicked
+var installBtn = document.getElementById('pwa-install-btn');
+if(installBtn) {
+  installBtn.addEventListener('click', function() {
+    var banner = document.getElementById('pwa-install-banner');
+    if(banner) banner.classList.remove('show');
+    if(deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(r) {
+        deferredPrompt = null;
+      });
+    }
+  });
+}
+
+// Close banner
+var closeBtn = document.getElementById('pwa-banner-close');
+if(closeBtn) {
+  closeBtn.addEventListener('click', function() {
+    var banner = document.getElementById('pwa-install-banner');
+    if(banner) banner.classList.remove('show');
+    // Don't show again this session
+    sessionStorage.setItem('pwa-banner-dismissed','1');
+  });
+}
+
+// Hide banner if already installed
+window.addEventListener('appinstalled', function() {
+  var banner = document.getElementById('pwa-install-banner');
+  if(banner) banner.classList.remove('show');
+  deferredPrompt = null;
+});
+
+// iOS: show banner if not in standalone mode and not dismissed
+if(window.navigator.standalone === false && !sessionStorage.getItem('pwa-banner-dismissed')) {
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS) {
+    setTimeout(function() {
+      var banner = document.getElementById('pwa-install-banner');
+      var installBtn = document.getElementById('pwa-install-btn');
+      if(banner && installBtn) {
+        // iOS cannot auto-install - change button to show instructions
+        var t2 = T[activeLang] || T['ku'];
+        installBtn.textContent = t2.pwaIOSBtn || 'چۆنیەتی دامەزراندن';
+        installBtn.addEventListener('click', function() {
+          var t3 = T[activeLang] || T['ku'];
+          alert(t3.pwaIOSAlert || 'بۆ دامەزراندن:\n\nShare دابگرە → Add to Home Screen');
+        });
+        banner.classList.add('show');
+      }
+    }, 2000);
+  }
+}
+
+// Register Service Worker
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').then(function(r) {
+      console.log('SW registered');
+    }).catch(function(e) {
+      console.log('SW failed', e);
     });
   });
 }
