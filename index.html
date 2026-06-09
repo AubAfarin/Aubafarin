@@ -104,9 +104,9 @@ header{position:relative;background:#fff;border-bottom:1px solid var(--slate-100
 /* AGE FILTERS */
 
 /* PRODUCTS */
-.nav-logo{width:0;overflow:hidden;opacity:0;transition:width .35s cubic-bezier(.4,0,.2,1),opacity .35s;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.top-cat-nav.stuck .nav-logo{width:64px;opacity:1}.top-cat-nav.stuck .nav-logo .icon-btn{transform:translateY(-4px);width:42px;height:42px}.top-cat-nav.stuck .nav-logo .icon-btn svg{width:38px;height:38px}
-.top-cat-nav.stuck{box-shadow:0 4px 20px rgba(0,0,0,.08)}.top-cat-nav.stuck #navLogoInner{width:64px;opacity:1}
+
+
+.top-cat-nav.stuck{box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .products-section{padding:80px 0;background:var(--slate-50);border-top:1px solid var(--slate-100);border-bottom:1px solid var(--slate-100)}
 .products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
 .products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
@@ -184,7 +184,7 @@ footer{background:var(--slate-900);color:#fff;padding:80px 0 40px;border-top:1px
 .footer-contact-icon{width:40px;height:40px;border:1px solid rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
 .footer-copyright{border-top:1px solid rgba(255,255,255,.05);padding-top:32px;text-align:center;font-size:10px;font-weight:900;color:#374151;text-transform:uppercase;letter-spacing:2px}
 /* FLOATING */
-.whatsapp-float{position:fixed;bottom:40px;right:40px;z-index:50}
+.whatsapp-float{position:fixed;bottom:40px;right:24px;z-index:50;cursor:grab;touch-action:none}.cart-float{position:fixed;bottom:40px;left:24px;z-index:50;cursor:grab;touch-action:none}.cart-float-btn{width:56px;height:56px;background:var(--primary,#1e3a5f);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(30,58,95,.4);position:relative}.cart-float-badge{position:absolute;top:4px;right:4px;background:#e53e3e;color:#fff;font-size:9px;width:16px;height:16px;display:none;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;font-weight:900}
 .wa-btn{width:56px;height:56px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,.4);transition:transform .2s;position:relative}
 .wa-btn:hover{transform:scale(1.1)}
 .wa-ping{position:absolute;inset:0;background:rgba(37,211,102,.2);border-radius:50%;animation:ping 1.5s infinite}
@@ -741,11 +741,18 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 </footer>
 
 <!-- WHATSAPP FLOAT -->
-<div class="whatsapp-float">
+<div class="whatsapp-float" id="waBtnFloat">
   <a href="https://wa.me/9647771004040" target="_blank" class="wa-btn">
     <div class="wa-ping"></div>
     <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
   </a>
+</div>
+
+<div class="cart-float" id="cartBtnFloat">
+  <button class="cart-float-btn" onclick="openCart()" aria-label="Cart">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span class="cart-float-badge" id="cartFloatBadge">0</span>
+  </button>
 </div>
 
 <!-- PANEL OVERLAY -->
@@ -899,20 +906,6 @@ function renderCats() {
   }
   el.innerHTML = html;
   // inject sticky nav logo as last item (appears beside \u0647\u06d5\u0645\u0648\u0648\u06cc when stuck)
-  var logoEl = document.createElement('a');
-  logoEl.id = 'navLogoInner';
-  logoEl.href = '/';
-  logoEl.className = 'nav-logo';
-  logoEl.style.cssText = 'padding:0 8px;text-decoration:none';
-  logoEl.onclick = function(){ openCart(); return false; };
-  var cartBtnOriginal = document.querySelector('.icon-btn[aria-label="Cart"]');
-  if (cartBtnOriginal) {
-    var cloned = cartBtnOriginal.cloneNode(true);
-    cloned.removeAttribute('id');
-    cloned.style.cssText = 'background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center';
-    logoEl.appendChild(cloned);
-  }
-  el.prepend(logoEl);
 
   var ml = document.getElementById('menuLinks');
   html = '';
@@ -1063,18 +1056,14 @@ function updateQty(id, d) {
 
 function updateCartBadge() {
   var badge = document.getElementById('cartBadge');
+  var floatBadge = document.getElementById('cartFloatBadge');
   var total = 0;
   for (var i = 0; i < cart.length; i++) total += cart[i].qty;
   badge.textContent = total;
   badge.style.display = total > 0 ? 'flex' : 'none';
-  // sync cloned badge in sticky nav logo
-  var navLogo = document.getElementById('navLogoInner');
-  if (navLogo) {
-    var navBadge = navLogo.querySelector('.cart-badge');
-    if (navBadge) {
-      navBadge.textContent = total;
-      navBadge.style.display = total > 0 ? 'flex' : 'none';
-    }
+  if (floatBadge) {
+    floatBadge.textContent = total;
+    floatBadge.style.display = total > 0 ? 'flex' : 'none';
   }
 }
 
@@ -1615,5 +1604,82 @@ doSearch();
 
 
 <script id="aub-stock">(function(){document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent="❌ Sold Out";}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent="SOLD OUT";el.style.position="relative";el.appendChild(badge);});})();</script>
+
+<script>
+(function(){
+  // side: 'right' or 'left'
+  function makeDraggable(el, storageKey, side) {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(storageKey)); } catch(e){}
+    if (saved && typeof saved.bottom === 'number' && typeof saved.h === 'number') {
+      el.style.bottom = saved.bottom + 'px';
+      el.style.top = 'auto';
+      if (side === 'left') {
+        el.style.left = saved.h + 'px';
+        el.style.right = 'auto';
+      } else {
+        el.style.right = saved.h + 'px';
+        el.style.left = 'auto';
+      }
+    }
+    var dragging = false, startX, startY, startBottom, startH;
+    function getPos(e) { return e.touches ? e.touches[0] : e; }
+    function onDown(e) {
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('a, button')) {
+        dragging = false; return;
+      }
+      var p = getPos(e);
+      dragging = true;
+      startX = p.clientX; startY = p.clientY;
+      var rect = el.getBoundingClientRect();
+      startBottom = window.innerHeight - rect.bottom;
+      startH = side === 'left' ? rect.left : window.innerWidth - rect.right;
+      el.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      var p = getPos(e);
+      var dx = p.clientX - startX, dy = p.clientY - startY;
+      var newBottom = Math.max(0, Math.min(window.innerHeight - 60, startBottom - dy));
+      var newH;
+      if (side === 'left') {
+        newH = Math.max(0, Math.min(window.innerWidth - 60, startH + dx));
+        el.style.left = newH + 'px';
+        el.style.right = 'auto';
+      } else {
+        newH = Math.max(0, Math.min(window.innerWidth - 60, startH - dx));
+        el.style.right = newH + 'px';
+        el.style.left = 'auto';
+      }
+      el.style.bottom = newBottom + 'px';
+      el.style.top = 'auto';
+      e.preventDefault();
+    }
+    function onUp(e) {
+      if (!dragging) return;
+      dragging = false;
+      el.style.cursor = 'grab';
+      var rect = el.getBoundingClientRect();
+      var h = side === 'left' ? rect.left : window.innerWidth - rect.right;
+      var pos = { bottom: window.innerHeight - rect.bottom, h: h };
+      try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch(e){}
+    }
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('touchstart', onDown, { passive: false });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchend', onUp);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var wa = document.getElementById('waBtnFloat');
+    var cart = document.getElementById('cartBtnFloat');
+    if (wa) makeDraggable(wa, 'aub_wa_pos', 'right');
+    if (cart) makeDraggable(cart, 'aub_cart_pos', 'left');
+  });
+})();
+</script>
 </body>
 </html>
