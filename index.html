@@ -1685,5 +1685,50 @@ doSearch();
 })();
 </script>
 <script id="aub-stock">(function(){document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent="❌ Sold Out";}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent="SOLD OUT";el.style.position="relative";el.appendChild(badge);});})();</script>
+
+<script>
+(function(){
+  // Push a history entry whenever a layer opens, pop it to close on back
+  var _pushed = 0;
+
+  function _push(layer) {
+    history.pushState({ layer: layer }, '');
+    _pushed++;
+  }
+
+  function _getTopOpen() {
+    // priority: search > product > cart > menu
+    if (document.getElementById('searchOverlay') && document.getElementById('searchOverlay').classList.contains('open')) return 'search';
+    if (document.getElementById('productModal') && document.getElementById('productModal').classList.contains('open')) return 'product';
+    if (document.getElementById('cartPanel') && document.getElementById('cartPanel').classList.contains('open')) return 'cart';
+    if (document.getElementById('menuDrawer') && document.getElementById('menuDrawer').classList.contains('open')) return 'menu';
+    return null;
+  }
+
+  window.addEventListener('popstate', function(e) {
+    var top = _getTopOpen();
+    if (top === 'search')  { closeSearch(); }
+    else if (top === 'product') { closeProduct(); }
+    else if (top === 'cart')    { closeCart(); }
+    else if (top === 'menu')    { closeMenu(); }
+    // if nothing open, let the browser navigate back naturally (already popped)
+  });
+
+  // Wrap openers after DOM ready so the original functions exist
+  document.addEventListener('DOMContentLoaded', function() {
+    var _origOpenSearch  = openSearch;
+    var _origOpenCart    = openCart;
+    var _origOpenMenu    = openMenu;
+    var _origOpenProduct = typeof openProduct === 'function' ? openProduct : null;
+
+    openSearch = function() { _push('search'); _origOpenSearch.apply(this, arguments); };
+    openCart   = function() { _push('cart');   _origOpenCart.apply(this, arguments); };
+    openMenu   = function() { _push('menu');   _origOpenMenu.apply(this, arguments); };
+    if (_origOpenProduct) {
+      openProduct = function() { _push('product'); _origOpenProduct.apply(this, arguments); };
+    }
+  });
+})();
+</script>
 </body>
 </html>
