@@ -2883,24 +2883,33 @@ async function geminiTranslate() {
 
   var GROQ_KEY = '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';
 
-  var textPrompt = 'You are an expert Kurdish Sorani translator.\n\n' +
-    'YOUR TASK: Translate the Kurdish Sorani text below into Arabic and English.\n' +
-    'The image is provided ONLY to help you understand the product type — do NOT describe the image.\n' +
-    'You MUST translate the Kurdish words literally and accurately.\n\n' +
+  var textPrompt = 'You are an expert Kurdish Sorani (Central Kurdish) translator for a children\'s clothing store in Sulaymaniyah, Iraq.\n\n' +
+    'TASK: Translate ONLY the Kurdish text provided below — do NOT describe or interpret the image.\n' +
+    'The image is provided only as visual context to help you choose accurate product terminology.\n\n' +
+    'CRITICAL RULES:\n' +
+    '1. The "Kurdish Name" is a SHORT product name (2-5 words). Translate it word-for-word as a product name.\n' +
+    '2. Do NOT expand, describe, or add extra words to the name.\n' +
+    '3. Do NOT use the image as the source — use the Kurdish text as the source.\n\n' +
     'Kurdish Sorani glossary:\n' +
-    '- قاتی = suit / matching set (top + bottom together)\n' +
+    '- قاتی = suit / set (matching top + bottom)\n' +
+    '- قاتی کچان = girls\' suit\n' +
+    '- قاتی کوڕان = boys\' suit\n' +
     '- کچان = girls\n' +
-    '- کوران / کوڕان = boys\n' +
+    '- کوڕان / کوران = boys\n' +
     '- منداڵ = child\n' +
     '- جلوبەرگ = clothing\n' +
     '- پیرانی = dress\n' +
     '- شڵوار = pants\n' +
     '- کراس = shirt\n' +
+    '- بلوزە = blouse\n' +
+    '- کەپ = cap / hat\n' +
     '- نوێ = new\n' +
-    '- جوان = beautiful\n\n' +
-    'Kurdish Name to translate: ' + nameKU + '\n' +
+    '- جوان = beautiful\n' +
+    '- بچووک = small\n' +
+    '- گەورە = large\n\n' +
+    'Kurdish Name to translate (keep it short — product name only): ' + nameKU + '\n' +
     'Kurdish Description to translate: ' + (descKU || '') + '\n\n' +
-    'Return ONLY this JSON, nothing else:\n' +
+    'Return ONLY this JSON with no extra text:\n' +
     '{"nameAR":"...","nameEN":"...","descAR":"...","descEN":"..."}';
 
   try {
