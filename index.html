@@ -184,7 +184,7 @@ footer{background:var(--slate-900);color:#fff;padding:80px 0 40px;border-top:1px
 .footer-contact-icon{width:40px;height:40px;border:1px solid rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
 .footer-copyright{border-top:1px solid rgba(255,255,255,.05);padding-top:32px;text-align:center;font-size:10px;font-weight:900;color:#374151;text-transform:uppercase;letter-spacing:2px}
 /* FLOATING */
-.whatsapp-float{position:fixed;bottom:40px;right:24px;z-index:50;cursor:grab;touch-action:none}.cart-float{position:fixed;bottom:40px;left:24px;z-index:50;cursor:grab;touch-action:none}.cart-float-btn{width:56px;height:56px;background:var(--primary,#1e3a5f);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(30,58,95,.4);position:relative}.cart-float-badge{position:absolute;top:4px;right:4px;background:#e53e3e;color:#fff;font-size:9px;width:16px;height:16px;display:none;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;font-weight:900}
+.whatsapp-float{position:fixed;bottom:40px;right:24px;z-index:9999;cursor:grab;touch-action:none}.cart-float{position:fixed;bottom:40px;left:24px;z-index:9999;cursor:grab;touch-action:none}.cart-float-btn{width:56px;height:56px;background:var(--primary,#1e3a5f);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(30,58,95,.4);position:relative}.cart-float-badge{position:absolute;top:4px;right:4px;background:#e53e3e;color:#fff;font-size:9px;width:16px;height:16px;display:none;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;font-weight:900}
 .wa-btn{width:56px;height:56px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,.4);transition:transform .2s;position:relative}
 .wa-btn:hover{transform:scale(1.1)}
 .wa-ping{position:absolute;inset:0;background:rgba(37,211,102,.2);border-radius:50%;animation:ping 1.5s infinite}
@@ -1607,66 +1607,69 @@ doSearch();
 
 <script>
 (function(){
-  // side: 'right' or 'left'
+  var DRAG_THRESHOLD = 6; // px — movement needed to count as a drag not a tap
   function makeDraggable(el, storageKey, side) {
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem(storageKey)); } catch(e){}
     if (saved && typeof saved.bottom === 'number' && typeof saved.h === 'number') {
       el.style.bottom = saved.bottom + 'px';
       el.style.top = 'auto';
-      if (side === 'left') {
-        el.style.left = saved.h + 'px';
-        el.style.right = 'auto';
-      } else {
-        el.style.right = saved.h + 'px';
-        el.style.left = 'auto';
-      }
+      if (side === 'left') { el.style.left = saved.h + 'px'; el.style.right = 'auto'; }
+      else { el.style.right = saved.h + 'px'; el.style.left = 'auto'; }
     }
-    var dragging = false, startX, startY, startBottom, startH;
+    var active = false, didDrag = false, startX, startY, startBottom, startH;
     function getPos(e) { return e.touches ? e.touches[0] : e; }
+
     function onDown(e) {
-      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('a, button')) {
-        dragging = false; return;
-      }
       var p = getPos(e);
-      dragging = true;
+      active = true;
+      didDrag = false;
       startX = p.clientX; startY = p.clientY;
       var rect = el.getBoundingClientRect();
       startBottom = window.innerHeight - rect.bottom;
       startH = side === 'left' ? rect.left : window.innerWidth - rect.right;
-      el.style.cursor = 'grabbing';
-      e.preventDefault();
+      // don't preventDefault here — let clicks still work until we know it's a drag
     }
+
     function onMove(e) {
-      if (!dragging) return;
+      if (!active) return;
       var p = getPos(e);
       var dx = p.clientX - startX, dy = p.clientY - startY;
+      if (!didDrag && Math.sqrt(dx*dx + dy*dy) < DRAG_THRESHOLD) return; // not moved enough yet
+      didDrag = true;
+      el.style.cursor = 'grabbing';
       var newBottom = Math.max(0, Math.min(window.innerHeight - 60, startBottom - dy));
       var newH;
       if (side === 'left') {
         newH = Math.max(0, Math.min(window.innerWidth - 60, startH + dx));
-        el.style.left = newH + 'px';
-        el.style.right = 'auto';
+        el.style.left = newH + 'px'; el.style.right = 'auto';
       } else {
         newH = Math.max(0, Math.min(window.innerWidth - 60, startH - dx));
-        el.style.right = newH + 'px';
-        el.style.left = 'auto';
+        el.style.right = newH + 'px'; el.style.left = 'auto';
       }
       el.style.bottom = newBottom + 'px';
       el.style.top = 'auto';
       e.preventDefault();
     }
+
     function onUp(e) {
-      if (!dragging) return;
-      dragging = false;
+      if (!active) return;
+      active = false;
       el.style.cursor = 'grab';
-      var rect = el.getBoundingClientRect();
-      var h = side === 'left' ? rect.left : window.innerWidth - rect.right;
-      var pos = { bottom: window.innerHeight - rect.bottom, h: h };
-      try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch(e){}
+      if (didDrag) {
+        // block the click that follows a drag (prevents WA opening / cart opening)
+        var block = function(ev) { ev.stopPropagation(); ev.preventDefault(); };
+        el.addEventListener('click', block, { capture: true, once: true });
+        var rect = el.getBoundingClientRect();
+        var h = side === 'left' ? rect.left : window.innerWidth - rect.right;
+        var pos = { bottom: window.innerHeight - rect.bottom, h: h };
+        try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch(e){}
+      }
+      didDrag = false;
     }
+
     el.addEventListener('mousedown', onDown);
-    el.addEventListener('touchstart', onDown, { passive: false });
+    el.addEventListener('touchstart', onDown, { passive: true });
     document.addEventListener('mousemove', onMove);
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('mouseup', onUp);
