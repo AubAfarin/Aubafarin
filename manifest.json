@@ -1,0 +1,34 @@
+{
+  "name": "ئافەرین AUB",
+  "short_name": "ئافەرین",
+  "description": "فرۆشگای منداڵان ئافەرین - هەرێمی کوردستان",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2D1B2E",
+  "theme_color": "#2D1B2E",
+  "dir": "rtl",
+  "lang": "ku",
+  "categories": ["shopping"],
+  "icons": [
+    {
+      "src": "/Logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
