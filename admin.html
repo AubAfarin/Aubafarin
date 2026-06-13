@@ -693,6 +693,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               <option value="beauty">ئێکسسوارات</option>
               <option value="gifts">دیاری</option>
               <option value="play">پلەی زۆن</option>
+              <option value="corner">پەڕاوگە</option>
             </select>
             <button class="btn btn-primary" onclick="openNewProduct()" id="addProdBtn">➕ Add Product</button>
           </div>
@@ -3122,7 +3123,7 @@ var editingProdIdx = -1;
 
 var CAT_LABELS = {
   newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
-  shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن'
+  shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
 };
 var AGE_LABELS = {'0-3m':'٠-٣ مانگ','3-6m':'٣-٦ مانگ','6-12m':'٦-١٢ مانگ','mini':'٢-٩ ساڵ','junior':'٨-١٦ ساڵ'};
 
@@ -3456,7 +3457,7 @@ async function saveCatalog() {
   // Auto-generate sitemap.xml and robots.txt on every Catalog push
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   xml += '  <url><loc>https://aubafarin.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n';
-  (Object.keys(CATS_DATA).length ? Object.keys(CATS_DATA) : ['newborn','girls','boys','shoes','toys','beauty','gifts','play']).forEach(function(c){
+  (Object.keys(CATS_DATA).length ? Object.keys(CATS_DATA) : ['newborn','girls','boys','shoes','toys','beauty','gifts','play','corner']).forEach(function(c){
     xml += '  <url><loc>https://aubafarin.com/#' + c + '</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n';
   });
   PRODUCTS.forEach(function(p){
@@ -4039,7 +4040,7 @@ async function saveMarketing() {
 // SEO
 // ══════════════════════════════════════════════════════════════
 function generateSitemap() {
-  var cats = Object.keys(CATS_DATA).length ? Object.keys(CATS_DATA) : ['newborn','girls','boys','shoes','toys','beauty','gifts','play'];
+  var cats = Object.keys(CATS_DATA).length ? Object.keys(CATS_DATA) : ['newborn','girls','boys','shoes','toys','beauty','gifts','play','corner'];
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   xml += '  <url><loc>https://aubafarin.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n';
   cats.forEach(function(c) {
@@ -5180,7 +5181,7 @@ function rebuildCatalogFilter() {
   if(!sel) return;
   var cats = Object.keys(CATS_DATA).length ? CATS_DATA : {
     newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
-    shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن'
+    shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
   };
   var current = sel.value;
   sel.innerHTML = '<option value="">هەمووی — All</option>' +
@@ -7198,8 +7199,7 @@ function buildHeroCardsEditor(html) {
       {"img":"","label":"جلی کوڕان","cat":"boys"},
       {"img":"","label":"ساوا و پێداویستی","cat":"newborn"},
       {"img":"","label":"پێڵاو","cat":"shoes"},
-      {"img":"","label":"یاری","cat":"toys"},
-      {"img":"","label":"کوالیتی باش","cat":"girls"}
+      {"img":"","label":"یاری","cat":"toys"}
     ];
   }
 

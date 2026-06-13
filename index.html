@@ -119,7 +119,7 @@ header{position:relative;background:#2D1B2E;border-bottom:1px solid rgba(255,255
 
 .top-cat-nav.stuck{box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .products-section{padding:80px 0;background:var(--slate-50);border-top:1px solid var(--slate-100);border-bottom:1px solid var(--slate-100)}@media(max-width:768px){.products-section{padding:24px 0 60px}}
-.products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}@media(max-width:768px){.products-header{margin-bottom:20px}}
+.products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
 .products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 @media(min-width:640px){.products-grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1024px){.products-grid{grid-template-columns:repeat(4,1fr)}}
@@ -891,8 +891,8 @@ const PRODUCTS = [{"id":"newborn-22","cat":"newborn","age":"0-3m","addedAt":"202
 
 var HERO_CARDS = [{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778943223743_1778943222811_IMG_20260504_192108.jpg","label":"هەموو بەرهەمەکان","cat":"newborn","posX":50,"posY":0},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778507334153_1778507333999_IMG_20260504_192042.jpg","label":"جلی کچان","cat":"girls","posX":50,"posY":0},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778202064049_1778202062048_20260411_054644.jpg","label":"جلی کوڕان","cat":"boys","posX":50,"posY":50},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778507666539_1778507666401_beautiful-newborn-baby-smiling-on-white-cotton.jpg","label":"ساوا و پێداویستی","cat":"newborn","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&h=500&fit=crop","label":"پێڵاو","cat":"shoes","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop","label":"یاری","cat":"toys","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=500&h=500&fit=crop","label":"کوالیتی باش","cat":"girls","posX":50,"posY":50}];
 
-var CATS = {"all":"هەمووی","newborn":"منداڵی ساوا","girls":"بۆ کچان","boys":"بۆ کوڕان","shoes":"پێڵاو","toys":"یارییەکان","beauty":"ئێکسسوارات","gifts":"دیاری","play":"پلەی زۆن"};
-var CAT_IMGS = {"all":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","newborn":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","girls":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982182508_1777982183745_IMG_20260504_192028.jpg","boys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982420014_1777982421384_20260411_075956.jpg","shoes":"https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=200&auto=format&fit=crop","toys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982537730_1777982538555_Gemini_Generated_Image_57814u57814u5781_1_.png","beauty":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982598097_1777982599466_20260401_114341.jpg","gifts":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982678123_1777982679531_flowers-online-e1452086452554.jpg","play":"https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=200&auto=format&fit=crop"};
+var CATS = {"all":"هەمووی","newborn":"منداڵی ساوا","girls":"بۆ کچان","boys":"بۆ کوڕان","shoes":"پێڵاو","toys":"یارییەکان","beauty":"ئێکسسوارات","gifts":"دیاری","play":"پلەی زۆن","corner":"پەڕاوگە"};
+var CAT_IMGS = {"all":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","newborn":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","girls":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982182508_1777982183745_IMG_20260504_192028.jpg","boys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982420014_1777982421384_20260411_075956.jpg","shoes":"https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=200&auto=format&fit=crop","toys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982537730_1777982538555_Gemini_Generated_Image_57814u57814u5781_1_.png","beauty":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982598097_1777982599466_20260401_114341.jpg","gifts":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982678123_1777982679531_flowers-online-e1452086452554.jpg","play":"https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=200&auto=format&fit=crop","corner":"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop"};
 
 
 var HERO_TEXT = {"badge":"✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت","h1":"جوانترین <span>پۆشاک</span><br>بۆ منداڵەکەت","desc":"شایەنی باشترینەکانن! لێرە نوێترین مۆدێلەکانی جیهان بە کوالێتییەکی بێوێنە و نرخێکی گونجاو دەست دەکەوێت.","cta":"بگەڕێ بۆ بەرهەمەکان ←","ctaCat":"all","h1Size":"0.9rem","h1LH":"1.5","descSize":"0.9em","descLH":"1.5","cardWDesk":"268px","cardHDesk":"396px","cardWMob":"110px","cardHMob":"140px","badgeAR":"","h1AR":"","descAR":"","ctaAR":"","badgeEN":"","h1EN":"","descEN":"","ctaEN":"","cardGapDesk":"0px","cardGapMob":"0px"};
@@ -1300,7 +1300,7 @@ var T = {
     checkout: 'بەرەو پارەدان',
     total: 'کۆی گشتی',
     noResults: 'هیچ بەرهەمێک نەدۆزرایەوە',
-    cats: {all:'هەمووی',newborn:'منداڵی ساوا',girls:'بۆ کچان',boys:'بۆ کوڕان',shoes:'پێڵاو',toys:'یارییەکان',beauty:'ئێکسسوارات',gifts:'دیاری',play:'پلەی زۆن'},
+    cats: {all:'هەمووی',newborn:'منداڵی ساوا',girls:'بۆ کچان',boys:'بۆ کوڕان',shoes:'پێڵاو',toys:'یارییەکان',beauty:'ئێکسسوارات',gifts:'دیاری',play:'پلەی زۆن',corner:'پەڕاوگە'},
     ages: {'':'هەموو تەمەنەکان','0-3m':'٠-٣ مانگ','3-6m':'٣-٦ مانگ','6-12m':'٦-١٢ مانگ','mini':'٢-٩ ساڵ','junior':'٨-١٦ ساڵ'},
     currency: 'د.ع',
     inStock: 'بەردەستە',
@@ -1349,7 +1349,7 @@ var T = {
     checkout: 'إتمام الشراء',
     total: 'المجموع',
     noResults: 'لا توجد نتائج',
-    cats: {all:'الكل',newborn:'حديث الولادة',girls:'للبنات',boys:'للأولاد',shoes:'أحذية',toys:'ألعاب',beauty:'إكسسوارات',gifts:'هدايا',play:'منطقة اللعب'},
+    cats: {all:'الكل',newborn:'حديث الولادة',girls:'للبنات',boys:'للأولاد',shoes:'أحذية',toys:'ألعاب',beauty:'إكسسوارات',gifts:'هدايا',play:'منطقة اللعب',corner:'الزاوية'},
     ages: {'':'جميع الأعمار','0-3m':'٠-٣ أشهر','3-6m':'٣-٦ أشهر','6-12m':'٦-١٢ شهر','mini':'٢-٩ سنوات','junior':'٨-١٦ سنة'},
     currency: 'د.ع',
     inStock: 'متاح',
@@ -1398,7 +1398,7 @@ var T = {
     checkout: 'Checkout',
     total: 'Total',
     noResults: 'No products found',
-    cats: {all:'All',newborn:'Newborn',girls:'Girls',boys:'Boys',shoes:'Shoes',toys:'Toys',beauty:'Accessories',gifts:'Gifts',play:'Play Zone'},
+    cats: {all:'All',newborn:'Newborn',girls:'Girls',boys:'Boys',shoes:'Shoes',toys:'Toys',beauty:'Accessories',gifts:'Gifts',play:'Play Zone',corner:'Corner'},
     ages: {'':'All Ages','0-3m':'0–3 Months','3-6m':'3–6 Months','6-12m':'6–12 Months','mini':'2–9 Years','junior':'8–16 Years'},
     currency: 'IQD',
     inStock: 'In Stock',
