@@ -55,7 +55,7 @@ img{display:block;max-width:100%}
 .lang-opt-check{color:var(--primary);font-size:12px;opacity:0}
 .lang-opt.active .lang-opt-check{opacity:1}
 /* TOP CATEGORY NAV */
-.top-cat-nav{background:#FFFDF9;border-bottom:1px solid var(--slate-100);position:sticky;top:0;z-index:39;transition:box-shadow .3s;padding:8px 0 0}
+.top-cat-nav{background:#FFFDF9;border-bottom:1px solid var(--slate-100);position:sticky;top:80px;z-index:39;transition:box-shadow .3s;padding:8px 0 0}
 .top-cat-inner{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:0 16px;justify-content:center}.top-cat-inner::after{content:"";display:block;flex-shrink:0;width:0}@media(max-width:900px){.top-cat-inner{justify-content:flex-start}.top-cat-inner::after{width:16px}}
 .top-cat-inner::-webkit-scrollbar{display:none}
 .top-cat-btn{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;cursor:pointer;padding:12px 8px 0;position:relative;border-bottom:3px solid transparent;transition:border-color .25s;min-width:90px}
@@ -75,7 +75,7 @@ img{display:block;max-width:100%}
 .top-cat-filters .age-btn:hover{border-color:#E8637A;color:var(--primary);background:#FDF0F2}
 .top-cat-filters .age-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(232,99,122,.3)}
 /* HEADER */
-header{position:relative;background:#2D1B2E;border-bottom:1px solid rgba(255,255,255,0.1);z-index:40}header .logo-center{transition:opacity .3s,transform .3s;opacity:1}header.logo-hidden .logo-center{opacity:0;pointer-events:none}
+header{position:sticky;top:0;background:#2D1B2E;border-bottom:1px solid rgba(255,255,255,0.1);z-index:50}
 .header-inner{height:80px;display:flex;align-items:center;justify-content:space-between;position:relative}
 .header-actions{display:flex;align-items:center;gap:8px}
 .icon-btn{padding:8px;color:#fff;border-radius:50%;transition:all .2s;display:flex;align-items:center;justify-content:center;position:relative}
@@ -549,7 +549,8 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 }
 /* AUB layout visibility — controlled via data-aub on body */
 [data-aub~="hide-topbar"] .top-bar{display:none!important}
-[data-aub~="hide-hero"] .hero-new,[data-aub~="hide-hero"] .hero{display:none!important}
+.hero.hero-new{overflow:hidden;max-height:3000px;opacity:1;transition:max-height .45s ease,opacity .35s ease}
+[data-aub~="hide-hero"] .hero-new,[data-aub~="hide-hero"] .hero{max-height:0!important;opacity:0!important;pointer-events:none;transition:max-height .35s ease,opacity .25s ease}
 [data-aub~="hide-products"] .products-section{display:none!important}
 [data-aub~="hide-trust"] .trust-section{display:none!important}
 [data-aub~="hide-payment"] .payment-section{display:none!important}
@@ -1063,6 +1064,16 @@ function renderProducts() {
 
 function setCategory(cat) {
   activecat = cat; activeAge = null; page = 1;
+  var bodyEl = document.body;
+  var attr = bodyEl.getAttribute('data-aub') || '';
+  var tokens = attr.split(/\s+/).filter(Boolean);
+  var idx = tokens.indexOf('hide-hero');
+  if (cat === 'all') {
+    if (idx !== -1) tokens.splice(idx, 1);
+  } else {
+    if (idx === -1) tokens.push('hide-hero');
+  }
+  bodyEl.setAttribute('data-aub', tokens.join(' '));
   renderCats(); renderAges(); renderProducts();
 }
 
@@ -1340,7 +1351,7 @@ var T = {
     pwaTitle: 'ئافەرین AUB دابەزێنە',
     pwaSub: 'ئەپەکە بخەرە سەر شاشەی ئامێرەکەت',
     pwaInstall: 'ئەپەکە دابەزێنە',
-    pwaIOSBtn: 'چۆنیەتی دامەزراندن',
+    pwaIOSBtn: 'ئەپەکە دابەزێنە',
     pwaIOSAlert: 'بۆ دامەزراندن:\n\n١. دووگمەی Share دابگرە\n٢. Add to Home Screen هەڵبژێرە\n٣. Add دابگرە',
     pwaAndroidAlert: 'بۆ دامەزراندن:\n\n١. مێنیوی وێبگەڕ بکەرەوە (⋮)\n٢. "Add to Home screen" یان "Install app" هەڵبژێرە'
   },
@@ -1656,19 +1667,15 @@ doSearch();
   window.addEventListener('resize', updateCatScrollHint);
 })();
 
-// Scroll handler: make nav sticky with logo animation
+// Scroll handler: shadow on category nav once it sticks below the header
 (function() {
   var nav = document.getElementById('topCatNav_wrap');
-  var header = document.querySelector('header');
   function onScroll() {
-    if (!nav || !header) return;
-    var headerBottom = header.getBoundingClientRect().bottom;
-    if (headerBottom <= 0) {
+    if (!nav) return;
+    if (nav.getBoundingClientRect().top <= 80) {
       nav.classList.add('stuck');
-      header.classList.add('logo-hidden');
     } else {
       nav.classList.remove('stuck');
-      header.classList.remove('logo-hidden');
     }
   }
   window.addEventListener('scroll', onScroll, {passive: true});
@@ -1896,7 +1903,7 @@ if(!isStandaloneMode() && !sessionStorage.getItem('pwa-banner-dismissed')) {
       var installBtn = document.getElementById('pwa-install-btn');
       if(banner && installBtn) {
         var t2 = T[activeLang] || T['ku'];
-        installBtn.textContent = t2.pwaIOSBtn || 'چۆنیەتی دامەزراندن';
+        installBtn.textContent = t2.pwaIOSBtn || 'ئەپەکە دابەزێنە';
         installBtn.addEventListener('click', function() {
           var t3 = T[activeLang] || T['ku'];
           alert(t3.pwaIOSAlert || 'بۆ دامەزراندن:\n\nShare دابگرە → Add to Home Screen');
@@ -1914,7 +1921,7 @@ if(!isStandaloneMode() && !sessionStorage.getItem('pwa-banner-dismissed')) {
       var installBtn = document.getElementById('pwa-install-btn');
       if(banner && installBtn) {
         var t2 = T[activeLang] || T['ku'];
-        installBtn.textContent = t2.pwaIOSBtn || 'چۆنیەتی دامەزراندن';
+        installBtn.textContent = t2.pwaIOSBtn || 'ئەپەکە دابەزێنە';
         installBtn.addEventListener('click', function() {
           var t3 = T[activeLang] || T['ku'];
           alert(t3.pwaAndroidAlert || t3.pwaIOSAlert || 'Open browser menu → Add to Home screen');
