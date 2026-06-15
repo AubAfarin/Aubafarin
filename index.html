@@ -1075,6 +1075,9 @@ function setCategory(cat) {
   }
   bodyEl.setAttribute('data-aub', tokens.join(' '));
   renderCats(); renderAges(); renderProducts();
+  if (cat !== 'all') {
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
 }
 
 function setAge(age) {
