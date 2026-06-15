@@ -3121,6 +3121,26 @@ async function pushHTMLToGitHub(newHTML, commitMsg) {
 var PRODUCTS = [];
 var editingProdIdx = -1;
 
+// ── Push Notifications (new product alerts) ──────────────────────────────
+var PUSH_WORKER_URL = 'https://aub-push-worker.afarin4business-fdf.workers.dev';
+var PUSH_ADMIN_KEY = 'arin@#29March$2026';
+
+async function sendNewProductPush(prod) {
+  try {
+    var name = (prod.name && (prod.name.ku || prod.name.en || prod.name.ar)) || prod.id;
+    await fetch(PUSH_WORKER_URL + '/notify', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-Admin-Key': PUSH_ADMIN_KEY},
+      body: JSON.stringify({
+        title: 'بەرهەمی نوێ 🎉',
+        body: name,
+        icon: prod.image || '/icon-192.png',
+        url: 'https://aubafarin.com/#product-' + prod.id
+      })
+    });
+  } catch(e) { console.warn('Push notify failed', e); }
+}
+
 var CAT_LABELS = {
   newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
   shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
@@ -5378,12 +5398,14 @@ function saveProdModalPatched() {
   };
   var sp = parseInt(document.getElementById('pSalePrice').value);
   if(sp) prod.salePrice = sp;
-  if(editingProdIdx === -1) { PRODUCTS.unshift(prod); toast('Product added — pushing to index.html…', 'success'); } // unshift = insert at top
+  var isNewProduct = (editingProdIdx === -1);
+  if(isNewProduct) { PRODUCTS.unshift(prod); toast('Product added — pushing to index.html…', 'success'); } // unshift = insert at top
   else { PRODUCTS[editingProdIdx] = prod; toast('Product updated — pushing to index.html…', 'success'); }
   closeProdModal();
   renderCatalogTable();
   updateDashboardStats();
   saveCatalog();
+  if(isNewProduct) sendNewProductPush(prod);
 };
 
 // ═══════════════════════════════ PATCH T PARSER ═══════════════════════════════
