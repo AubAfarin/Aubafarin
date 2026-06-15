@@ -118,6 +118,10 @@ header{position:relative;background:#2D1B2E;border-bottom:1px solid rgba(255,255
 
 
 .top-cat-nav.stuck{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.cat-scroll-hint{display:none;position:absolute;top:8px;bottom:0;left:0;width:48px;align-items:center;justify-content:center;pointer-events:none;z-index:5;background:linear-gradient(to left,rgba(255,253,249,0) 0%,rgba(255,253,249,.85) 60%,rgba(255,253,249,1) 100%)}
+.cat-scroll-hint svg{width:22px;height:22px;animation:catScrollHintMove 1.4s ease-in-out infinite}
+@keyframes catScrollHintMove{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(-6px);opacity:1}}
+@media(max-width:900px){.cat-scroll-hint.show{display:flex}}
 .products-section{padding:80px 0;background:var(--slate-50);border-top:1px solid var(--slate-100);border-bottom:1px solid var(--slate-100)}@media(max-width:768px){.products-section{padding:24px 0 60px}}
 .products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
 .products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
@@ -642,6 +646,9 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 
 
   <div id="topCatNav" class="top-cat-inner"></div>
+  <div id="catScrollHint" class="cat-scroll-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </div>
 
   </div>
   <div id="ageFilters" class="top-cat-filters" style="padding:4px 16px 10px"></div>
@@ -948,6 +955,19 @@ function renderCats() {
     html += '<button class="' + cls + '" data-cat="' + k + '">' + v + '</button>';
   }
   ml.innerHTML = html;
+  updateCatScrollHint();
+}
+
+function updateCatScrollHint() {
+  var inner = document.getElementById('topCatNav');
+  var hint = document.getElementById('catScrollHint');
+  if (!inner || !hint) return;
+  var hasOverflow = inner.scrollWidth > inner.clientWidth + 4;
+  if (hasOverflow && !window._catNavScrolled) {
+    hint.classList.add('show');
+  } else {
+    hint.classList.remove('show');
+  }
 }
 
 
@@ -1321,7 +1341,8 @@ var T = {
     pwaSub: 'ئەپەکە بخەرە سەر شاشەی ئامێرەکەت',
     pwaInstall: 'ئەپەکە دابەزێنە',
     pwaIOSBtn: 'چۆنیەتی دامەزراندن',
-    pwaIOSAlert: 'بۆ دامەزراندن:\n\n١. دووگمەی Share دابگرە\n٢. Add to Home Screen هەڵبژێرە\n٣. Add دابگرە'
+    pwaIOSAlert: 'بۆ دامەزراندن:\n\n١. دووگمەی Share دابگرە\n٢. Add to Home Screen هەڵبژێرە\n٣. Add دابگرە',
+    pwaAndroidAlert: 'بۆ دامەزراندن:\n\n١. مێنیوی وێبگەڕ بکەرەوە (⋮)\n٢. "Add to Home screen" یان "Install app" هەڵبژێرە'
   },
   ar: {
     dir: 'rtl',
@@ -1370,7 +1391,8 @@ var T = {
     pwaSub: 'أضفه إلى شاشتك الرئيسية',
     pwaInstall: 'تنزيل التطبيق',
     pwaIOSBtn: 'كيفية التثبيت',
-    pwaIOSAlert: 'للتثبيت:\n\n١. اضغط زر المشاركة Share\n٢. اختر إضافة للشاشة الرئيسية\n٣. اضغط إضافة'
+    pwaIOSAlert: 'للتثبيت:\n\n١. اضغط زر المشاركة Share\n٢. اختر إضافة للشاشة الرئيسية\n٣. اضغط إضافة',
+    pwaAndroidAlert: 'للتثبيت:\n\n١. افتح قائمة المتصفح (⋮)\n٢. اختر "إضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق"'
   },
   en: {
     dir: 'ltr',
@@ -1419,7 +1441,8 @@ var T = {
     pwaSub: 'Add to your home screen',
     pwaInstall: 'Install App',
     pwaIOSBtn: 'How to Install',
-    pwaIOSAlert: 'To install:\n\n1. Tap the Share button\n2. Select Add to Home Screen\n3. Tap Add'
+    pwaIOSAlert: 'To install:\n\n1. Tap the Share button\n2. Select Add to Home Screen\n3. Tap Add',
+    pwaAndroidAlert: 'To install:\n\n1. Open browser menu (⋮)\n2. Select "Add to Home screen" or "Install app"'
   }
 };
 
@@ -1621,6 +1644,18 @@ renderProducts();
 renderCart();
 doSearch();
 
+// Category nav scroll hint: hide once user scrolls, recheck on resize
+(function() {
+  var inner = document.getElementById('topCatNav');
+  if (inner) {
+    inner.addEventListener('scroll', function() {
+      window._catNavScrolled = true;
+      updateCatScrollHint();
+    }, {passive: true});
+  }
+  window.addEventListener('resize', updateCatScrollHint);
+})();
+
 // Scroll handler: make nav sticky with logo animation
 (function() {
   var nav = document.getElementById('topCatNav_wrap');
@@ -1787,16 +1822,29 @@ doSearch();
 <script>
 // PWA: Service Worker + Install Banner
 var deferredPrompt = null;
+var bannerShown = false;
 
-// Capture install prompt (Android Chrome)
+// Robust standalone/installed detection (works across iOS Safari + Android Chrome/others)
+function isStandaloneMode() {
+  if (window.navigator.standalone === true) return true;
+  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+  return false;
+}
+
+function showInstallBanner() {
+  if (bannerShown) return;
+  var banner = document.getElementById('pwa-install-banner');
+  if (banner) {
+    banner.classList.add('show');
+    bannerShown = true;
+  }
+}
+
+// Capture install prompt (Android Chrome / Edge / Samsung Internet new versions)
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
-  // Show banner after 2 seconds
-  setTimeout(function() {
-    var banner = document.getElementById('pwa-install-banner');
-    if(banner) banner.classList.add('show');
-  }, 2000);
+  setTimeout(showInstallBanner, 2000);
 });
 
 // Install button clicked
@@ -1804,13 +1852,15 @@ var installBtn = document.getElementById('pwa-install-btn');
 if(installBtn) {
   installBtn.addEventListener('click', function() {
     var banner = document.getElementById('pwa-install-banner');
-    if(banner) banner.classList.remove('show');
     if(deferredPrompt) {
+      if(banner) banner.classList.remove('show');
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(function(r) {
         deferredPrompt = null;
       });
     }
+    // If no deferredPrompt, the click is handled by the iOS/Android
+    // fallback listeners attached below (they show an alert instead).
   });
 }
 
@@ -1832,24 +1882,46 @@ window.addEventListener('appinstalled', function() {
   deferredPrompt = null;
 });
 
-// iOS: show banner if not in standalone mode and not dismissed
-if(window.navigator.standalone === false && !sessionStorage.getItem('pwa-banner-dismissed')) {
-  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+if(!isStandaloneMode() && !sessionStorage.getItem('pwa-banner-dismissed')) {
+  var ua = navigator.userAgent;
+  var isIOS = /iphone|ipad|ipod/i.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13+
+  var isAndroid = /android/i.test(ua);
+
   if(isIOS) {
+    // iOS: Safari/Chrome cannot auto-install - show Share instructions
     setTimeout(function() {
+      if (bannerShown) return;
       var banner = document.getElementById('pwa-install-banner');
       var installBtn = document.getElementById('pwa-install-btn');
       if(banner && installBtn) {
-        // iOS cannot auto-install - change button to show instructions
         var t2 = T[activeLang] || T['ku'];
         installBtn.textContent = t2.pwaIOSBtn || 'چۆنیەتی دامەزراندن';
         installBtn.addEventListener('click', function() {
           var t3 = T[activeLang] || T['ku'];
           alert(t3.pwaIOSAlert || 'بۆ دامەزراندن:\n\nShare دابگرە → Add to Home Screen');
         });
-        banner.classList.add('show');
+        showInstallBanner();
       }
     }, 2000);
+  } else {
+    // Android / other browsers: if beforeinstallprompt never fires
+    // (Samsung Internet, Firefox, in-app browsers, etc.), fall back to
+    // generic "open browser menu" instructions after a short delay.
+    setTimeout(function() {
+      if (bannerShown) return;
+      var banner = document.getElementById('pwa-install-banner');
+      var installBtn = document.getElementById('pwa-install-btn');
+      if(banner && installBtn) {
+        var t2 = T[activeLang] || T['ku'];
+        installBtn.textContent = t2.pwaIOSBtn || 'چۆنیەتی دامەزراندن';
+        installBtn.addEventListener('click', function() {
+          var t3 = T[activeLang] || T['ku'];
+          alert(t3.pwaAndroidAlert || t3.pwaIOSAlert || 'Open browser menu → Add to Home screen');
+        });
+        showInstallBanner();
+      }
+    }, 4000);
   }
 }
 
@@ -1863,6 +1935,7 @@ if('serviceWorker' in navigator) {
     });
   });
 }
+
 </script>
 <script id="aub-stock">(function(){document.querySelectorAll("[data-stock=soldout]").forEach(function(el){var btn=el.querySelector(".add-btn,.prod-add-btn,.btn-add");if(btn){btn.disabled=true;btn.style.opacity="0.35";btn.style.cursor="not-allowed";btn.textContent="❌ Sold Out";}var badge=document.createElement("div");badge.style.cssText="position:absolute;top:8px;right:8px;background:#EF4444;color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:20px;z-index:5";badge.textContent="SOLD OUT";el.style.position="relative";el.appendChild(badge);});})();</script>
 </body>
