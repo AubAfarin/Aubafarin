@@ -1671,7 +1671,18 @@ function renderHeroContent() {
 
 // INIT
 renderHeroCards();
-setLang(activeLang);
+try {
+  setLang(activeLang);
+} catch(e) {
+  try { localStorage.removeItem('aub_lang'); } catch(e2) {}
+  activeLang = 'ku';
+  CATS = T.ku.cats;
+  AGES = T.ku.ages;
+  renderHeroContent();
+  renderCats();
+  renderAges();
+  renderProducts();
+}
 renderCart();
 doSearch();
 
