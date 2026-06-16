@@ -43,7 +43,7 @@ img{display:block;max-width:100%}
 .lang-current{display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 8px;border-radius:8px;transition:background .2s;user-select:none}
 .lang-current:hover{background:rgba(255,255,255,0.15)}
 .lang-code{font-size:14px;font-weight:800;color:#fff;letter-spacing:0}
-.lang-arrow{font-size:8px;color:rgba(255,255,255,0.7);transition:transform .2s}
+.lang-arrow{font-size:8px;color:rgba(255,255,255,0.7);transition:transform .2s;cursor:pointer;touch-action:manipulation;padding:4px}
 .lang-switch.open .lang-arrow{transform:rotate(180deg)}
 .lang-drop{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--slate-100);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);overflow:hidden;z-index:200;min-width:130px;display:none}
 .lang-switch.open .lang-drop{display:block}
@@ -118,7 +118,7 @@ header{position:sticky;top:0;background:#2D1B2E;border-bottom:1px solid rgba(255
 
 
 .top-cat-nav.stuck{box-shadow:0 4px 20px rgba(0,0,0,.08)}
-.cat-scroll-hint{display:none;position:absolute;top:8px;bottom:0;left:0;width:48px;align-items:center;justify-content:center;pointer-events:none;z-index:5;background:linear-gradient(to left,rgba(255,253,249,0) 0%,rgba(255,253,249,.85) 60%,rgba(255,253,249,1) 100%)}
+.cat-scroll-hint{display:none;position:absolute;top:8px;bottom:0;left:0;width:48px;align-items:center;justify-content:center;cursor:pointer;z-index:5;background:linear-gradient(to left,rgba(255,253,249,0) 0%,rgba(255,253,249,.85) 60%,rgba(255,253,249,1) 100%)}
 .cat-scroll-hint svg{width:22px;height:22px;animation:catScrollHintMove 1.4s ease-in-out infinite}
 @keyframes catScrollHintMove{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(-6px);opacity:1}}
 @media(max-width:900px){.cat-scroll-hint.show{display:flex}}
@@ -598,7 +598,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
         <div class="lang-switch" id="langSwitch">
           <div class="lang-current" id="langCurrent" onclick="toggleLangDrop()">
             <span class="lang-code" id="langCode">کوردی</span>
-            <span class="lang-arrow">▼</span>
+            <span class="lang-arrow" onclick="toggleLangDrop()">▼</span>
           </div>
           <div class="lang-drop" id="langDrop">
             <div class="lang-opt active" data-lang="ku">
@@ -647,7 +647,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 
 
   <div id="topCatNav" class="top-cat-inner"></div>
-  <div id="catScrollHint" class="cat-scroll-hint">
+  <div id="catScrollHint" class="cat-scroll-hint" onclick="document.getElementById('topCatNav').scrollBy({left:-120,behavior:'smooth'})">
     <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
   </div>
 
