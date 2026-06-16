@@ -133,7 +133,8 @@ header{position:sticky;top:0;background:#2D1B2E;border-bottom:1px solid rgba(255
 .prod-img-wrap{position:relative;aspect-ratio:3/4;background:var(--slate-100);overflow:hidden}
 .prod-img-wrap img{width:100%;height:100%;object-fit:contain;background:#fff;transition:transform .7s}
 .prod-card:hover .prod-img-wrap img{transform:scale(1.05)}
-.prod-badge{position:absolute;top:12px;left:12px;background:var(--primary);color:#fff;font-size:9px;font-weight:900;padding:4px 10px;border-radius:999px;letter-spacing:0}
+.prod-badge{position:absolute;top:12px;left:12px;background:var(--primary);color:#fff;font-size:11px;font-weight:900;padding:5px 12px;border-radius:999px;letter-spacing:0;box-shadow:0 2px 8px rgba(232,99,122,.4)}
+.prod-badge-sale{position:absolute;top:12px;right:12px;background:#16a34a;color:#fff;font-size:13px;font-weight:900;padding:7px 16px;border-radius:999px;letter-spacing:0;box-shadow:0 3px 10px rgba(22,163,74,.5)}
 .prod-body{padding:16px}
 .prod-cat-label{font-size:9px;font-weight:900;color:var(--primary);letter-spacing:0;margin-bottom:6px}
 .prod-name{font-weight:700;color:var(--slate-900);font-size:13px;margin-bottom:16px;min-height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -1015,6 +1016,7 @@ function renderProducts() {
     var p = slice[i];
     var isNew30 = p.addedAt && (Math.floor((new Date() - new Date(p.addedAt)) / (1000*60*60*24)) <= 30);
     var badge = isNew30 ? '<span class="prod-badge">' + (T[activeLang].newBadge || 'نوێ') + '</span>' : '';
+    var saleBadge = p.salePrice ? '<span class="prod-badge-sale">' + (T[activeLang].saleBadge || 'داشکاندن') + '</span>' : '';
     var dateStr = '';
     if(p.addedAt) {
       var d = new Date(p.addedAt);
@@ -1041,12 +1043,13 @@ function renderProducts() {
       '<div class="prod-img-wrap">' +
       '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
       badge +
+      saleBadge +
       '</div>' +
       '<div class="prod-body">' +
       '<div class="prod-cat-label" style="display:flex;justify-content:space-between;align-items:center">' + (CATS[Array.isArray(p.cat)?p.cat[0]:p.cat] || '') + (dateStr ? '<span style="font-size:9px;color:var(--slate-400)">' + dateStr + '</span>' : '') + '</div>' +
       '<h3 class="prod-name">' + (typeof p.name === 'object' ? (p.name[activeLang] || p.name.ku) : p.name) + '</h3>' +
       '<div class="prod-footer">' +
-      '<div class="prod-price">' + p.price.toLocaleString() + ' <span>' + (T[activeLang].currency||'د.ع') + '</span></div>' +
+      '<div class="prod-price">' + (p.salePrice ? '<span style="text-decoration:line-through;color:var(--slate-400);font-size:10px;font-weight:600">' + p.price.toLocaleString() + '</span> ' + p.salePrice.toLocaleString() : p.price.toLocaleString()) + ' <span>' + (T[activeLang].currency||'د.ع') + '</span></div>' +
       '<button class="add-btn" data-addid="' + p.id + '">+</button>' +
       '</div></div></div>';
   }
@@ -1305,7 +1308,7 @@ document.addEventListener('click', function(e) {
 // ═══════════════════════════════
 // TRANSLATIONS
 // ═══════════════════════════════
-var activeLang = 'ku';
+var activeLang = (function(){ try { return localStorage.getItem('aub_lang') || 'ku'; } catch(e) { return 'ku'; } })();
 
 var T = {
   ku: {
@@ -1344,6 +1347,7 @@ var T = {
     social: ['واتسئەپ','تیکتۆک','سناپچات','ئینستاگرام'], phoneLabel: 'پەیوەندی',
     modalAddBtn: 'بخەرە سەبەتە',
     newBadge: 'نوێ',
+    saleBadge: 'داشکاندن',
     today: 'ئەمڕۆ',
     yesterday: 'دوێنێ',
     daysAgo: ' ڕۆژ لەمەوبەر',
@@ -1394,6 +1398,7 @@ var T = {
     social: ['واتساب','تيك توك','سناب شات','إنستغرام'], phoneLabel: 'تواصل',
     modalAddBtn: 'أضف إلى السلة',
     newBadge: 'جديد',
+    saleBadge: 'خصم',
     today: 'اليوم',
     yesterday: 'أمس',
     daysAgo: ' أيام مضت',
@@ -1444,6 +1449,7 @@ var T = {
     social: ['WhatsApp','TikTok','Snapchat','Instagram'], phoneLabel: 'Contact',
     modalAddBtn: 'Add to Cart',
     newBadge: 'New',
+    saleBadge: 'Discount',
     today: 'Today',
     yesterday: 'Yesterday',
     daysAgo: ' days ago',
@@ -1472,6 +1478,7 @@ document.addEventListener('click', function(e) {
 
 function setLang(lang) {
   activeLang = lang;
+  try { localStorage.setItem('aub_lang', lang); } catch(e) {}
   var t = T[lang];
 
   // Update html dir and lang
