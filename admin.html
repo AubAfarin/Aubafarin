@@ -3145,7 +3145,7 @@ var CAT_LABELS = {
   newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
   shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
 };
-var AGE_LABELS = {'0-3m':'٠-٣ مانگ','3-6m':'٣-٦ مانگ','6-12m':'٦-١٢ مانگ','mini':'٢-٩ ساڵ','junior':'٨-١٦ ساڵ'};
+var AGE_LABELS = {'0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ'};
 
 function loadProductsFromHTML(html) {
   // Use bracket-matching to find real array boundaries
@@ -7027,7 +7027,7 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 
   if(ageSel) {
     var ages = Object.keys(AGES_DATA).length ? AGES_DATA : {
-      '0-3m':'٣-٠ مانگ','3-6m':'٦-٣ مانگ','6-12m':'١٢-٦ مانگ','mini':'٩-٢ ساڵ','junior':'١٦-٨ ساڵ'
+      '0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ'
     };
     ageSel.innerHTML = Object.entries(ages).map(function(e){
       return '<option value="'+e[0]+'"'+(e[0]===selectedAge?' selected':'')+'>'+e[1]+' ('+e[0]+')</option>';
