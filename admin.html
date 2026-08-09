@@ -484,11 +484,11 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
     <div class="field-group">
       <label class="field-label" style="font-size:9px;font-weight:900;color:var(--text3);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px">GitHub Username</label>
-      <input class="login-input" type="text" id="loginUsername" placeholder="your-github-username" autocomplete="username" spellcheck="false">
+      <input class="login-input" type="text" id="loginUsername" placeholder="your-github-username" value="AubAfarin" autocomplete="username" spellcheck="false">
     </div>
     <div class="field-group">
       <label class="field-label" style="font-size:9px;font-weight:900;color:var(--text3);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px">Repository (owner/repo)</label>
-      <input class="login-input" type="text" id="loginRepo" placeholder="username/aubafarin.com" autocomplete="off" spellcheck="false">
+      <input class="login-input" type="text" id="loginRepo" placeholder="username/aubafarin.com" value="AubAfarin/Aubafarin" autocomplete="off" spellcheck="false">
     </div>
     <div class="field-group">
       <label class="field-label" style="font-size:9px;font-weight:900;color:var(--text3);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px">Personal Access Token (PAT)</label>
@@ -501,8 +501,8 @@ input[type=range]{flex:1;accent-color:var(--brand)}
       <input class="login-input" type="text" id="loginFilePath" value="index.html" placeholder="index.html" spellcheck="false">
       <div style="font-size:10px;color:var(--text3);margin-top:5px">Change only if your file is not at the root (e.g. <code>public/index.html</code>)</div>
     </div>
+    <div class="login-err" id="loginErr" style="display:none;font-size:13px;padding:12px 16px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:10px;text-align:center"></div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">🔐 Connect & Authenticate</button>
-    <div class="login-err" id="loginErr" style="display:none"></div>
   </div>
 </div>
 
@@ -2790,12 +2790,6 @@ async function doLogin() {
     }
     errEl.textContent = '❌ ' + msg;
     errEl.style.display = 'block';
-    errEl.style.color = '#EF4444';
-    errEl.style.fontSize = '13px';
-    errEl.style.padding = '10px';
-    errEl.style.background = 'rgba(239,68,68,0.1)';
-    errEl.style.borderRadius = '8px';
-    errEl.style.marginTop = '10px';
     btn.textContent = '🔐 Connect & Authenticate';
     btn.disabled = false;
     console.error('Login error:', e);
