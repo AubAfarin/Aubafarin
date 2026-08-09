@@ -2753,12 +2753,6 @@ async function doLogin() {
 
     var repoData = await repoRes.json();
 
-    btn.textContent = '⏳ Step 3/3: Checking permissions...';
-    // Step 3: verify write access (push permission)
-    if(!repoData.permissions || !repoData.permissions.push) {
-      throw new Error('Token has read-only access to "' + repo + '". Push (write) permission is required.');
-    }
-
     // ✅ All checks passed — store credentials and enter admin
     GH.token    = token;
     GH.repo     = repo;
