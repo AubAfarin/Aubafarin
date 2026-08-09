@@ -3028,6 +3028,7 @@ async function testGHConnection() {
 // ══════════════════════════════════════════════════════════════
 var cachedHTML = '';
 var cachedSHA = '';
+var _isSaving = false; // lock: prevents concurrent saves
 
 async function fetchCurrentHTML() {
   if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return null; }try {setPushStatus('pushing', 'Fetching current file...');
@@ -3145,7 +3146,7 @@ var CAT_LABELS = {
   newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
   shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
 };
-var AGE_LABELS = {'0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ'};
+var AGE_LABELS = {'0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ','3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'};
 
 function loadProductsFromHTML(html) {
   // Use bracket-matching to find real array boundaries
@@ -3429,8 +3430,21 @@ function closeProdModal() {document.getElementById('prodModal').classList.remove
 // SAVE CATALOG
 // ══════════════════════════════════════════════════════════════
 async function saveCatalog() {
+  // ── Save Lock: prevent concurrent pushes ──
+  if(_isSaving) {
+    toast('⏳ پاشەکەوتکردنێک هەنوو بەردەوامە — تکایە چاوەڕێ بکە', 'warn');
+    return;
+  }
+  _isSaving = true;
+  var saveBtn = document.getElementById('saveCatalogBtn');
+  var addBtn  = document.getElementById('addProdBtn');
+  if(saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving…'; }
+  if(addBtn)  { addBtn.disabled  = true; }
+
+  try {
+  // Always fetch fresh HTML from GitHub — never use stale cache
   var html = await fetchCurrentHTML();
-  if(!html) return;
+  if(!html) { return; }
 
   // Detect const vs var from the actual file
   var prodKeyword = html.match(/const\s+PRODUCTS/) ? 'const' : 'var';
@@ -3466,8 +3480,7 @@ async function saveCatalog() {
   // Inject sold-out state into buy buttons for each product
   PRODUCTS.forEach(function(p) {
     if(p.stock === 'soldout') {
-      // Mark sold-out products with data attribute so site JS can disable buy button
-      var pidRE = new RegExp('(data-pid=["\'\']' + p.id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '["\'\'][^>]*>)');
+      var pidRE = new RegExp('(data-pid=[\"\\'\\']' + p.id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[\"\\'\\'][^>]*>)');
       newHTML = newHTML.replace(pidRE, function(m) {
         if(m.includes('data-stock')) return m;
         return m.slice(0,-1) + ' data-stock="soldout">';
@@ -3484,8 +3497,6 @@ async function saveCatalog() {
     xml += '  <url><loc>https://aubafarin.com/#product-' + p.id + '</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n';
   });
   xml += '</urlset>';
-  // Sitemap pushed AFTER main HTML to avoid SHA conflict (see below)
-  // Inject stock-disabling script into site so visitors see soldout state
   var stockScript = '<script id="aub-stock">' +
     '(function(){' +
       'document.querySelectorAll("[data-stock=soldout]").forEach(function(el){' +
@@ -3499,22 +3510,28 @@ async function saveCatalog() {
       '});' +
     '})();' +
   '<\/script>';
-  // Remove old stock script if present, then inject updated one
   newHTML = newHTML.replace(/<script id="aub-stock">[\s\S]*?<\/script>/g, '');
   newHTML = newHTML.replace('</body>', stockScript + '\n</body>');
 
-  await pushHTMLToGitHub(newHTML, 'Admin: Update catalog (' + PRODUCTS.length + ' items)');
-  // Push sitemap and robots AFTER main HTML push to avoid SHA conflicts
-  if(GH.token) {
+  var pushOk = await pushHTMLToGitHub(newHTML, 'Admin: Update catalog (' + PRODUCTS.length + ' items)');
+  if(pushOk && GH.token) {
     setTimeout(async function() {
       try {
         await pushFile('sitemap.xml', btoa(unescape(encodeURIComponent(xml))), 'Auto: sitemap');
         await pushFile('robots.txt', btoa('User-agent: *\nAllow: /\nSitemap: https://aubafarin.com/sitemap.xml\n'), 'Auto: robots.txt');
       } catch(e) { console.warn('Sitemap push failed:', e.message); }
-    }, 2000); // 2 second delay ensures main push completes first
+    }, 2000);
+  }
+  } catch(saveErr) {
+    toast('Save failed: ' + saveErr.message, 'error');
+    console.error('[saveCatalog] error:', saveErr);
+  } finally {
+    // Always release the lock regardless of success or failure
+    _isSaving = false;
+    if(saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save & Push Catalog to Live'; }
+    if(addBtn)  { addBtn.disabled  = false; }
   }
 }
-
 // ══════════════════════════════════════════════════════════════
 // TEXTS EDITOR
 // ══════════════════════════════════════════════════════════════
@@ -7027,7 +7044,7 @@ function rebuildProdModalDropdowns(selectedCat, selectedAge) {
 
   if(ageSel) {
     var ages = Object.keys(AGES_DATA).length ? AGES_DATA : {
-      '0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ'
+      '0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ','3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'
     };
     ageSel.innerHTML = Object.entries(ages).map(function(e){
       return '<option value="'+e[0]+'"'+(e[0]===selectedAge?' selected':'')+'>'+e[1]+' ('+e[0]+')</option>';
