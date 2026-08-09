@@ -698,6 +698,14 @@ input[type=range]{flex:1;accent-color:var(--brand)}
             <button class="btn btn-primary" onclick="openNewProduct()" id="addProdBtn">➕ Add Product</button>
           </div>
         </div>
+        <div id="deployStatusBar" style="display:none;align-items:center;gap:10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:10px 16px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--brand)">
+          <span style="font-size:18px" id="deployStatusIcon">⏳</span>
+          <div style="flex:1">
+            <div id="deployStatusText">Waiting for Cloudflare to deploy…</div>
+            <div style="font-size:10px;font-weight:400;color:var(--text3);margin-top:2px" id="deployStatusSub">Add Product is locked until the new product is confirmed live</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);font-weight:900;min-width:32px;text-align:center" id="deployStatusTimer"></div>
+        </div>
 
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <div id="catalogSortBar" style="display:flex;gap:5px;flex-wrap:wrap"></div>
@@ -3017,6 +3025,8 @@ async function testGHConnection() {
 var cachedHTML = '';
 var cachedSHA = '';
 var _isSaving = false; // lock: prevents concurrent saves
+var _deployPoller = null;  // interval handle for live-check polling
+var _lastPushedProductId = null; // product ID to confirm went live
 
 async function fetchCurrentHTML() {
   if(!GH.token || !GH.repo) { toast('Configure GitHub first', 'error'); return null; }try {setPushStatus('pushing', 'Fetching current file...');
@@ -3417,6 +3427,86 @@ function closeProdModal() {document.getElementById('prodModal').classList.remove
 // ══════════════════════════════════════════════════════════════
 // SAVE CATALOG
 // ══════════════════════════════════════════════════════════════
+
+// ── Cloudflare deployment poller ──────────────────────────────────────────────
+// Keeps "Add Product" locked until the new product is confirmed live on aubafarin.com
+function waitForDeployment(productId, onLive) {
+  var bar      = document.getElementById('deployStatusBar');
+  var icon     = document.getElementById('deployStatusIcon');
+  var text     = document.getElementById('deployStatusText');
+  var sub      = document.getElementById('deployStatusSub');
+  var timer    = document.getElementById('deployStatusTimer');
+  var addBtn   = document.getElementById('addProdBtn');
+
+  if(bar)    bar.style.display = 'flex';
+  if(addBtn) { addBtn.disabled = true; addBtn.style.opacity = '0.45'; addBtn.title = 'Locked until previous product is live'; }
+
+  var elapsed  = 0;
+  var maxWait  = 120; // seconds before giving up
+  var interval = 4;   // poll every 4 seconds
+
+  // Clear any previous poller
+  if(_deployPoller) clearInterval(_deployPoller);
+
+  function updateTimer() {
+    if(timer) timer.textContent = elapsed + 's';
+  }
+
+  function unlock(success) {
+    clearInterval(_deployPoller);
+    _deployPoller = null;
+    if(addBtn) { addBtn.disabled = false; addBtn.style.opacity = ''; addBtn.title = ''; }
+    if(success) {
+      if(icon)  icon.textContent  = '✅';
+      if(text)  text.textContent  = 'Product is live on aubafarin.com!';
+      if(sub)   sub.textContent   = 'You can now add another product.';
+      setTimeout(function() { if(bar) bar.style.display = 'none'; }, 4000);
+      toast('✅ Product confirmed live on aubafarin.com!', 'success');
+    } else {
+      if(icon)  icon.textContent  = '⚠️';
+      if(text)  text.textContent  = 'Could not confirm live deployment after ' + maxWait + 's.';
+      if(sub)   sub.textContent   = 'The product was pushed to GitHub. Cloudflare may still be deploying — check the site manually.';
+      if(bar)   bar.style.background = 'rgba(245,158,11,0.1)';
+      if(bar)   bar.style.borderColor = 'rgba(245,158,11,0.3)';
+      if(bar)   bar.style.color = '#f59e0b';
+      toast('⚠️ Could not confirm live status — check aubafarin.com manually.', 'warn');
+    }
+    if(onLive) onLive(success);
+  }
+
+  updateTimer();
+  _deployPoller = setInterval(async function() {
+    elapsed += interval;
+    updateTimer();
+
+    if(elapsed >= maxWait) {
+      unlock(false);
+      return;
+    }
+
+    try {
+      // Fetch the live site with cache-busting and check for the product ID
+      var res = await fetch('https://aubafarin.com/?_cb=' + Date.now(), {
+        cache: 'no-store',
+        headers: { 'pragma': 'no-cache', 'cache-control': 'no-cache' }
+      });
+      if(res.ok) {
+        var html = await res.text();
+        if(html.indexOf('"id":"' + productId + '"') !== -1 ||
+           html.indexOf("'id':'" + productId + "'") !== -1 ||
+           html.indexOf('"' + productId + '"') !== -1) {
+          unlock(true);
+        } else {
+          if(text) text.textContent = 'Waiting for Cloudflare to deploy… (checking every ' + interval + 's)';
+        }
+      }
+    } catch(e) {
+      // Network hiccup — keep waiting
+      console.warn('[deployPoller] fetch error:', e.message);
+    }
+  }, interval * 1000);
+}
+
 async function saveCatalog() {
   // ── Save Lock: prevent concurrent pushes ──
   if(_isSaving) {
@@ -3517,10 +3607,11 @@ async function saveCatalog() {
     toast('Save failed: ' + saveErr.message, 'error');
     console.error('[saveCatalog] error:', saveErr);
   } finally {
-    // Always release the lock regardless of success or failure
+    // Always release the save lock
     _isSaving = false;
     if(saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save & Push Catalog to Live'; }
-    if(addBtn)  { addBtn.disabled  = false; }
+    // Only re-enable Add Product if no deployment poller is actively waiting
+    if(addBtn && !_deployPoller) { addBtn.disabled = false; addBtn.style.opacity = ''; }
   }
 }
 // ══════════════════════════════════════════════════════════════
@@ -5412,8 +5503,17 @@ function saveProdModalPatched() {
   closeProdModal();
   renderCatalogTable();
   updateDashboardStats();
-  saveCatalog();
-  if(isNewProduct) sendNewProductPush(prod);
+  // After save, if it's a new product, wait for Cloudflare to confirm it's live
+  // before unlocking the Add Product button
+  if(isNewProduct) {
+    _lastPushedProductId = prod.id;
+    saveCatalog().then(function() {
+      waitForDeployment(prod.id, null);
+    });
+    sendNewProductPush(prod);
+  } else {
+    saveCatalog();
+  }
 };
 
 // ═══════════════════════════════ PATCH T PARSER ═══════════════════════════════
