@@ -3468,11 +3468,14 @@ async function saveCatalog() {
   // Inject sold-out state into buy buttons for each product
   PRODUCTS.forEach(function(p) {
     if(p.stock === 'soldout') {
-      var pidRE = new RegExp('(data-pid=[\"\\'\\']' + p.id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[\"\\'\\'][^>]*>)');
-      newHTML = newHTML.replace(pidRE, function(m) {
-        if(m.includes('data-stock')) return m;
-        return m.slice(0,-1) + ' data-stock="soldout">';
-      });
+      var marker = 'data-pid="' + p.id + '"';
+      var idx2 = newHTML.indexOf(marker);
+      if(idx2 !== -1) {
+        var tagEnd = newHTML.indexOf('>', idx2);
+        if(tagEnd !== -1 && newHTML.indexOf('data-stock', idx2) === -1) {
+          newHTML = newHTML.slice(0, tagEnd) + ' data-stock="soldout"' + newHTML.slice(tagEnd);
+        }
+      }
     }
   });
   // Auto-generate sitemap.xml and robots.txt on every Catalog push
