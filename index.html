@@ -284,6 +284,15 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 .menu-links{flex:1;overflow-y:auto;padding:32px 0}
 .menu-link{display:block;width:100%;padding:20px 48px;font-size:10px;font-weight:900;letter-spacing:0;transition:all .2s;border-left:2px solid transparent;color:var(--slate-500);cursor:pointer;background:none;border:none;border-right:2px solid transparent}
 .menu-link:hover,.menu-link.active{background:var(--primary-light);color:var(--primary);border-inline-end-color:var(--primary)}
+.menu-section-title{font-size:9px;font-weight:900;letter-spacing:1px;color:var(--slate-400);padding:12px 48px 6px;text-transform:uppercase}
+.menu-subcat-bar{display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px 12px 48px;border-bottom:1px solid var(--slate-100);background:var(--slate-50)}
+.menu-subcat-btn{padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;background:#fff;color:var(--slate-500);border:1px solid var(--slate-100);cursor:pointer;font-family:inherit;transition:all .2s}
+.menu-subcat-btn:hover{border-color:var(--primary);color:var(--primary)}
+.menu-subcat-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.menu-age-bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px 14px}
+.menu-age-btn{padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;background:#fff;color:var(--slate-500);border:1px solid var(--slate-100);cursor:pointer;font-family:inherit;transition:all .2s}
+.menu-age-btn:hover{border-color:var(--primary);color:var(--primary)}
+.menu-age-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .menu-footer{padding:32px;border-top:1px solid var(--slate-100)}
 .menu-phone{display:flex;align-items:center;gap:24px;margin-bottom:40px}
 .menu-phone-icon{width:48px;height:48px;border:1px solid var(--slate-100);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary)}
@@ -856,6 +865,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
     </button>
   </div>
   <div id="menuLinks"></div>
+  <div id="menuAges"></div>
   <div class="menu-footer">
     <div class="menu-phone">
       <div class="menu-phone-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.67a19.79 19.79 0 01-3.07-8.63A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.06 6.06l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
@@ -987,8 +997,21 @@ function renderCats() {
     var k = keys[i], v = CATS[k];
     var cls = activecat === k ? 'menu-link active' : 'menu-link';
     html += '<button class="' + cls + '" data-cat="' + k + '">' + v + '</button>';
+    // Inject subcats immediately under the active category
+    if (activecat === k && activecat !== 'all') {
+      var subs = SUBCATS[k];
+      if (subs) {
+        html += '<div class="menu-subcat-bar">';
+        html += '<button class="menu-subcat-btn' + (!activeSubcat ? ' active' : '') + '" data-subcat="">هەمووی</button>';
+        Object.keys(subs).forEach(function(sk) {
+          html += '<button class="menu-subcat-btn' + (activeSubcat === sk ? ' active' : '') + '" data-subcat="' + sk + '">' + subs[sk] + '</button>';
+        });
+        html += '</div>';
+      }
+    }
   }
   ml.innerHTML = html;
+
   updateCatScrollHint();
 }
 
@@ -1020,6 +1043,20 @@ function renderAges() {
     html += '<button class="' + cls + '" data-age="' + k + '">' + v + '</button>';
   }
   el.innerHTML = html;
+
+  // Also render age filters in menu sidebar
+  var ma = document.getElementById('menuAges');
+  if(ma) {
+    var mHtml = '<div class="menu-section-title">' + allAgesLabel + '</div><div class="menu-age-bar">';
+    mHtml += '<button class="menu-age-btn' + (!activeAge ? ' active' : '') + '" data-age="">' + allAgesLabel + '</button>';
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i], v = AGES[k];
+      if(k === '') continue;
+      mHtml += '<button class="menu-age-btn' + (activeAge === k ? ' active' : '') + '" data-age="' + k + '">' + v + '</button>';
+    }
+    mHtml += '</div>';
+    ma.innerHTML = mHtml;
+  }
 }
 
 function buildProductHTML(p) {
@@ -1340,13 +1377,14 @@ document.addEventListener('click', function(e) {
   if (subcatBtn) {
     activeSubcat = subcatBtn.getAttribute('data-subcat') || null;
     page = 1;
-    renderCats(); renderProducts();
+    renderCats(); renderAges(); renderProducts();
+    closeMenu();
     return;
   }
 
   // Age filter buttons
   var ageBtn = t.closest('[data-age]');
-  if (ageBtn) { setAge(ageBtn.getAttribute('data-age')); return; }
+  if (ageBtn) { setAge(ageBtn.getAttribute('data-age')); closeMenu(); return; }
 
   // Pagination buttons
 
