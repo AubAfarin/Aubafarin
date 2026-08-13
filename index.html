@@ -66,6 +66,10 @@ img{display:block;max-width:100%}
 .top-cat-btn.active .top-cat-img-wrap{box-shadow:0 6px 20px rgba(232,99,122,.35);transform:translateY(-2px)}
 .top-cat-btn.active .top-cat-img-wrap::after{content:"";position:absolute;inset:0;border-radius:12px;border:2.5px solid var(--primary);pointer-events:none}
 .top-cat-btn.active .top-cat-label{color:var(--primary);font-weight:800}
+#subcatBar{display:none;padding:6px 16px 10px;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;border-top:1px solid var(--slate-100);background:#FFFDF9}
+.subcat-pill{padding:6px 16px;border-radius:999px;font-size:11px;font-weight:700;transition:all .2s;background:#fff;color:var(--slate-500);border:1px solid var(--slate-100);cursor:pointer;font-family:inherit}
+.subcat-pill:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.subcat-pill.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(232,99,122,.3)}
 .top-cat-img-wrap{width:64px;height:64px;border-radius:12px;overflow:hidden;position:relative;transition:transform .25s,box-shadow .25s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .top-cat-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
 .top-cat-btn:hover .top-cat-img-wrap img{transform:scale(1.12)}
@@ -636,18 +640,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 
 
 <!-- HERO -->
-<section class="hero hero-new">
-<main class="hero-container">
-        <section class="content-side" id="heroContentSide">
-            <!-- Rendered by renderHeroContent() from HERO_TEXT variable -->
-        </section>
 
-        <section class="image-side" id="heroImageSide">
-            <!-- Rendered by renderHeroCards() from HERO_CARDS variable -->
-        </section>
-    </main>
-</section>
-<hr style="border:none;border-top:2px solid var(--slate-100);margin:0">
 <nav class="top-cat-nav" id="topCatNav_wrap">
 
 
@@ -682,7 +675,8 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <p style="font-weight:700;color:var(--slate-500)" id="emptyText">هیچ بەرهەمێک نەدۆزرایەوە</p>
     </div>
-    <div class="pagination" id="pagination"></div>
+    <div id="loadMoreSentinel" style="height:1px;margin-top:32px"></div>
+    <div id="loadingSpinner" style="display:none;text-align:center;padding:24px;color:var(--primary);font-weight:700;font-size:14px">⏳ چاوەڕێ بکە…</div>
   </div>
 </section>
 
@@ -904,8 +898,18 @@ const PRODUCTS = [{"id":"newborn-264","cat":"newborn","age":"0-4y","addedAt":"20
 
 var HERO_CARDS = [{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778943223743_1778943222811_IMG_20260504_192108.jpg","label":"هەموو بەرهەمەکان","cat":"newborn","posX":50,"posY":0},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778507334153_1778507333999_IMG_20260504_192042.jpg","label":"جلی کچان","cat":"girls","posX":50,"posY":0},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778202064049_1778202062048_20260411_054644.jpg","label":"جلی کوڕان","cat":"boys","posX":50,"posY":50},{"img":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1778507666539_1778507666401_beautiful-newborn-baby-smiling-on-white-cotton.jpg","label":"ساوا و پێداویستی","cat":"newborn","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&h=500&fit=crop","label":"پێڵاو","cat":"shoes","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop","label":"یاری","cat":"toys","posX":50,"posY":50},{"img":"https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=500&h=500&fit=crop","label":"کوالیتی باش","cat":"girls","posX":50,"posY":50}];
 
-var CATS = {"all":"هەمووی","newborn":"منداڵی ساوا","girls":"بۆ کچان","boys":"بۆ کوڕان","shoes":"پێڵاو","toys":"یارییەکان","beauty":"ئێکسسوارات","gifts":"دیاری","play":"پلەی زۆن","corner":"پەڕاوگە"};
-var CAT_IMGS = {"all":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","newborn":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","girls":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982182508_1777982183745_IMG_20260504_192028.jpg","boys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982420014_1777982421384_20260411_075956.jpg","shoes":"https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=200&auto=format&fit=crop","toys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982537730_1777982538555_Gemini_Generated_Image_57814u57814u5781_1_.png","beauty":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982598097_1777982599466_20260401_114341.jpg","gifts":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982678123_1777982679531_flowers-online-e1452086452554.jpg","play":"https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=200&auto=format&fit=crop","corner":"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop"};
+var CATS = {"all":"هەمووی","newborn":"منداڵی ساوا","girls":"بۆ کچان","boys":"بۆ کوڕان","shoes":"پێڵاو","toys":"یارییەکان","beauty":"ئێکسسوارات","cosmetics":"کۆزمەتیک","gifts":"گوڵفرۆشی و دیاری","play":"پلەی زۆن","corner":"پەڕاوگە"};
+var SUBCATS = {
+  newborn: {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', food:'خۆراک', cleaning:'کلێنس و دایبی', essentials:'پێداویستی', sleeping:'نووستن'},
+  girls:   {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', toys:'یاری'},
+  boys:    {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', toys:'یاری'},
+  shoes:   {girls:'کچان', boys:'کوڕان'},
+  beauty:  {girls:'کچان', boys:'کوڕان'},
+  cosmetics:{girls:'کچان', boys:'کوڕان'},
+  toys:    {general:'گشتی', girls:'کچان', boys:'کوڕان', newborn:'منداڵی ساوا', educational:'یاری هزری', bike:'پاسکیل و سکۆتەر', drone:'درۆن'},
+  play:    {outdoor:'ئاوت دۆر', indoor:'ئیندۆر'}
+};
+var CAT_IMGS = {"all":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","newborn":"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200&auto=format&fit=crop","girls":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982182508_1777982183745_IMG_20260504_192028.jpg","boys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982420014_1777982421384_20260411_075956.jpg","shoes":"https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=200&auto=format&fit=crop","toys":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982537730_1777982538555_Gemini_Generated_Image_57814u57814u5781_1_.png","beauty":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982598097_1777982599466_20260401_114341.jpg","cosmetics":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982598097_1777982599466_20260401_114341.jpg","gifts":"https://aub-images-worker.afarin4business-fdf.workers.dev/file/1777982678123_1777982679531_flowers-online-e1452086452554.jpg","play":"https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=200&auto=format&fit=crop","corner":"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop"};
 
 
 var HERO_TEXT = {"badge":"✨ کۆلیکشنی نوێی ٢٠٢٦ گەیشت","h1":"جوانترین <span>پۆشاک</span><br>بۆ منداڵەکەت","desc":"شایەنی باشترینەکانن! لێرە نوێترین مۆدێلەکانی جیهان بە کوالێتییەکی بێوێنە و نرخێکی گونجاو دەست دەکەوێت.","cta":"بگەڕێ بۆ بەرهەمەکان ←","ctaCat":"all","h1Size":"2.75rem","h1LH":"2","descSize":"1.05rem","descLH":"1.75","cardWDesk":"268px","cardHDesk":"396px","cardWMob":"110px","cardHMob":"140px","badgeAR":"✨ مجموعة 2026 الجديدة وصلت","h1AR":"أجمل <span>الملابس</span><br>لطفلك","descAR":"يستحقون الأفضل! تجد هنا أحدث الموديلات العالمية بجودة لا مثيل لها وسعر مناسب.","ctaAR":"تصفح المنتجات ←","badgeEN":"✨ New 2026 Collection Has Arrived","h1EN":"The Cutest <span>Outfits</span><br>For Your Child","descEN":"They deserve the best! Discover the world\u2019s newest styles with unmatched quality at a fair price.","ctaEN":"Browse Products \u2192","cardGapDesk":"0px","cardGapMob":"0px"};
@@ -914,6 +918,7 @@ var AGES = {"0-4y":"٠-٤ ساڵ","3-8y":"٣-٨ ساڵ","8-16y":"٨-١٦ ساڵ"
 var AGE_KEYS = ['0-4y','3-8y','8-16y','3-10y','3-12y','4-12y'];
 
 var activecat = 'all';
+var activeSubcat = null;
 var activeAge = null;
 var page = 1;
 var cart = [];
@@ -924,17 +929,21 @@ var PER_PAGE = 15;
 function filteredProds() {
   var result = PRODUCTS.filter(function(p) {
     if (activecat !== 'all') {
-      var inCat = Array.isArray(p.cat) ? p.cat.indexOf(activecat) !== -1 : p.cat === activecat;
+      var cats = Array.isArray(p.cat) ? p.cat : [p.cat];
+      var inCat = cats.indexOf(activecat) !== -1;
       if(!inCat) return false;
+    }
+    if (activeSubcat) {
+      var subcats = Array.isArray(p.subcat) ? p.subcat : (p.subcat ? [p.subcat] : []);
+      if(subcats.indexOf(activeSubcat) === -1) return false;
     }
     if (activeAge && p.age !== activeAge) return false;
     return true;
   });
-  // Sort by addedAt descending — newest products first in every category
   result.sort(function(a, b) {
     var da = a.addedAt ? new Date(a.addedAt).getTime() : 0;
     var db = b.addedAt ? new Date(b.addedAt).getTime() : 0;
-    return db - da; // newest first
+    return db - da;
   });
   return result;
 }
@@ -947,11 +956,30 @@ function renderCats() {
     var k = keys[i], v = CATS[k];
     var cls = activecat === k ? 'top-cat-btn active' : 'top-cat-btn';
     html += '<button class="' + cls + '" data-cat="' + k + '">' +
-      '<div class="top-cat-img-wrap"><img src="' + CAT_IMGS[k] + '" alt="' + v + '" loading="lazy"></div>' +
+      '<div class="top-cat-img-wrap"><img src="' + (CAT_IMGS[k]||'') + '" alt="' + v + '" loading="lazy"></div>' +
       '<span class="top-cat-label">' + (typeof v === 'object' ? (v[activeLang] || v.ku || String(v)) : v) + '</span></button>';
   }
   el.innerHTML = html;
-  // inject sticky nav logo as last item (appears beside \u0647\u06d5\u0645\u0648\u0648\u06cc when stuck)
+
+  // Subcategory pills
+  var subcatBar = document.getElementById('subcatBar');
+  if (!subcatBar) {
+    subcatBar = document.createElement('div');
+    subcatBar.id = 'subcatBar';
+    el.parentNode.insertBefore(subcatBar, el.nextSibling);
+  }
+  var subs = SUBCATS[activecat];
+  if (subs && activecat !== 'all') {
+    var subHtml = '<button class="subcat-pill' + (!activeSubcat ? ' active' : '') + '" data-subcat="">هەمووی</button>';
+    Object.keys(subs).forEach(function(sk) {
+      subHtml += '<button class="subcat-pill' + (activeSubcat === sk ? ' active' : '') + '" data-subcat="' + sk + '">' + subs[sk] + '</button>';
+    });
+    subcatBar.innerHTML = subHtml;
+    subcatBar.style.display = 'flex';
+  } else {
+    subcatBar.style.display = 'none';
+    subcatBar.innerHTML = '';
+  }
 
   var ml = document.getElementById('menuLinks');
   html = '';
@@ -994,12 +1022,51 @@ function renderAges() {
   el.innerHTML = html;
 }
 
+function buildProductHTML(p) {
+  var isNew30 = p.addedAt && (Math.floor((new Date() - new Date(p.addedAt)) / (1000*60*60*24)) <= 30);
+  var badge = isNew30 ? '<span class="prod-badge">' + (T[activeLang].newBadge || 'نوێ') + '</span>' : '';
+  var saleBadge = p.salePrice ? '<span class="prod-badge-sale">' + (T[activeLang].saleBadge || 'داشکاندن') + '</span>' : '';
+  var dateStr = '';
+  if(p.addedAt) {
+    var d = new Date(p.addedAt);
+    var now = new Date();
+    var daysDiff = Math.floor((now - d) / (1000*60*60*24));
+    if(daysDiff === 0) dateStr = T[activeLang].today;
+    else if(daysDiff === 1) dateStr = T[activeLang].yesterday;
+    else if(daysDiff < 7) dateStr = daysDiff + T[activeLang].daysAgo;
+    else {
+      var dd = d.getDate(); var mm = d.getMonth() + 1; var yyyy = d.getFullYear();
+      if(activeLang === 'ku' || activeLang === 'ar') {
+        function toEA(n){ return String(n).replace(/[0-9]/g, function(c){ return '٠١٢٣٤٥٦٧٨٩'[+c]; }); }
+        var rtlSlash = '‏/‏';
+        dateStr = '<bdi dir="rtl">' + toEA(dd) + rtlSlash + toEA(mm) + rtlSlash + toEA(yyyy) + '</bdi>';
+      } else {
+        dateStr = String(dd).padStart(2,'0') + '/' + String(mm).padStart(2,'0') + '/' + yyyy;
+      }
+    }
+  }
+  return '<div class="prod-card" data-prodid="' + p.id + '">' +
+    '<div class="prod-img-wrap">' +
+    '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
+    badge + saleBadge +
+    '</div>' +
+    '<div class="prod-body">' +
+    '<div class="prod-cat-label" style="display:flex;justify-content:space-between;align-items:center">' + (CATS[Array.isArray(p.cat)?p.cat[0]:p.cat] || '') + (dateStr ? '<span style="font-size:9px;color:var(--slate-400)">' + dateStr + '</span>' : '') + '</div>' +
+    '<h3 class="prod-name">' + (typeof p.name === 'object' ? (p.name[activeLang] || p.name.ku) : p.name) + '</h3>' +
+    '<div class="prod-footer">' +
+    '<div class="prod-price">' + (p.salePrice ? '<span style="text-decoration:line-through;color:var(--slate-400);font-size:10px;font-weight:600">' + p.price.toLocaleString() + '</span> ' + p.salePrice.toLocaleString() : p.price.toLocaleString()) + ' <span>' + (T[activeLang].currency||'د.ع') + '</span></div>' +
+    '<button class="add-btn" data-addid="' + p.id + '">+</button>' +
+    '</div></div></div>';
+}
+
+var _infiniteProds = [];
+var _infiniteLoaded = 0;
+var _infiniteObserver = null;
+
 function renderProducts() {
   var prods = filteredProds();
-  var total = prods.length;
-  var totalPages = Math.ceil(total / PER_PAGE) || 1;
-  if (page > totalPages) page = 1;
-  var slice = prods.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  _infiniteProds = prods;
+  _infiniteLoaded = 0;
 
   var t = T[activeLang]; var title = activecat === 'all' ? t.allProducts : CATS[activecat];
   document.getElementById('productsTitle').textContent = title;
@@ -1007,70 +1074,47 @@ function renderProducts() {
   var grid = document.getElementById('productsGrid');
   var empty = document.getElementById('emptyState');
 
-  if (slice.length === 0) {
+  if (prods.length === 0) {
     grid.innerHTML = '';
     empty.style.display = 'block'; var eEl = document.getElementById('emptyText'); if(eEl) eEl.textContent = T[activeLang].noResults;
-    document.getElementById('pagination').innerHTML = '';
     return;
   }
   empty.style.display = 'none';
-
-  var html = '';
-  for (var i = 0; i < slice.length; i++) {
-    var p = slice[i];
-    var isNew30 = p.addedAt && (Math.floor((new Date() - new Date(p.addedAt)) / (1000*60*60*24)) <= 30);
-    var badge = isNew30 ? '<span class="prod-badge">' + (T[activeLang].newBadge || 'نوێ') + '</span>' : '';
-    var saleBadge = p.salePrice ? '<span class="prod-badge-sale">' + (T[activeLang].saleBadge || 'داشکاندن') + '</span>' : '';
-    var dateStr = '';
-    if(p.addedAt) {
-      var d = new Date(p.addedAt);
-      var now = new Date();
-      var daysDiff = Math.floor((now - d) / (1000*60*60*24));
-      if(daysDiff === 0) dateStr = T[activeLang].today;
-      else if(daysDiff === 1) dateStr = T[activeLang].yesterday;
-      else if(daysDiff < 7) dateStr = daysDiff + T[activeLang].daysAgo;
-      else {
-        var dd = d.getDate();
-        var mm = d.getMonth() + 1;
-        var yyyy = d.getFullYear();
-        if(activeLang === 'ku' || activeLang === 'ar') {
-          // Eastern Arabic-Indic numerals
-          function toEA(n){ return String(n).replace(/[0-9]/g, function(c){ return '٠١٢٣٤٥٦٧٨٩'[+c]; }); }
-          var rtlSlash = '\u200F/\u200F';
-          dateStr = '<bdi dir="rtl">' + toEA(dd) + rtlSlash + toEA(mm) + rtlSlash + toEA(yyyy) + '</bdi>';
-        } else {
-          dateStr = String(dd).padStart(2,'0') + '/' + String(mm).padStart(2,'0') + '/' + yyyy;
-        }
-      }
-    }
-    html += '<div class="prod-card" data-prodid="' + p.id + '">' +
-      '<div class="prod-img-wrap">' +
-      '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
-      badge +
-      saleBadge +
-      '</div>' +
-      '<div class="prod-body">' +
-      '<div class="prod-cat-label" style="display:flex;justify-content:space-between;align-items:center">' + (CATS[Array.isArray(p.cat)?p.cat[0]:p.cat] || '') + (dateStr ? '<span style="font-size:9px;color:var(--slate-400)">' + dateStr + '</span>' : '') + '</div>' +
-      '<h3 class="prod-name">' + (typeof p.name === 'object' ? (p.name[activeLang] || p.name.ku) : p.name) + '</h3>' +
-      '<div class="prod-footer">' +
-      '<div class="prod-price">' + (p.salePrice ? '<span style="text-decoration:line-through;color:var(--slate-400);font-size:10px;font-weight:600">' + p.price.toLocaleString() + '</span> ' + p.salePrice.toLocaleString() : p.price.toLocaleString()) + ' <span>' + (T[activeLang].currency||'د.ع') + '</span></div>' +
-      '<button class="add-btn" data-addid="' + p.id + '">+</button>' +
-      '</div></div></div>';
-  }
-  grid.innerHTML = html;
-
-  var pag = document.getElementById('pagination');
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
-  var btns = '<button class="page-btn" data-page="' + (page - 1) + '" ' + (page === 1 ? 'disabled' : '') + '>←</button>';
-  for (var i = 1; i <= totalPages; i++) {
-    btns += '<button class="page-btn ' + (page === i ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
-  }
-  btns += '<button class="page-btn" data-page="' + (page + 1) + '" ' + (page === totalPages ? 'disabled' : '') + '>→</button>';
-  pag.innerHTML = btns;
+  grid.innerHTML = '';
+  _loadMoreProducts();
+  _setupInfiniteScroll();
 }
 
+function _loadMoreProducts() {
+  var batch = PER_PAGE;
+  var end = Math.min(_infiniteLoaded + batch, _infiniteProds.length);
+  var html = '';
+  for (var i = _infiniteLoaded; i < end; i++) {
+    html += buildProductHTML(_infiniteProds[i]);
+  }
+  document.getElementById('productsGrid').insertAdjacentHTML('beforeend', html);
+  _infiniteLoaded = end;
+  var spinner = document.getElementById('loadingSpinner');
+  if(spinner) spinner.style.display = 'none';
+}
+
+function _setupInfiniteScroll() {
+  if(_infiniteObserver) _infiniteObserver.disconnect();
+  var sentinel = document.getElementById('loadMoreSentinel');
+  if(!sentinel) return;
+  _infiniteObserver = new IntersectionObserver(function(entries) {
+    if(entries[0].isIntersecting && _infiniteLoaded < _infiniteProds.length) {
+      var spinner = document.getElementById('loadingSpinner');
+      if(spinner) spinner.style.display = 'block';
+      setTimeout(_loadMoreProducts, 300);
+    }
+  }, {rootMargin: '200px'});
+  _infiniteObserver.observe(sentinel);
+}
+
+
 function setCategory(cat) {
-  activecat = cat; activeAge = null; page = 1;
+  activecat = cat; activeSubcat = null; activeAge = null; page = 1;
   var bodyEl = document.body;
   var attr = bodyEl.getAttribute('data-aub') || '';
   var tokens = attr.split(/\s+/).filter(Boolean);
@@ -1292,13 +1336,20 @@ document.addEventListener('click', function(e) {
   var catBtn = t.closest('[data-cat]');
   if (catBtn) { setCategory(catBtn.getAttribute('data-cat')); closeMenu(); return; }
 
+  var subcatBtn = t.closest('[data-subcat]');
+  if (subcatBtn) {
+    activeSubcat = subcatBtn.getAttribute('data-subcat') || null;
+    page = 1;
+    renderCats(); renderProducts();
+    return;
+  }
+
   // Age filter buttons
   var ageBtn = t.closest('[data-age]');
   if (ageBtn) { setAge(ageBtn.getAttribute('data-age')); return; }
 
   // Pagination buttons
-  var pageBtn = t.closest('[data-page]');
-  if (pageBtn && !pageBtn.disabled) { page = parseInt(pageBtn.getAttribute('data-page')); renderProducts(); document.querySelector('.products-section').scrollIntoView({behavior:'smooth'}); return; }
+
 
   // Search result item
   var searchItem = t.closest('[data-searchid]');
@@ -1341,7 +1392,7 @@ var T = {
     checkout: 'بەرەو پارەدان',
     total: 'کۆی گشتی',
     noResults: 'هیچ بەرهەمێک نەدۆزرایەوە',
-    cats: {all:'هەمووی',newborn:'منداڵی ساوا',girls:'بۆ کچان',boys:'بۆ کوڕان',shoes:'پێڵاو',toys:'یارییەکان',beauty:'ئێکسسوارات',gifts:'دیاری',play:'پلەی زۆن',corner:'پەڕاوگە'},
+    cats: {all:'هەمووی',newborn:'منداڵی ساوا',girls:'بۆ کچان',boys:'بۆ کوڕان',shoes:'پێڵاو',toys:'یارییەکان',beauty:'ئێکسسوارات',cosmetics:'کۆزمەتیک',gifts:'گوڵفرۆشی و دیاری',play:'پلەی زۆن',corner:'پەڕاوگە'},
     ages: {'':'هەموو تەمەنەکان','0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ','3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'},
     currency: 'د.ع',
     inStock: 'بەردەستە',
@@ -1392,7 +1443,7 @@ var T = {
     checkout: 'إتمام الشراء',
     total: 'المجموع',
     noResults: 'لا توجد نتائج',
-    cats: {all:'الكل',newborn:'حديث الولادة',girls:'للبنات',boys:'للأولاد',shoes:'أحذية',toys:'ألعاب',beauty:'إكسسوارات',gifts:'هدايا',play:'منطقة اللعب',corner:'قرطاسية'},
+    cats: {all:'الكل',newborn:'حديث الولادة',girls:'للبنات',boys:'للأولاد',shoes:'أحذية',toys:'ألعاب',beauty:'إكسسوارات',cosmetics:'مستحضرات',gifts:'هدايا',play:'منطقة اللعب',corner:'قرطاسية'},
     ages: {'':'جميع الأعمار','0-4y':'٠-٤ سنوات','3-8y':'٣-٨ سنوات','8-16y':'٨-١٦ سنة','3-10y':'٣-١٠ سنوات','3-12y':'٣-١٢ سنة','4-12y':'٤-١٢ سنة'},
     currency: 'د.ع',
     inStock: 'متاح',
@@ -1443,7 +1494,7 @@ var T = {
     checkout: 'Checkout',
     total: 'Total',
     noResults: 'No products found',
-    cats: {all:'All',newborn:'Newborn',girls:'Girls',boys:'Boys',shoes:'Shoes',toys:'Toys',beauty:'Accessories',gifts:'Gifts',play:'Play Zone',corner:'Stationery'},
+    cats: {all:'All',newborn:'Newborn',girls:'Girls',boys:'Boys',shoes:'Shoes',toys:'Toys',beauty:'Accessories',cosmetics:'Cosmetics',gifts:'Gifts',play:'Play Zone',corner:'Stationery'},
     ages: {'':'All Ages','0-4y':'0–4 Years','3-8y':'3–8 Years','8-16y':'8–16 Years','3-10y':'3–10 Years','3-12y':'3–12 Years','4-12y':'4–12 Years'},
     currency: 'IQD',
     inStock: 'In Stock',
@@ -1587,6 +1638,7 @@ function setLang(lang) {
 
   // Re-render dynamic content
   activecat = 'all';
+  activeSubcat = null;
   activeAge = null;
   page = 1;
   renderHeroContent();

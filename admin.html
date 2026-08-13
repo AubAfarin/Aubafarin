@@ -119,6 +119,9 @@ img{display:block;max-width:100%}
 .field-input:focus{border-color:var(--brand);background:var(--surface3)}
 .field-input::placeholder{color:var(--text3)}
 .field-select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;appearance:none}
+.cat-pill,.subcat-pill-admin{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:999px;border:2px solid var(--border2);background:var(--surface2);color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;user-select:none;font-family:inherit;min-height:36px}
+.cat-pill.active,.subcat-pill-admin.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.cat-pill:hover,.subcat-pill-admin:hover{border-color:var(--brand);color:var(--brand)}
 .field-select:focus{border-color:var(--brand)}
 .field-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:80px;transition:border-color .2s}
 .field-textarea:focus{border-color:var(--brand)}
@@ -691,7 +694,7 @@ input[type=range]{flex:1;accent-color:var(--brand)}
               <option value="shoes">پێڵاو</option>
               <option value="toys">یاری</option>
               <option value="beauty">ئێکسسوارات</option>
-              <option value="gifts">دیاری</option>
+              <option value="gifts">گوڵفرۆشی و دیاری</option>
               <option value="play">پلەی زۆن</option>
               <option value="corner">پەڕاوگە</option>
             </select>
@@ -2291,13 +2294,21 @@ input[type=range]{flex:1;accent-color:var(--brand)}
 
         <div class="card-grid cols-2" style="gap:10px">
           <div class="field-group">
-            <label class="field-label">Category</label>
-            <select class="field-select" id="pCat" onchange="autoGenID()"></select>
+            <label class="field-label">Category <span style="font-size:9px;color:var(--text3)">(tap to select multiple)</span></label>
+            <div id="pCatPills" style="display:flex;flex-wrap:wrap;gap:7px;padding:6px 0"></div>
+            <!-- hidden select keeps compatibility with save logic -->
+            <select id="pCat" multiple style="display:none"></select>
           </div>
           <div class="field-group">
             <label class="field-label">Age Group</label>
             <select class="field-select" id="pAge"></select>
           </div>
+        </div>
+        <div class="field-group" id="subcatFieldGroup" style="display:none">
+          <label class="field-label">Sub-category <span style="font-size:9px;color:var(--text3)">(tap to select multiple)</span></label>
+          <div id="pSubcatPills" style="display:flex;flex-wrap:wrap;gap:7px;padding:6px 0"></div>
+          <!-- hidden select keeps compatibility with save logic -->
+          <select id="pSubcat" multiple style="display:none"></select>
         </div>
 
         <div class="card-grid cols-2" style="gap:10px">
@@ -3142,7 +3153,7 @@ async function sendNewProductPush(prod) {
 
 var CAT_LABELS = {
   newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
-  shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
+  shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'گوڵفرۆشی و دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
 };
 var AGE_LABELS = {'0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ','3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'};
 
@@ -3337,7 +3348,7 @@ function openNewProduct() {
   var dateEl = document.getElementById('pDate');
   if(dateEl) dateEl.value = new Date(new Date().getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
   // Populate dropdowns from live data
-  rebuildProdModalDropdowns('', '');
+  rebuildProdModalDropdowns('', '', []);
   // Restore storage preference
   loadStorageUrls();
   if(typeof setAddImgTab === 'function') setAddImgTab(1);
@@ -3351,7 +3362,7 @@ function editProduct(idx) {
   document.getElementById('prodModalTitle').textContent = 'Edit Product: ' + p.id;
   document.getElementById('deleteProdBtn').style.display = 'inline-flex';
   document.getElementById('pID').value = p.id || '';
-  rebuildProdModalDropdowns(p.cat || '', p.age || '');
+  rebuildProdModalDropdowns(p.cat || '', p.age || '', p.subcat || []);
   document.getElementById('pPrice').value = p.price || '';
   document.getElementById('pSalePrice').value = p.salePrice || '';
   var _pDateEl = document.getElementById('pDate');
@@ -5300,7 +5311,7 @@ function rebuildCatalogFilter() {
   if(!sel) return;
   var cats = Object.keys(CATS_DATA).length ? CATS_DATA : {
     newborn:'منداڵی ساوا', girls:'جلوبەرگ (کچ)', boys:'جلوبەرگ (کوڕ)',
-    shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
+    shoes:'پێڵاو', toys:'یاری', beauty:'ئێکسسوارات', gifts:'گوڵفرۆشی و دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
   };
   var current = sel.value;
   sel.innerHTML = '<option value="">هەمووی — All</option>' +
@@ -5473,9 +5484,14 @@ function saveProdModalPatched() {
   var allImgs = mainImg ? [mainImg].concat(extraImgLines.filter(function(u){return u !== mainImg})) : extraImgLines;
   var pDescAREl = document.getElementById('pDescAR');
   var pDescENEl = document.getElementById('pDescEN');
+  var pCatEl = document.getElementById('pCat');
+  var pSubcatEl = document.getElementById('pSubcat');
+  var catVals = pCatEl ? Array.from(pCatEl.selectedOptions).map(function(o){return o.value;}) : [];
+  var subcatVals = pSubcatEl ? Array.from(pSubcatEl.selectedOptions).map(function(o){return o.value;}) : [];
   var prod = {
     id: id,
-    cat: document.getElementById('pCat').value,
+    cat: catVals.length === 1 ? catVals[0] : catVals,
+    subcat: subcatVals.length === 1 ? subcatVals[0] : (subcatVals.length > 1 ? subcatVals : undefined),
     age: document.getElementById('pAge').value,
     addedAt: document.getElementById('pDate').value || new Date().toISOString().slice(0,16),
     name: {
@@ -7117,25 +7133,135 @@ async function uploadImgFile(file) {
 // ══════════════════════════════════════════════════════════════
 // rebuildProdModalDropdowns — populate cat/age before modal opens
 // ══════════════════════════════════════════════════════════════
-function rebuildProdModalDropdowns(selectedCat, selectedAge) {
-  var catSel = document.getElementById('pCat');
-  var ageSel = document.getElementById('pAge');
+var ADMIN_SUBCATS = {
+  newborn:   {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', food:'خۆراک', cleaning:'کلێنس و دایبی', essentials:'پێداویستی', sleeping:'نووستن'},
+  girls:     {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', toys:'یاری'},
+  boys:      {clothing:'جلوبەرگ', shoes:'پێلاو', cosmetics:'کۆزمەتیک', accessories:'ئێکسسوارات', toys:'یاری'},
+  shoes:     {girls:'کچان', boys:'کوڕان'},
+  beauty:    {girls:'کچان', boys:'کوڕان'},
+  cosmetics: {girls:'کچان', boys:'کوڕان'},
+  toys:      {general:'گشتی', girls:'کچان', boys:'کوڕان', newborn:'منداڵی ساوا', educational:'یاری هزری', bike:'پاسکیل و سکۆتەر', drone:'درۆن'},
+  play:      {outdoor:'ئاوت دۆر', indoor:'ئیندۆر'}
+};
 
+function rebuildSubcatSelect() {
+  var catSel    = document.getElementById('pCat');
+  var subcatSel = document.getElementById('pSubcat');
+  var subcatGrp = document.getElementById('subcatFieldGroup');
+  var pillsEl   = document.getElementById('pSubcatPills');
+  if(!catSel || !subcatSel || !subcatGrp || !pillsEl) return;
+
+  // Collect currently selected subcats to preserve them
+  var prevSelected = Array.from(subcatSel.selectedOptions).map(function(o){return o.value;});
+
+  // Get selected cats from hidden select
+  var selectedCats = Array.from(catSel.selectedOptions).map(function(o){return o.value;});
+
+  // Merge subcats of all selected cats
+  var merged = {};
+  selectedCats.forEach(function(k){
+    var subs = ADMIN_SUBCATS[k];
+    if(subs) Object.assign(merged, subs);
+  });
+  var keys = Object.keys(merged);
+  if(keys.length === 0) {
+    subcatGrp.style.display = 'none';
+    pillsEl.innerHTML = '';
+    subcatSel.innerHTML = '';
+    return;
+  }
+
+  // Sync hidden select options
+  subcatSel.innerHTML = keys.map(function(sk){
+    return '<option value="'+sk+'"'+(prevSelected.indexOf(sk)!==-1?' selected':'')+'>'+merged[sk]+'</option>';
+  }).join('');
+
+  // Build pill UI
+  pillsEl.innerHTML = keys.map(function(sk){
+    var active = prevSelected.indexOf(sk) !== -1 ? ' active' : '';
+    return '<button type="button" class="subcat-pill-admin'+active+'" data-subcat-key="'+sk+'">'+merged[sk]+'</button>';
+  }).join('');
+
+  subcatGrp.style.display = 'block';
+}
+
+// Toggle cat pill and sync hidden select, then rebuild subcats
+document.addEventListener('click', function(e) {
+  var cp = e.target.closest('[data-cat-key]');
+  if(!cp) return;
+  cp.classList.toggle('active');
+  var key = cp.getAttribute('data-cat-key');
+  var catSel = document.getElementById('pCat');
   if(catSel) {
+    Array.from(catSel.options).forEach(function(o){
+      if(o.value === key) o.selected = cp.classList.contains('active');
+    });
+  }
+  autoGenID();
+  rebuildSubcatSelect();
+});
+// Toggle subcat pill and sync hidden select
+document.addEventListener('click', function(e) {
+  var sp = e.target.closest('[data-subcat-key]');
+  if(!sp) return;
+  sp.classList.toggle('active');
+  var key = sp.getAttribute('data-subcat-key');
+  var subcatSel = document.getElementById('pSubcat');
+  if(subcatSel) {
+    Array.from(subcatSel.options).forEach(function(o){
+      if(o.value === key) o.selected = sp.classList.contains('active');
+    });
+  }
+});
+
+function rebuildProdModalDropdowns(selectedCat, selectedAge, selectedSubcats) {
+  var catSel   = document.getElementById('pCat');
+  var pillsEl  = document.getElementById('pCatPills');
+  var ageSel   = document.getElementById('pAge');
+
+  if(catSel && pillsEl) {
     var cats = Object.keys(CATS_DATA).length ? CATS_DATA : {
       newborn:'منداڵی ساوا', girls:'بۆ کچان', boys:'بۆ کوڕان',
-      shoes:'پێڵاو', toys:'یارییەکان', beauty:'ئێکسسوارات', gifts:'دیاری', play:'پلەی زۆن'
+      shoes:'پێڵاو', toys:'یارییەکان', beauty:'ئێکسسوارات',
+      cosmetics:'کۆزمەتیک', gifts:'گوڵفرۆشی و دیاری', play:'پلەی زۆن', corner:'پەڕاوگە'
     };
     var catKeys = Object.keys(cats).filter(function(k){return k!=='all';});
+    var selArr = Array.isArray(selectedCat) ? selectedCat : (selectedCat ? [selectedCat] : []);
+
+    // Build hidden select
     catSel.innerHTML = catKeys.map(function(k){
-      return '<option value="'+k+'"'+(k===selectedCat?' selected':'')+'>'+k+' — '+cats[k]+'</option>';
+      return '<option value="'+k+'"'+(selArr.indexOf(k)!==-1?' selected':'')+'>'+k+'</option>';
     }).join('');
-    if(!selectedCat && catKeys.length) catSel.value = catKeys[0];
+
+    // Build pill UI
+    pillsEl.innerHTML = catKeys.map(function(k){
+      var active = selArr.indexOf(k) !== -1 ? ' active' : '';
+      return '<button type="button" class="cat-pill'+active+'" data-cat-key="'+k+'">'+cats[k]+'</button>';
+    }).join('');
+
+    rebuildSubcatSelect();
+
+    // Restore subcats
+    if(selectedSubcats && selectedSubcats.length) {
+      var subArr = Array.isArray(selectedSubcats) ? selectedSubcats : [selectedSubcats];
+      document.querySelectorAll('[data-subcat-key]').forEach(function(btn){
+        if(subArr.indexOf(btn.getAttribute('data-subcat-key')) !== -1) {
+          btn.classList.add('active');
+          var subcatSel = document.getElementById('pSubcat');
+          if(subcatSel) {
+            Array.from(subcatSel.options).forEach(function(o){
+              if(o.value === btn.getAttribute('data-subcat-key')) o.selected = true;
+            });
+          }
+        }
+      });
+    }
   }
 
   if(ageSel) {
     var ages = Object.keys(AGES_DATA).length ? AGES_DATA : {
-      '0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ','3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'
+      '0-4y':'٠-٤ ساڵ','3-8y':'٣-٨ ساڵ','8-16y':'٨-١٦ ساڵ',
+      '3-10y':'٣-١٠ ساڵ','3-12y':'٣-١٢ ساڵ','4-12y':'٤-١٢ ساڵ'
     };
     ageSel.innerHTML = Object.entries(ages).map(function(e){
       return '<option value="'+e[0]+'"'+(e[0]===selectedAge?' selected':'')+'>'+e[1]+' ('+e[0]+')</option>';
