@@ -56,6 +56,9 @@ img{display:block;max-width:100%}
 .lang-opt-check{color:var(--primary);font-size:12px;opacity:0}
 .lang-opt.active .lang-opt-check{opacity:1}
 /* TOP CATEGORY NAV */
+.hero-video-wrap{width:100%;padding:28px 48px;background:var(--slate-50);box-sizing:border-box}
+.hero-video-wrap video{width:100%;max-width:1100px;height:auto;display:block;margin:0 auto;border-radius:20px;box-shadow:0 10px 40px rgba(45,27,46,.18)}
+@media(max-width:600px){.hero-video-wrap{padding:16px 24px}.hero-video-wrap video{border-radius:14px}}
 .top-cat-nav{background:#FFFDF9;border-bottom:1px solid var(--slate-100);position:sticky;top:80px;z-index:39;transition:box-shadow .3s;padding:8px 0 0}
 .top-cat-inner{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:0 16px;justify-content:center}.top-cat-inner::after{content:"";display:block;flex-shrink:0;width:0}@media(max-width:900px){.top-cat-inner{justify-content:flex-start}.top-cat-inner::after{width:16px}}
 .top-cat-inner::-webkit-scrollbar{display:none}
@@ -648,7 +651,12 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
 <!-- TOP CATEGORY NAV -->
 
 
-<!-- HERO -->
+<!-- HERO VIDEO -->
+<div class="hero-video-wrap">
+  <video autoplay muted loop playsinline preload="auto">
+    <source src="https://raw.githubusercontent.com/AubAfarin/Aubafarin/main/AUB%20Buidling.mp4" type="video/mp4">
+  </video>
+</div>
 
 <nav class="top-cat-nav" id="topCatNav_wrap">
 
@@ -1573,6 +1581,8 @@ function setLang(lang) {
   activeLang = lang;
   try { localStorage.setItem('aub_lang', lang); } catch(e) {}
   var t = T[lang];
+
+
 
   // Update html dir and lang
   document.documentElement.setAttribute('dir', t.dir);
