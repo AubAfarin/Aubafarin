@@ -853,7 +853,7 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
         </button>
         <button class="btn-share" id="modalShareBtn" onclick="shareProduct()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          هاوبەشکردن
+          <span id="shareText">هاوبەشکردن</span>
         </button>
       </div>
     </div>
@@ -1106,7 +1106,7 @@ function buildProductHTML(p) {
   }
   return '<div class="prod-card" data-prodid="' + p.id + '">' +
     '<div class="prod-img-wrap">' +
-    '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
+    '<img src="' + p.image + '" alt="' + (typeof p.name==="object"?(p.name[activeLang]||p.name.ku):p.name) + '" loading="lazy">' +
     badge + saleBadge +
     '</div>' +
     '<div class="prod-body">' +
@@ -1341,16 +1341,20 @@ function copyProductLink() {
     navigator.clipboard.writeText(link).then(function() {
       btn.classList.add('copied');
       txt.textContent = 'کۆپی کرا ✓';
-      setTimeout(function() { btn.classList.remove('copied'); txt.textContent = 'کۆپی لینک'; }, 2000);
+      var labels = {ku:{copy:'کۆپی لینک',copied:'کۆپی کرا ✓'},ar:{copy:'نسخ الرابط',copied:'تم النسخ ✓'},en:{copy:'Copy Link',copied:'Copied ✓'}};
+      var L = labels[activeLang]||labels.ku;
+      txt.textContent = L.copied;
+      setTimeout(function() { btn.classList.remove('copied'); txt.textContent = L.copy; }, 2000);
     });
   } catch(e) {
-    // Fallback for older browsers
     var ta = document.createElement('textarea');
     ta.value = link; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy');
     document.body.removeChild(ta);
-    btn.classList.add('copied'); txt.textContent = 'کۆپی کرا ✓';
-    setTimeout(function() { btn.classList.remove('copied'); txt.textContent = 'کۆپی لینک'; }, 2000);
+    var labels2 = {ku:{copy:'کۆپی لینک',copied:'کۆپی کرا ✓'},ar:{copy:'نسخ الرابط',copied:'تم النسخ ✓'},en:{copy:'Copy Link',copied:'Copied ✓'}};
+    var L2 = labels2[activeLang]||labels2.ku;
+    btn.classList.add('copied'); txt.textContent = L2.copied;
+    setTimeout(function() { btn.classList.remove('copied'); txt.textContent = L2.copy; }, 2000);
   }
 }
 
@@ -1635,6 +1639,11 @@ function setLang(lang) {
 
 
 
+  // Update copy/share button labels
+  var shareTxts = {ku:'هاوبەشکردن', ar:'مشاركة', en:'Share'};
+  var copyTxts  = {ku:'کۆپی لینک',  ar:'نسخ الرابط', en:'Copy Link'};
+  var shareEl = document.getElementById('shareText');    if(shareEl) shareEl.textContent = shareTxts[lang]||shareTxts.ku;
+  var copyEl  = document.getElementById('copyLinkText'); if(copyEl)  copyEl.textContent  = copyTxts[lang]||copyTxts.ku;
   // Update html dir and lang
   document.documentElement.setAttribute('dir', t.dir);
   // Update lang switcher UI
