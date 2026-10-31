@@ -87,6 +87,7 @@ header{position:sticky;top:0;background:#2D1B2E;border-bottom:1px solid rgba(255
 .header-inner{height:80px;display:flex;align-items:center;justify-content:space-between;position:relative}
 .header-actions{display:flex;align-items:center;gap:8px}
 .icon-btn{padding:8px;color:#fff;border-radius:50%;transition:all .2s;display:flex;align-items:center;justify-content:center;position:relative}
+.site-toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:#2D1B2E;color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;font-weight:700;z-index:100000;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 8px 24px rgba(0,0,0,.25)}.site-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .icon-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
 .cart-badge{position:absolute;top:4px;right:4px;background:var(--primary);color:#fff;font-size:9px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;font-weight:900}
 .logo-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}.header-logo-link img{height:42px;width:auto;object-fit:contain;display:block}
@@ -640,6 +641,9 @@ html[dir=ltr] .menu-drawer.open{left:0;right:auto;transform:translateX(0)}
             </div>
           </div>
         </div>
+        <button class="icon-btn" id="siteShareBtn" onclick="shareSite()" aria-label="Share" title="Share">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
         <button class="icon-btn" onclick="openSearch()" aria-label="Search">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
@@ -1321,6 +1325,45 @@ function renderModalGallery() {
   document.getElementById('modalThumbs').innerHTML = html;
 }
 
+var SITE_URL = 'https://aubafarin.com/';
+var SITE_SHARE_TXT = {
+  ku:{label:'هاوبەشکردن', copied:'لینکی ماڵپەڕ کۆپی کرا ✓', title:'ئافەرین AUB'},
+  ar:{label:'مشاركة', copied:'تم نسخ رابط الموقع ✓', title:'أفرين AUB'},
+  en:{label:'Share', copied:'Site link copied ✓', title:'AUB Afarin'}
+};
+function showSiteToast(msg) {
+  var t = document.getElementById('siteToast');
+  if (!t) { t = document.createElement('div'); t.id = 'siteToast'; t.className = 'site-toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function copySiteLink() {
+  var L = SITE_SHARE_TXT[activeLang] || SITE_SHARE_TXT.ku;
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = SITE_URL; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta); showSiteToast(L.copied);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(SITE_URL).then(function(){ showSiteToast(L.copied); }, fallback);
+  } else { fallback(); }
+}
+function shareSite() {
+  var L = SITE_SHARE_TXT[activeLang] || SITE_SHARE_TXT.ku;
+  if (navigator.share) {
+    navigator.share({ title: L.title, url: SITE_URL }).catch(function(err){
+      if (err && err.name !== 'AbortError') copySiteLink();
+    });
+  } else { copySiteLink(); }
+}
+function updateSiteShareLabel() {
+  var L = SITE_SHARE_TXT[activeLang] || SITE_SHARE_TXT.ku;
+  var b = document.getElementById('siteShareBtn');
+  if (b) { b.setAttribute('aria-label', L.label); b.setAttribute('title', L.label); }
+}
+
 function closeProduct() {
   document.getElementById('productOverlay').classList.remove('open');
   document.getElementById('productModal').classList.remove('open');
@@ -1644,6 +1687,7 @@ function setLang(lang) {
   var copyTxts  = {ku:'کۆپی لینک',  ar:'نسخ الرابط', en:'Copy Link'};
   var shareEl = document.getElementById('shareText');    if(shareEl) shareEl.textContent = shareTxts[lang]||shareTxts.ku;
   var copyEl  = document.getElementById('copyLinkText'); if(copyEl)  copyEl.textContent  = copyTxts[lang]||copyTxts.ku;
+  updateSiteShareLabel();
   // Update html dir and lang
   document.documentElement.setAttribute('dir', t.dir);
   // Update lang switcher UI
